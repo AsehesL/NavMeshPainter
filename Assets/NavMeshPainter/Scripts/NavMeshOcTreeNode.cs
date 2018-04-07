@@ -90,6 +90,22 @@ namespace ASL.NavMeshPainter
         //    }
         //}
 
+        public void GenerateMesh(List<NavMeshOcTreeNode> nodeList, List<Vector3> vlist, List<int> ilist)
+        {
+            for (int i = 0; i < m_ChildNodes.Length; i++)
+            {
+                if (m_ChildNodes[i] > 0)
+                    nodeList[m_ChildNodes[i]].GenerateMesh(nodeList, vlist, ilist);
+            }
+            if (m_ItemList != null)
+            {
+                for (int i = 0; i < m_ItemList.Count; i++)
+                {
+                    m_ItemList[i].GenerateMesh(vlist, ilist);
+                }
+            }
+        }
+
         public void Check(List<NavMeshOcTreeNode> nodeList)
         {
             for (int i = 0; i < m_ChildNodes.Length; i++)

@@ -45,7 +45,7 @@ public class NavMeshPainterEditor : Editor
         painter.gameObject.hideFlags = HideFlags.DontSave;
 
         NavMeshPainterAsset asset = new NavMeshPainterAsset();
-        asset.Create(Selection.gameObjects, true, 30);
+        asset.Create(Selection.gameObjects, true, 30, 0.03125f);
 
         AssetDatabase.CreateAsset(asset, savePath);
         painter.painter = asset;
@@ -62,7 +62,10 @@ public class NavMeshPainterEditor : Editor
         {
             m_DebugMaterial = new Material(Shader.Find("Unlit/NavMeshDebug"));
             m_DebugMaterial.hideFlags = HideFlags.HideAndDontSave;
-            m_DebugMaterial.SetFloat("_CellSize", 2.5f);
+            if (m_Target.painter)
+                m_DebugMaterial.SetFloat("_CellSize", Mathf.Sqrt(m_Target.painter.area*200));
+            else
+                m_DebugMaterial.SetFloat("_CellSize", 2.5f);
         }
         if (m_Target.painter)
         {
@@ -120,6 +123,20 @@ public class NavMeshPainterEditor : Editor
             if (m_Target.painter)
             {
                 m_Target.painter.CheckTriangle();
+            }
+        }
+        if (GUILayout.Button("Bake"))
+        {
+            if (m_Target.painter)
+            {
+                MeshFilter mf = new GameObject("StForBake").AddComponent<MeshFilter>();
+                //mf.gameObject.hideFlags = HideFlags.HideAndDontSave;
+                mf.gameObject.isStatic = true;
+                mf.sharedMesh = m_Target.painter.GenerateMesh();
+
+                MeshRenderer mr = mf.gameObject.AddComponent<MeshRenderer>();
+                mr.sharedMaterial = new Material(Shader.Find("Unlit/Color"));
+                mr.sharedMaterial.SetColor("_Color", Color.red);
             }
         }
         m_IsPainting = GUILayout.Toggle(m_IsPainting, "绘制", GUI.skin.FindStyle("Button"));

@@ -93,6 +93,19 @@ namespace ASL.NavMeshPainter
                 m_NodeLists[0].CheckTriangle(m_NodeLists);
         }
 
+        public Mesh GenerateMesh()
+        {
+            List<Vector3> vlist = new List<Vector3>();
+            List<int> ilist = new List<int>();
+            if (m_NodeLists != null && m_NodeLists.Count > 0)
+                m_NodeLists[0].GenerateMesh(m_NodeLists, vlist, ilist);
+            Mesh mesh = new Mesh();
+            mesh.SetVertices(vlist);
+            mesh.SetTriangles(ilist, 0);
+            mesh.hideFlags = HideFlags.HideAndDontSave;
+            return mesh;
+        }
+
         public void Draw(NavMeshBrush trigger, bool clear = false)
         {
             if (m_NodeLists != null && m_NodeLists.Count > 0)

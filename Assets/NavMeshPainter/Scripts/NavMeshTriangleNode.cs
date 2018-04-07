@@ -222,6 +222,45 @@ namespace ASL.NavMeshPainter
                 right.Check(nodeList);
         }
 
+        public void GenerateMesh(List<NavMeshTriangleNode> nodeList, List<Vector3> vlist, List<int> ilist)
+        {
+            if (!isMix)
+            {
+                if (isBePainted)
+                {
+                    ilist.Add(vlist.Count);
+                    vlist.Add(vertex0);
+                    ilist.Add(vlist.Count);
+                    vlist.Add(vertex1);
+                    ilist.Add(vlist.Count);
+                    vlist.Add(vertex2);
+                }
+            }
+            else
+            {
+                NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodeList.Count
+                    ? nodeList[m_CenterNodeIndex]
+                    : null;
+                NavMeshTriangleNode top = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodeList.Count
+                    ? nodeList[m_TopNodeIndex]
+                    : null;
+                NavMeshTriangleNode left = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodeList.Count
+                    ? nodeList[m_LeftNodeIndex]
+                    : null;
+                NavMeshTriangleNode right = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodeList.Count
+                    ? nodeList[m_RightNodeIndex]
+                    : null;
+                if (center != null)
+                    center.GenerateMesh(nodeList, vlist, ilist);
+                if (top != null)
+                    top.GenerateMesh(nodeList, vlist, ilist);
+                if (left != null)
+                    left.GenerateMesh(nodeList, vlist, ilist);
+                if (right != null)
+                    right.GenerateMesh(nodeList, vlist, ilist);
+            }
+        }
+
         private bool IsHitBrush(Vector3 pos, Vector3 brushPos, float radius, float height)
         {
             float deltaH = Mathf.Abs(pos.y - brushPos.y);

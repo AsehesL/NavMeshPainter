@@ -10,7 +10,12 @@ namespace ASL.NavMeshPainter
 
         public NavMeshOcTree ocTree;
 
-        public void Create(GameObject[] gameObjects, bool containChilds, float angle)
+        public float area { get { return m_Area; } }
+
+        [SerializeField]
+        private float m_Area;
+
+        public void Create(GameObject[] gameObjects, bool containChilds, float angle, float area)
         {
             Vector3 max = new Vector3(-Mathf.Infinity, -Mathf.Infinity, -Mathf.Infinity);
             Vector3 min = new Vector3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
@@ -21,9 +26,9 @@ namespace ASL.NavMeshPainter
             {
                 if (!gameObjects[i].activeSelf)
                     continue;
-                FindTriangle(gameObjects[i].transform, triangles, angle, ref max, ref min);
+                FindTriangle(gameObjects[i].transform, triangles, angle, area, ref max, ref min);
                 if (containChilds)
-                    FindTriangleInChild(gameObjects[i].transform, triangles, angle, ref max, ref min);
+                    FindTriangleInChild(gameObjects[i].transform, triangles, angle, area, ref max, ref min);
             }
 
             Vector3 size = max - min;
@@ -37,9 +42,6 @@ namespace ASL.NavMeshPainter
 
             Vector3 center = min + size*0.5f;
             ocTree = new NavMeshOcTree(center, size*1.1f, 7);
-
-            Debug.Log(center);
-            Debug.Log(size);
 
             List<Vector3> vlist = new List<Vector3>();
             List<int> ilist = new List<int>();
@@ -59,6 +61,8 @@ namespace ASL.NavMeshPainter
             renderMesh.SetVertices(vlist);
             renderMesh.SetTriangles(ilist, 0);
             renderMesh.RecalculateNormals();
+
+            m_Area = area;
         }
 
         public void Draw(NavMeshBrush brush)
@@ -73,6 +77,13 @@ namespace ASL.NavMeshPainter
                 ocTree.Draw(brush, true);
         }
 
+        public Mesh GenerateMesh()
+        {
+            if (ocTree != null)
+                return ocTree.GenerateMesh();
+            return null;
+        }
+
         public void Check()
         {
             if (ocTree != null)
@@ -85,7 +96,7 @@ namespace ASL.NavMeshPainter
                 ocTree.CheckTriangle();
         }
 
-        private void FindTriangle(Transform transform, List<NavMeshTriangle> triangles, float angle, ref Vector3 max,
+        private void FindTriangle(Transform transform, List<NavMeshTriangle> triangles, float angle, float area, ref Vector3 max,
             ref Vector3 min)
         {
             MeshFilter mf = transform.GetComponent<MeshFilter>();
@@ -120,18 +131,18 @@ namespace ASL.NavMeshPainter
                 min = Vector3.Min(min, v1);
                 min = Vector3.Min(min, v2);
 
-                NavMeshTriangle triangle = new NavMeshTriangle(v0, v1, v2);
+                NavMeshTriangle triangle = new NavMeshTriangle(v0, v1, v2, area);
                 triangles.Add(triangle);
             }
         }
 
-        private void FindTriangleInChild(Transform transform, List<NavMeshTriangle> triangles, float angle, ref Vector3 max, ref Vector3 min)
+        private void FindTriangleInChild(Transform transform, List<NavMeshTriangle> triangles, float angle, float area, ref Vector3 max, ref Vector3 min)
         {
             for (int i = 0; i < transform.childCount; i++)
             {
                 Transform child = transform.GetChild(i);
                 if (child.gameObject.activeSelf)
-                    FindTriangle(child, triangles, angle, ref max, ref min);
+                    FindTriangle(child, triangles, angle, area, ref max, ref min);
             }
         }
 

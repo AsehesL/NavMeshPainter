@@ -51,7 +51,7 @@ namespace ASL.NavMeshPainter
         [SerializeField]
         private Bounds m_Bounds;
 
-        public NavMeshTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2)
+        public NavMeshTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2, float area)
         {
             NavMeshTriangleNode root = new NavMeshTriangleNode(vertex0, vertex1, vertex2);
             m_NodeLists = new List<NavMeshTriangleNode>();
@@ -76,7 +76,11 @@ namespace ASL.NavMeshPainter
 
             this.m_Bounds = new Bounds(ct, si);
 
-            root.Subdivide(4, m_NodeLists);
+            float currentArea = Vector3.Cross(vertex1 - vertex0, vertex2 - vertex0).magnitude*0.5f;
+            int depth = Mathf.RoundToInt(currentArea/area*0.25f);
+            
+
+            root.Subdivide(depth, m_NodeLists);
         }
 
         public void Check()
@@ -89,6 +93,13 @@ namespace ASL.NavMeshPainter
         {
             if (m_NodeLists.Count >= 1)
                 m_NodeLists[0].CheckTriangle(m_NodeLists);
+        }
+
+
+        public void GenerateMesh(List<Vector3> vlist, List<int> ilist)
+        {
+            if (m_NodeLists.Count >= 1)
+                m_NodeLists[0].GenerateMesh(m_NodeLists, vlist, ilist);
         }
 
         public void Draw(NavMeshBrush brush, bool clear)
