@@ -36,6 +36,40 @@ namespace ASL.NavMeshPainter
             return this;
         }
 
+        public void Draw(NavMeshBrush brush, List<NavMeshOcTreeNode> nodeList, bool clear)
+        {
+            for (int i = 0; i < m_ChildNodes.Length; i++)
+            {
+                if (m_ChildNodes[i] > 0)
+                    nodeList[m_ChildNodes[i]].Draw(brush, nodeList, clear);
+            }
+
+            if (brush.bounds.Intersects(this.bounds))
+            {
+                for (int i = 0; i < m_ItemList.Count; i++)
+                {
+                    if (brush.bounds.Intersects(m_ItemList[i].bounds))
+                        m_ItemList[i].Draw(brush, clear);
+                }
+            }
+        }
+
+        public void DrawNode(List<NavMeshOcTreeNode> nodeList)
+        {
+            for (int i = 0; i < m_ChildNodes.Length; i++)
+            {
+                if (m_ChildNodes[i] > 0)
+                    nodeList[m_ChildNodes[i]].DrawNode(nodeList);
+            }
+            if (m_ItemList != null)
+            {
+                for (int i = 0; i < m_ItemList.Count; i++)
+                {
+                    m_ItemList[i].DrawTriangle();
+                }
+            }
+        }
+
         //public void Trigger(ITrigger trigger, OctProjectorMesh mesh, List<MeshOcTreeNode> nodeList, MeshOcTreeTriggerHandle handle)
         //{
         //    if (handle == null)
@@ -55,6 +89,38 @@ namespace ASL.NavMeshPainter
         //        }
         //    }
         //}
+
+        public void Check(List<NavMeshOcTreeNode> nodeList)
+        {
+            for (int i = 0; i < m_ChildNodes.Length; i++)
+            {
+                if (m_ChildNodes[i] > 0)
+                    nodeList[m_ChildNodes[i]].Check(nodeList);
+            }
+            if (m_ItemList != null)
+            {
+                for (int i = 0; i < m_ItemList.Count; i++)
+                {
+                    m_ItemList[i].Check();
+                }
+            }
+        }
+
+        public void CheckTriangle(List<NavMeshOcTreeNode> nodeList)
+        {
+            for (int i = 0; i < m_ChildNodes.Length; i++)
+            {
+                if (m_ChildNodes[i] > 0)
+                    nodeList[m_ChildNodes[i]].CheckTriangle(nodeList);
+            }
+            if (m_ItemList != null)
+            {
+                for (int i = 0; i < m_ItemList.Count; i++)
+                {
+                    m_ItemList[i].CheckTriangle();
+                }
+            }
+        }
 
         private NavMeshOcTreeNode GetContainerNode(NavMeshTriangle item, List<NavMeshOcTreeNode> nodeList)
         {

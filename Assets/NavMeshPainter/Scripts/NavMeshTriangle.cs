@@ -1,19 +1,47 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace ASL.NavMeshPainter
 {
+    [System.Serializable]
     public class NavMeshTriangle
     {
+        public Vector3 vertex0
+        {
+            get
+            {
+                if (m_NodeLists == null || m_NodeLists.Count < 1)
+                    return default(Vector3);
+                return m_NodeLists[0].vertex0;
+            }
+        }
 
-        private NavMeshTriangleNode m_CenterNode;
-        private NavMeshTriangleNode m_TopNode;
-        private NavMeshTriangleNode m_LeftNode;
-        private NavMeshTriangleNode m_RightNode;
+        public Vector3 vertex1
+        {
+            get
+            {
+                if (m_NodeLists == null || m_NodeLists.Count < 1)
+                    return default(Vector3);
+                return m_NodeLists[0].vertex1;
+            }
+        }
 
-        public Vector3 vertex0;
-        public Vector3 vertex1;
-        public Vector3 vertex2;
+        public Vector3 vertex2
+        {
+            get
+            {
+                if (m_NodeLists == null || m_NodeLists.Count < 1)
+                    return default(Vector3);
+                return m_NodeLists[0].vertex2;
+            }
+        }
+
+        /// <summary>
+        /// 节点列表
+        /// </summary>
+        [SerializeField]
+        private List<NavMeshTriangleNode> m_NodeLists;
 
         /// <summary>
         /// 三角形的AABB包围盒
@@ -25,9 +53,9 @@ namespace ASL.NavMeshPainter
 
         public NavMeshTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2)
         {
-            this.vertex0 = vertex0;
-            this.vertex1 = vertex1;
-            this.vertex2 = vertex2;
+            NavMeshTriangleNode root = new NavMeshTriangleNode(vertex0, vertex1, vertex2);
+            m_NodeLists = new List<NavMeshTriangleNode>();
+            m_NodeLists.Add(root);
 
             float maxX = Mathf.Max(vertex0.x, vertex1.x, vertex2.x);
             float maxY = Mathf.Max(vertex0.y, vertex1.y, vertex2.y);
@@ -47,7 +75,32 @@ namespace ASL.NavMeshPainter
             Vector3 ct = new Vector3(minX, minY, minZ) + si / 2;
 
             this.m_Bounds = new Bounds(ct, si);
+
+            root.Subdivide(4, m_NodeLists);
         }
 
+        public void Check()
+        {
+            if (m_NodeLists.Count >= 1)
+                m_NodeLists[0].Check(m_NodeLists);
+        }
+
+        public void CheckTriangle()
+        {
+            if (m_NodeLists.Count >= 1)
+                m_NodeLists[0].CheckTriangle(m_NodeLists);
+        }
+
+        public void Draw(NavMeshBrush brush, bool clear)
+        {
+            if (m_NodeLists.Count >= 1)
+                m_NodeLists[0].Paint(!clear, brush.position, brush.size, brush.maxHeight, m_NodeLists);
+        }
+
+        public void DrawTriangle()
+        {
+            if (m_NodeLists.Count >= 1)
+                m_NodeLists[0].DrawTriangle(m_NodeLists);
+        }
     }
 }

@@ -35,16 +35,16 @@ namespace ASL.NavMeshPainter
         [SerializeField]
         private List<NavMeshOcTreeNode> m_NodeLists;
 
-        /// <summary>
-        /// 数据列表
-        /// </summary>
-        [SerializeField]
-        private List<NavMeshTriangle> m_DataList;
+        ///// <summary>
+        ///// 数据列表
+        ///// </summary>
+        //[SerializeField]
+        //private List<NavMeshTriangle> m_DataList;
         /// <summary>
         /// 数据所在节点索引
         /// </summary>
-        [SerializeField]
-        private List<int> m_NodeIndexList;
+        //[SerializeField]
+        //private List<int> m_NodeIndexList;
 
         /// <summary>
         /// 构造八叉树
@@ -56,8 +56,7 @@ namespace ASL.NavMeshPainter
         {
             this.m_MaxDepth = maxDepth;
             this.m_NodeLists = new List<NavMeshOcTreeNode>();
-            this.m_DataList = new List<NavMeshTriangle>();
-            this.m_NodeIndexList = new List<int>();
+            //this.m_NodeIndexList = new List<int>();
             this.m_NodeLists.Add(new NavMeshOcTreeNode(new Bounds(center, size)));
         }
 
@@ -75,21 +74,36 @@ namespace ASL.NavMeshPainter
                     int index = m_NodeLists.IndexOf(node);
                     if (index >= 0)
                     {
-                        m_DataList.Add(item);
-                        m_NodeIndexList.Add(index);
+                        //m_NodeIndexList.Add(index);
                         m_Count++;
                     }
                 }
             }
         }
 
-        //public void Trigger(ITrigger trigger, OctProjectorMesh mesh, MeshOcTreeTriggerHandle handle)
-        //{
-        //    if (handle == null)
-        //        return;
-        //    if (m_NodeLists != null && m_NodeLists.Count > 0)
-        //        m_NodeLists[0].Trigger(trigger, mesh, m_NodeLists, handle);
-        //}
+        public void Check()
+        {
+            if (m_NodeLists != null && m_NodeLists.Count > 0)
+                m_NodeLists[0].Check(m_NodeLists);
+        }
+
+        public void CheckTriangle()
+        {
+            if (m_NodeLists != null && m_NodeLists.Count > 0)
+                m_NodeLists[0].CheckTriangle(m_NodeLists);
+        }
+
+        public void Draw(NavMeshBrush trigger, bool clear = false)
+        {
+            if (m_NodeLists != null && m_NodeLists.Count > 0)
+                m_NodeLists[0].Draw(trigger, m_NodeLists, clear);
+        }
+
+        public void DrawGizmos()
+        {
+            if (m_NodeLists != null && m_NodeLists.Count > 0)
+                m_NodeLists[0].DrawNode(m_NodeLists);
+        }
     }
 
 }
