@@ -2,7 +2,7 @@
 using System.Collections;
 using ASL.NavMeshPainter;
 
-public enum PaintToolType
+public enum PaintingToolType
 {
     Brush,
     Line,
@@ -14,7 +14,7 @@ public enum PaintToolType
 public class NavMeshPainter : MonoBehaviour
 {
 
-    public PaintToolType paintTool;
+    public PaintingToolType paintTool;
 
     public NavMeshPainterData painter;
 
@@ -24,7 +24,7 @@ public class NavMeshPainter : MonoBehaviour
     {
         switch (paintTool)
         {
-            case PaintToolType.Brush:
+            case PaintingToolType.Brush:
                 return brush;
 
         }

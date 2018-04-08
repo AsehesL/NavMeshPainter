@@ -56,7 +56,10 @@
 				float4 col = float4(checker, checker, checker, 0.5);
 				float dis = length(i.worldPos.xz - _BrushPos.xz);
 				float deltaH = abs(i.worldPos.y - _BrushPos.y);
-				float atten = step(dis, _BrushSize.x) *step(deltaH, _BrushSize.y);
+				float attenH = step(deltaH, _BrushSize.y);
+				float attenC = step(dis, _BrushSize.x);
+				float2 attenS = step(abs(i.worldPos.xz - _BrushPos.xz), _BrushSize.xx);
+				float atten = lerp(attenC, attenS.x*attenS.y, _BrushSize.z)*attenH;
 				col.rgb = lerp(col.rgb, _BrushColor.rgb, _BrushColor.a*atten);
 
 				return col;

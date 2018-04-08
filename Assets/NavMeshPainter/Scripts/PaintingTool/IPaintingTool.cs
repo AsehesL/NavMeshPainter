@@ -13,8 +13,6 @@ namespace ASL.NavMeshPainter
 
         void DrawTool(Material renderMaterial);
 
-        void DrawGUI();
-
         bool IntersectsBounds(Bounds bounds);
 
         bool IntersectsTriangle(NavMeshTriangleNode node);

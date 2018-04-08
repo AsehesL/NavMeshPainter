@@ -30,11 +30,18 @@ public class NavMeshPainterEditor : Editor
 
         public GUIContent[] toolIcons = new GUIContent[]
         {
-            EditorGUIUtility.IconContent("TerrainInspector.TerrainToolSplat", "|Paint the NavMesh"),
-            EditorGUIUtility.IconContent("TerrainInspector.TerrainToolPlants", "|Erase the NavMesh"),
-            EditorGUIUtility.IconContent("TerrainInspector.TerrainToolSmoothHeight", "|Sampling from texture"),
-            EditorGUIUtility.IconContent("TerrainInspector.TerrainToolSettings", "|Bake Setting")
+            EditorGUIUtility.IconContent("NavMeshPainter/add.png", "|Paint the NavMesh"),
+            EditorGUIUtility.IconContent("NavMeshPainter/reduce.png", "|Erase the NavMesh"),
+            EditorGUIUtility.IconContent("NavMeshPainter/texture.png", "|Sampling from texture"),
+            EditorGUIUtility.IconContent("NavMeshPainter/nm.png", "|Bake Setting")
         };
+
+        public GUIContent brushIcon = EditorGUIUtility.IconContent("NavMeshPainter/brush.png");
+        public GUIContent eraserIcon = EditorGUIUtility.IconContent("NavMeshPainter/eraser.png");
+        public GUIContent lineIcon = EditorGUIUtility.IconContent("NavMeshPainter/line.png");
+        public GUIContent boxIcon = EditorGUIUtility.IconContent("NavMeshPainter/box.png");
+        public GUIContent cylinderIcon = EditorGUIUtility.IconContent("NavMeshPainter/cylinder.png");
+        public GUIContent sphereIcon = EditorGUIUtility.IconContent("NavMeshPainter/sphere.png");
     }
 
     private static NavMeshPainterEditor.Styles styles;
@@ -53,6 +60,8 @@ public class NavMeshPainterEditor : Editor
         }
     }
     private static System.Reflection.MethodInfo m_IntersectRayMesh;
+
+    private SerializedProperty m_NavMeshBrush;
 
 
     private Material m_DebugMaterial;
@@ -89,6 +98,7 @@ public class NavMeshPainterEditor : Editor
     void OnEnable()
     {
         m_Target = (NavMeshPainter) target;
+        m_NavMeshBrush = serializedObject.FindProperty("brush");
     }
 
     void OnSceneGUI()
@@ -130,7 +140,7 @@ public class NavMeshPainterEditor : Editor
                     m_Target.brush.position = hit.point;
                     //m_DebugMaterial.SetColor("_BrushColor", new Color(0, 0.5f, 1, 0.5f));
                     m_DebugMaterial.SetVector("_BrushPos", m_Target.brush.position);
-                    m_DebugMaterial.SetVector("_BrushSize", new Vector2(m_Target.brush.radius, m_Target.brush.maxHeight));
+                    m_DebugMaterial.SetVector("_BrushSize", new Vector2(m_Target.brush.size, m_Target.brush.maxHeight));
 
                     if (m_IsDrawing && Event.current.type == EventType.MouseDrag)
                     {
@@ -231,39 +241,53 @@ public class NavMeshPainterEditor : Editor
 
         GUILayout.BeginHorizontal();
 
-        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintToolType.Brush, styles.toolIcons[0],
+        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintingToolType.Brush, styles.brushIcon,
             styles.buttonLeft, GUILayout.Width(35))
-            ? PaintToolType.Brush
+            ? PaintingToolType.Brush
             : m_Target.paintTool;
 
-        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintToolType.Line, styles.toolIcons[0],
+        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintingToolType.Line, styles.lineIcon,
            styles.buttonMid, GUILayout.Width(35))
-           ? PaintToolType.Line
+           ? PaintingToolType.Line
            : m_Target.paintTool;
 
-        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintToolType.Box, styles.toolIcons[0],
+        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintingToolType.Box, styles.boxIcon,
            styles.buttonMid, GUILayout.Width(35))
-           ? PaintToolType.Box
+           ? PaintingToolType.Box
            : m_Target.paintTool;
 
-        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintToolType.Sphere, styles.toolIcons[0],
+        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintingToolType.Sphere, styles.sphereIcon,
            styles.buttonMid, GUILayout.Width(35))
-           ? PaintToolType.Sphere
+           ? PaintingToolType.Sphere
            : m_Target.paintTool;
 
-        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintToolType.Cylinder, styles.toolIcons[0],
+        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintingToolType.Cylinder, styles.cylinderIcon,
            styles.buttonRight, GUILayout.Width(35))
-           ? PaintToolType.Cylinder
+           ? PaintingToolType.Cylinder
            : m_Target.paintTool;
 
         GUILayout.EndHorizontal();
 
         GUILayout.Label("Settings", styles.boldLabel);
-        IPaintingTool tool = m_Target.GetPaintingTool();
-        if (tool != null)
-            tool.DrawGUI();
+
+        var tooleditor = GetPaintingToolEditor(m_Target.paintTool);
+        if (tooleditor != null)
+            EditorGUILayout.PropertyField(tooleditor);
+        //IPaintingTool tool = m_Target.GetPaintingTool();
+        //if (tool != null)
+        //    tool.DrawGUI();
 
         GUILayout.EndVertical();
+    }
+
+    private SerializedProperty GetPaintingToolEditor(PaintingToolType type)
+    {
+        switch (type)
+        {
+            case PaintingToolType.Brush:
+                return m_NavMeshBrush;
+        }
+        return null;
     }
 
 
