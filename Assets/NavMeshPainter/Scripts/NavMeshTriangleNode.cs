@@ -17,18 +17,6 @@ namespace ASL.NavMeshPainter
 
         public bool isBePainted;
         public bool isMix;
-
-        public Bounds bounds
-        {
-            get
-            {
-                Vector3 size = max - min;
-
-                Vector3 center = min + size * 0.5f;
-
-                return new Bounds(center, size);
-            }
-        }
         
         [SerializeField] private int m_CenterNodeIndex = -1;
         [SerializeField] private int m_TopNodeIndex = -1;

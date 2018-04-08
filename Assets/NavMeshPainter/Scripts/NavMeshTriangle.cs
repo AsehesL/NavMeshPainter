@@ -119,7 +119,7 @@ namespace ASL.NavMeshPainter
 //                    m_NodeLists[0].Subdivide(m_Depth, m_NodeLists);
 //                    m_Subdivide = true;
 //                }
-                m_NodeLists[0].Paint(!clear, brush.position, brush.size, brush.maxHeight, m_NodeLists);
+                m_NodeLists[0].Paint(!clear, brush.position, brush.radius, brush.maxHeight, m_NodeLists);
             }
         }
 

@@ -44,11 +44,11 @@ namespace ASL.NavMeshPainter
                     nodeList[m_ChildNodes[i]].Draw(brush, nodeList, clear);
             }
 
-            if (brush.bounds.Intersects(this.bounds))
+            if (brush.Bounds.Intersects(this.bounds))
             {
                 for (int i = 0; i < m_ItemList.Count; i++)
                 {
-                    if (brush.bounds.Intersects(m_ItemList[i].bounds))
+                    if (brush.Bounds.Intersects(m_ItemList[i].bounds))
                         m_ItemList[i].Draw(brush, clear);
                 }
             }
@@ -69,26 +69,6 @@ namespace ASL.NavMeshPainter
                 }
             }
         }
-
-        //public void Trigger(ITrigger trigger, OctProjectorMesh mesh, List<MeshOcTreeNode> nodeList, MeshOcTreeTriggerHandle handle)
-        //{
-        //    if (handle == null)
-        //        return;
-        //    for (int i = 0; i < m_ChildNodes.Length; i++)
-        //    {
-        //        if (m_ChildNodes[i] > 0)
-        //            nodeList[m_ChildNodes[i]].Trigger(trigger, mesh, nodeList, handle);
-        //    }
-
-        //    if (trigger.IsDetected(this.bounds))
-        //    {
-        //        for (int i = 0; i < m_ItemList.Count; i++)
-        //        {
-        //            if (trigger.IsDetected(m_ItemList[i].bounds))
-        //                handle(mesh, m_ItemList[i]);
-        //        }
-        //    }
-        //}
 
         public void GenerateMesh(List<NavMeshOcTreeNode> nodeList, List<Vector3> vlist, List<int> ilist)
         {
