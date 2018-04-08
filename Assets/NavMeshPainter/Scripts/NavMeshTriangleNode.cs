@@ -12,47 +12,52 @@ namespace ASL.NavMeshPainter
         public Vector3 vertex1;
         public Vector3 vertex2;
 
+        public Vector3 max;
+        public Vector3 min;
+
         public bool isBePainted;
         public bool isMix;
+
+        public Bounds bounds
+        {
+            get
+            {
+                Vector3 size = max - min;
+
+                Vector3 center = min + size * 0.5f;
+
+                return new Bounds(center, size);
+            }
+        }
         
         [SerializeField] private int m_CenterNodeIndex = -1;
         [SerializeField] private int m_TopNodeIndex = -1;
         [SerializeField] private int m_LeftNodeIndex = -1;
         [SerializeField] private int m_RightNodeIndex = -1;
 
-        private NavMeshTriangleNode() { }
-
         public NavMeshTriangleNode(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2)
         {
             this.vertex0 = vertex0;
             this.vertex1 = vertex1;
             this.vertex2 = vertex2;
+            max = Vector3.Max(vertex0, vertex1);
+            max = Vector3.Max(max, vertex2);
+            min = Vector3.Min(vertex0, vertex1);
+            min = Vector3.Min(min, vertex2);
         }
 
         public void Subdivide(int depth, List<NavMeshTriangleNode> nodelist)
         {
             if (depth <= 0)
                 return;
-            NavMeshTriangleNode center = new NavMeshTriangleNode();
-            NavMeshTriangleNode top = new NavMeshTriangleNode();
-            NavMeshTriangleNode left = new NavMeshTriangleNode();
-            NavMeshTriangleNode right = new NavMeshTriangleNode();
+            Vector3 half01 = vertex0 + (vertex1 - vertex0) * 0.5f;
+            Vector3 half02 = vertex0 + (vertex2 - vertex0) * 0.5f;
+            Vector3 half12 = vertex1 + (vertex2 - vertex1) * 0.5f;
 
-            center.vertex0 = vertex0 + (vertex1 - vertex0)*0.5f;
-            center.vertex1 = vertex1 + (vertex2 - vertex1)*0.5f;
-            center.vertex2 = vertex0 + (vertex2 - vertex0)*0.5f;
-
-            top.vertex0 = vertex0 + (vertex1 - vertex0) * 0.5f;
-            top.vertex1 = vertex1;
-            top.vertex2 = vertex1 + (vertex2 - vertex1) * 0.5f;
-
-            left.vertex0 = vertex0;
-            left.vertex1 = vertex0 + (vertex1 - vertex0) * 0.5f;
-            left.vertex2 = vertex0 + (vertex2 - vertex0) * 0.5f;
-
-            right.vertex0 = vertex0 + (vertex2 - vertex0) * 0.5f;
-            right.vertex1 = vertex1 + (vertex2 - vertex1) * 0.5f;
-            right.vertex2 = vertex2;
+            NavMeshTriangleNode center = new NavMeshTriangleNode(half01, half12, half02);
+            NavMeshTriangleNode top = new NavMeshTriangleNode(half01, vertex1, half12);
+            NavMeshTriangleNode left = new NavMeshTriangleNode(vertex0, half01, half02);
+            NavMeshTriangleNode right = new NavMeshTriangleNode(half02, half12, vertex2);
 
             m_CenterNodeIndex = nodelist.Count;
             nodelist.Add(center);
@@ -71,24 +76,31 @@ namespace ASL.NavMeshPainter
 
         public void Paint(bool paint, Vector3 brushPos, float radius, float height, List<NavMeshTriangleNode> nodelist)
         {
-            bool isHit = IsHitBrush(vertex0, brushPos, radius, height);
-            if (isHit)
+            if (IsHitBrush(brushPos, radius, height))
             {
                 SetPaintMark(paint, brushPos, radius, height, nodelist);
-                return;
             }
-            isHit = IsHitBrush(vertex1, brushPos, radius, height);
-            if (isHit)
-            {
-                SetPaintMark(paint, brushPos, radius, height, nodelist);
-                return;
-            }
-            isHit = IsHitBrush(vertex2, brushPos, radius, height);
-            if (isHit)
-            {
-                SetPaintMark(paint, brushPos, radius, height, nodelist);
-                return;
-            }
+//            bool isHit = IsHitBrush(vertex0, brushPos, radius, height);
+//            if (isHit)
+//            {
+//                Debug.Log("HitV0");
+//                SetPaintMark(paint, brushPos, radius, height, nodelist);
+//                return;
+//            }
+//            isHit = IsHitBrush(vertex1, brushPos, radius, height);
+//            if (isHit)
+//            {
+//                Debug.Log("HitV1");
+//                SetPaintMark(paint, brushPos, radius, height, nodelist);
+//                return;
+//            }
+//            isHit = IsHitBrush(vertex2, brushPos, radius, height);
+//            if (isHit)
+//            {
+//                Debug.Log("HitV2");
+//                SetPaintMark(paint, brushPos, radius, height, nodelist);
+//                return;
+//            }
 
         }
 
@@ -198,7 +210,7 @@ namespace ASL.NavMeshPainter
 
         public void CheckTriangle(List<NavMeshTriangleNode> nodeList)
         {
-            Debug.Log("Triangle:" + vertex0 + "," + vertex1 + "," + vertex2);
+            Debug.Log("Triangle:" + vertex0 + "," + vertex1 + "," + vertex2+",Max:"+max+",Min:"+min);
 
             NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodeList.Count
                     ? nodeList[m_CenterNodeIndex]
@@ -261,15 +273,30 @@ namespace ASL.NavMeshPainter
             }
         }
 
-        private bool IsHitBrush(Vector3 pos, Vector3 brushPos, float radius, float height)
+//        private bool IsHitBrush(Vector3 pos, Vector3 brushPos, float radius, float height)
+//        {
+//            float deltaH = Mathf.Abs(pos.y - brushPos.y);
+//            if (deltaH > height)
+//                return false;
+//            float dis = Vector2.Distance(new Vector2(pos.x, pos.z), new Vector2(brushPos.x, brushPos.z));
+//            Debug.Log("Pos:"+pos+",BrushPos:"+brushPos+ ",Dis:" + dis + "," + radius);
+//            return dis < radius;
+//        }
+
+        private bool IsHitBrush(Vector3 brushPos, float radius, float height)
         {
-            float deltaH = Mathf.Abs(pos.y - brushPos.y);
-            if (deltaH > height)
+            if (max.y < brushPos.y - height || min.y > brushPos.y + height)
                 return false;
-            float dis = Vector2.Distance(new Vector2(pos.x, pos.z), new Vector2(brushPos.x, brushPos.z));
-            //Debug.Log("Dis:" + dis + "," + radius);
-            return dis < radius;
+            Vector2 nearestpos = default(Vector2);
+            nearestpos.x = Mathf.Clamp(brushPos.x, min.x, max.x);
+            nearestpos.y = Mathf.Clamp(brushPos.z, min.z, max.z);
+            float dis = Vector2.Distance(nearestpos, new Vector2(brushPos.x, brushPos.z));
+            
+            if (dis > radius)
+                return false;
+            return true;
         }
+
 
 
         private void ResetPaintMark(bool paint, NavMeshTriangleNode center, NavMeshTriangleNode top, NavMeshTriangleNode left, NavMeshTriangleNode right)

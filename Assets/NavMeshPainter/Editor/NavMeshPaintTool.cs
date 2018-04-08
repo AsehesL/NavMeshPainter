@@ -8,7 +8,7 @@ public class NavMeshPaintTool : EditorWindow
 {
 
 
-    private NavMeshPainterAsset m_Painter;
+    private NavMeshPainterData m_Painter;
 
     [MenuItem("Tools/NavMeshPainter")]
     static void Init()
@@ -35,7 +35,7 @@ public class NavMeshPaintTool : EditorWindow
     void OnGUI()
     {
         m_Painter =
-            EditorGUILayout.ObjectField("绘制器", m_Painter, typeof (NavMeshPainterAsset), false) as NavMeshPainterAsset;
+            EditorGUILayout.ObjectField("绘制器", m_Painter, typeof (NavMeshPainterData), false) as NavMeshPainterData;
         if (GUILayout.Button("拾取选中物体并创建八叉树"))
         {
             

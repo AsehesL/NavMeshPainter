@@ -2,6 +2,7 @@
 using UnityEditor;
 using System.Collections;
 using ASL.NavMeshPainter;
+using UnityEditor.AI;
 
 [CustomEditor(typeof(NavMeshPainter))]
 public class NavMeshPainterEditor : Editor
@@ -44,8 +45,9 @@ public class NavMeshPainterEditor : Editor
         NavMeshPainter painter = new GameObject("[NavMeshPainter]").AddComponent<NavMeshPainter>();
         painter.gameObject.hideFlags = HideFlags.DontSave;
 
-        NavMeshPainterAsset asset = new NavMeshPainterAsset();
-        asset.Create(Selection.gameObjects, true, 30, 0.03125f);
+        NavMeshPainterData asset = NavMeshPainterData.CreateInstance<NavMeshPainterData>();
+        asset.Create(Selection.gameObjects, true, 30, 0.03125f, 5);
+        //asset.Create(Selection.gameObjects, true, 30, 0.125f);
 
         AssetDatabase.CreateAsset(asset, savePath);
         painter.painter = asset;
@@ -63,7 +65,7 @@ public class NavMeshPainterEditor : Editor
             m_DebugMaterial = new Material(Shader.Find("Unlit/NavMeshDebug"));
             m_DebugMaterial.hideFlags = HideFlags.HideAndDontSave;
             if (m_Target.painter)
-                m_DebugMaterial.SetFloat("_CellSize", Mathf.Sqrt(m_Target.painter.area*200));
+                m_DebugMaterial.SetFloat("_CellSize", Mathf.Sqrt(m_Target.painter.Area*200));
             else
                 m_DebugMaterial.SetFloat("_CellSize", 2.5f);
         }
@@ -136,7 +138,13 @@ public class NavMeshPainterEditor : Editor
 
                 MeshRenderer mr = mf.gameObject.AddComponent<MeshRenderer>();
                 mr.sharedMaterial = new Material(Shader.Find("Unlit/Color"));
+                mr.sharedMaterial.hideFlags = HideFlags.HideAndDontSave;
                 mr.sharedMaterial.SetColor("_Color", Color.red);
+
+                NavMeshBuilder.BuildNavMesh();
+                DestroyImmediate(mf.gameObject);
+
+                
             }
         }
         m_IsPainting = GUILayout.Toggle(m_IsPainting, "绘制", GUI.skin.FindStyle("Button"));

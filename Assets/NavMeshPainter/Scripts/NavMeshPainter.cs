@@ -5,7 +5,7 @@ using ASL.NavMeshPainter;
 public class NavMeshPainter : MonoBehaviour
 {
 
-    public NavMeshPainterAsset painter;
+    public NavMeshPainterData painter;
 
     public NavMeshBrush brush;
 
