@@ -4,7 +4,7 @@ using System.Collections;
 namespace ASL.NavMeshPainter
 {
     [System.Serializable]
-    public class NavMeshBrush : IPaintingTool
+    public class NavMeshBrushTool : IPaintingTool
     {
         public enum BrushType
         {

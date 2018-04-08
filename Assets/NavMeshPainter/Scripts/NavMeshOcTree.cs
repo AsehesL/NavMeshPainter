@@ -106,7 +106,7 @@ namespace ASL.NavMeshPainter
             return mesh;
         }
 
-        public void Draw(NavMeshBrush trigger, bool clear = false)
+        public void Draw(NavMeshBrushTool trigger, bool clear = false)
         {
             if (m_NodeLists != null && m_NodeLists.Count > 0)
                 m_NodeLists[0].Draw(trigger, m_NodeLists, clear);

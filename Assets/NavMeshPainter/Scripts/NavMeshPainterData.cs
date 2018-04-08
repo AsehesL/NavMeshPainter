@@ -65,13 +65,13 @@ namespace ASL.NavMeshPainter
             m_Area = area;
         }
 
-        public void Draw(NavMeshBrush brush)
+        public void Draw(NavMeshBrushTool brush)
         {
             if (ocTree != null)
                 ocTree.Draw(brush);
         }
 
-        public void Erase(NavMeshBrush brush)
+        public void Erase(NavMeshBrushTool brush)
         {
             if (ocTree != null)
                 ocTree.Draw(brush, true);

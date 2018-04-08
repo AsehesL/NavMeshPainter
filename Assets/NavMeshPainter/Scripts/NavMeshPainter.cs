@@ -18,7 +18,7 @@ public class NavMeshPainter : MonoBehaviour
 
     public NavMeshPainterData painter;
 
-    public NavMeshBrush brush;
+    public NavMeshBrushTool brush;
 
     public IPaintingTool GetPaintingTool()
     {

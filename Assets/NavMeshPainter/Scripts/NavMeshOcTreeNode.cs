@@ -36,7 +36,7 @@ namespace ASL.NavMeshPainter
             return this;
         }
 
-        public void Draw(NavMeshBrush brush, List<NavMeshOcTreeNode> nodeList, bool clear)
+        public void Draw(NavMeshBrushTool brush, List<NavMeshOcTreeNode> nodeList, bool clear)
         {
             for (int i = 0; i < m_ChildNodes.Length; i++)
             {

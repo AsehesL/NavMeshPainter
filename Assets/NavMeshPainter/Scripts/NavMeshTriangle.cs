@@ -110,7 +110,7 @@ namespace ASL.NavMeshPainter
                 m_NodeLists[0].GenerateMesh(m_NodeLists, vlist, ilist);
         }
 
-        public void Draw(NavMeshBrush brush, bool clear)
+        public void Draw(NavMeshBrushTool brush, bool clear)
         {
             if (m_NodeLists.Count >= 1)
             {

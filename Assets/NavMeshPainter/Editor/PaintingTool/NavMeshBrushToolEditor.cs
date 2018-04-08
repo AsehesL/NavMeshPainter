@@ -4,8 +4,8 @@ using System.Collections;
 
 namespace ASL.NavMeshPainter
 {
-    [CustomPropertyDrawer(typeof(NavMeshBrush))]
-    public class NavMeshBrushEditor : PropertyDrawer
+    [CustomPropertyDrawer(typeof(NavMeshBrushTool))]
+    public class NavMeshBrushToolEditor : PropertyDrawer
     {
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
