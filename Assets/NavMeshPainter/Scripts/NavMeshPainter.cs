@@ -30,6 +30,13 @@ public class NavMeshPainter : MonoBehaviour
         return null;
     }
 
+    public float GetMinSize()
+    {
+        if (painter != null)
+            return painter.GetMinSize();
+        return 0;
+    }
+
     public Mesh GetRenderMesh()
     {
         if (painter != null)
@@ -54,6 +61,12 @@ public class NavMeshPainter : MonoBehaviour
         if (painter != null)
             return painter.GenerateMesh();
         return null;
+    }
+
+    public void SamplingFromTexture(Texture2D texture)
+    {
+        if (painter != null)
+            painter.SamplingFromTexture(texture);
     }
 
     void OnDrawGizmosSelected()

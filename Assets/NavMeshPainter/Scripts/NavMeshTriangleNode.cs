@@ -12,6 +12,10 @@ namespace ASL.NavMesh
         public Vector3 vertex1;
         public Vector3 vertex2;
 
+        public Vector2 uv0;
+        public Vector2 uv1;
+        public Vector2 uv2;
+
         public Vector3 max;
         public Vector3 min;
 
@@ -23,11 +27,14 @@ namespace ASL.NavMesh
         [SerializeField] private int m_LeftNodeIndex = -1;
         [SerializeField] private int m_RightNodeIndex = -1;
 
-        public NavMeshTriangleNode(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2)
+        public NavMeshTriangleNode(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2, Vector2 uv0, Vector2 uv1, Vector2 uv2)
         {
             this.vertex0 = vertex0;
             this.vertex1 = vertex1;
             this.vertex2 = vertex2;
+            this.uv0 = uv0;
+            this.uv1 = uv1;
+            this.uv2 = uv2;
             max = Vector3.Max(vertex0, vertex1);
             max = Vector3.Max(max, vertex2);
             min = Vector3.Min(vertex0, vertex1);
@@ -42,10 +49,14 @@ namespace ASL.NavMesh
             Vector3 half02 = vertex0 + (vertex2 - vertex0) * 0.5f;
             Vector3 half12 = vertex1 + (vertex2 - vertex1) * 0.5f;
 
-            NavMeshTriangleNode center = new NavMeshTriangleNode(half01, half12, half02);
-            NavMeshTriangleNode top = new NavMeshTriangleNode(half01, vertex1, half12);
-            NavMeshTriangleNode left = new NavMeshTriangleNode(vertex0, half01, half02);
-            NavMeshTriangleNode right = new NavMeshTriangleNode(half02, half12, vertex2);
+            Vector2 halfuv01 = uv0 + (uv1 - uv0)*0.5f;
+            Vector2 halfuv02 = uv0 + (uv2 - uv0)*0.5f;
+            Vector2 halfuv12 = uv1 + (uv2 - uv1)*0.5f;
+
+            NavMeshTriangleNode center = new NavMeshTriangleNode(half01, half12, half02, halfuv01, halfuv12, halfuv02);
+            NavMeshTriangleNode top = new NavMeshTriangleNode(half01, vertex1, half12, halfuv01, uv1, halfuv12);
+            NavMeshTriangleNode left = new NavMeshTriangleNode(vertex0, half01, half02, uv0, halfuv01, halfuv02);
+            NavMeshTriangleNode right = new NavMeshTriangleNode(half02, half12, vertex2, halfuv02, halfuv12, uv2);
 
             m_CenterNodeIndex = nodelist.Count;
             nodelist.Add(center);
@@ -175,18 +186,38 @@ namespace ASL.NavMesh
             }
         }
 
-        private bool IsHitTool(Vector3 brushPos, float radius, float height)
+        public void SamplingFromTexture(List<NavMeshTriangleNode> nodeList, Texture2D texture)
         {
-            if (max.y < brushPos.y - height || min.y > brushPos.y + height)
-                return false;
-            Vector2 nearestpos = default(Vector2);
-            nearestpos.x = Mathf.Clamp(brushPos.x, min.x, max.x);
-            nearestpos.y = Mathf.Clamp(brushPos.z, min.z, max.z);
-            float dis = Vector2.Distance(nearestpos, new Vector2(brushPos.x, brushPos.z));
-            
-            if (dis > radius)
-                return false;
-            return true;
+            NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodeList.Count
+                        ? nodeList[m_CenterNodeIndex]
+                        : null;
+            NavMeshTriangleNode top = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodeList.Count
+                ? nodeList[m_TopNodeIndex]
+                : null;
+            NavMeshTriangleNode left = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodeList.Count
+                ? nodeList[m_LeftNodeIndex]
+                : null;
+            NavMeshTriangleNode right = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodeList.Count
+                ? nodeList[m_RightNodeIndex]
+                : null;
+
+            if (center != null)
+                center.SamplingFromTexture(nodeList, texture);
+
+            if (top != null)
+                top.SamplingFromTexture(nodeList, texture);
+
+            if (left != null)
+                left.SamplingFromTexture(nodeList, texture);
+
+            if (right != null)
+                right.SamplingFromTexture(nodeList, texture);
+
+            bool isInMask = SamplingTexture(texture);
+            if (isInMask)
+                isBePainted = true;
+
+            ResetPaintMark(isBePainted, center, top, left, right);
         }
 
         private void ResetPaintMark(bool paint, NavMeshTriangleNode center, NavMeshTriangleNode top, NavMeshTriangleNode left, NavMeshTriangleNode right)
@@ -213,6 +244,19 @@ namespace ASL.NavMesh
                 return;
             }
             isMix = false;
+        }
+
+        private bool SamplingTexture(Texture2D texture)
+        {
+            Vector2 uv = (uv0 + uv1 + uv2)/3;
+            int x = (int) (uv.x*texture.width);
+            int y = (int) (uv.y*texture.height);
+            Color col = texture.GetPixel(x, y);
+            if (col.r > 0.5f)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

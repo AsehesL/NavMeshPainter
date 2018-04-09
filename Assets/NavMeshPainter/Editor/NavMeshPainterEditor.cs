@@ -40,21 +40,20 @@ public class NavMeshPainterEditor : Editor
         public GUIContent boxIcon = EditorGUIUtility.IconContent("NavMeshPainter/box.png");
         public GUIContent cylinderIcon = EditorGUIUtility.IconContent("NavMeshPainter/cylinder.png");
         public GUIContent sphereIcon = EditorGUIUtility.IconContent("NavMeshPainter/sphere.png");
+        public GUIContent checkerboardIcon = EditorGUIUtility.IconContent("NavMeshPainter/checkerboard.png");
     }
 
     public static NavMeshPainterEditor.Styles styles;
-
-    //private NavMeshToolEditor m_NavMeshBrush;
-    //private NavMeshToolEditor m_NavMeshLineTool;
-    //private NavMeshToolEditor m_NavMeshBoxFillTool;
-    //private NavMeshToolEditor m_NavMeshCylinderFillTool;
-    //private NavMeshToolEditor m_NavMeshSphereFillTool;
 
     private NavMeshPainter m_Target;
 
     private ToolType m_ToolType = ToolType.None;
 
     private Dictionary<System.Type, NavMeshToolEditor> m_ToolEditors;
+
+    private bool m_ShowCheckerBoard = true;
+
+    private Texture2D m_RoadMask;
 
     [MenuItem("Tools/Create NavMeshPainter")]
     static void Init()
@@ -80,13 +79,10 @@ public class NavMeshPainterEditor : Editor
     void OnEnable()
     {
         m_Target = (NavMeshPainter) target;
-      
 
-//        m_NavMeshBrush = serializedObject.FindProperty("brush");
-//        m_NavMeshLineTool = serializedObject.FindProperty("lineTool");
-//        m_NavMeshBoxFillTool = serializedObject.FindProperty("boxFillTool");
-//        m_NavMeshCylinderFillTool = serializedObject.FindProperty("cylinderFillTool");
-//        m_NavMeshSphereFillTool = serializedObject.FindProperty("sphereFillTool");
+        float minSize = m_Target.GetMinSize();
+        NavMeshEditorUtils.SetCheckerBoardCellSize(minSize);
+        NavMeshEditorUtils.SetMaskTexture(null);
     }
 
     void OnSceneGUI()
@@ -95,26 +91,25 @@ public class NavMeshPainterEditor : Editor
         {
             styles = new Styles();
         }
-//        if (m_DebugMaterial == null)
-//        {
-//            m_DebugMaterial = new Material((Shader)EditorGUIUtility.Load("NavMeshPainter/Shader/NavMeshDebug.shader"));
-//            
-//            m_DebugMaterial.hideFlags = HideFlags.HideAndDontSave;
-//            if (m_Target.painter)
-//                m_DebugMaterial.SetFloat("_CellSize", Mathf.Sqrt(m_Target.painter.Area*200));
-//            else
-//                m_DebugMaterial.SetFloat("_CellSize", 2.5f);
-//        }
-            //m_DebugMaterial.SetVector("_BrushPos");
-            //m_Target.painter.DrawMesh(m_DebugMaterial);
-        NavMeshEditorUtils.DrawCheckerBoard(m_Target.GetRenderMesh(), Matrix4x4.identity);
-        DrawPaintingToolSceneGUI();
+        if(m_ShowCheckerBoard)
+            NavMeshEditorUtils.DrawCheckerBoard(m_Target.GetRenderMesh(), Matrix4x4.identity);
+
+        switch (m_ToolType)
+        {
+            case ToolType.Erase:
+            case ToolType.Paint:
+                DrawPaintingToolSceneGUI();
+                break;
+            case ToolType.Mapping:
+                DrawMappingSceneGUI();
+                break;
+        }
 
     }
 
     public override void OnInspectorGUI()
     {
-        base.OnInspectorGUI();
+        //base.OnInspectorGUI();
         if (styles == null)
         {
             styles = new Styles();
@@ -138,12 +133,24 @@ public class NavMeshPainterEditor : Editor
                 DrawBakeSettingGUI();
                 break;
         }
+
+        EditorGUILayout.Space();
     }
 
     private void DrawToolsGUI()
     {
         GUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
+
+        EditorGUI.BeginChangeCheck();
+        m_ShowCheckerBoard = GUILayout.Toggle(m_ShowCheckerBoard, styles.checkerboardIcon, styles.command);
+        if (EditorGUI.EndChangeCheck())
+        {
+            float minSize = m_Target.GetMinSize();
+            NavMeshEditorUtils.SetCheckerBoardCellSize(minSize);
+        }
+
+        EditorGUILayout.Space();
 
         int selectedTool = (int)this.m_ToolType;
         int num = GUILayout.Toolbar(selectedTool, styles.toolIcons, styles.command, new GUILayoutOption[0]);
@@ -194,7 +201,21 @@ public class NavMeshPainterEditor : Editor
 
     private void DrawTextureMappingGUI()
     {
-        
+        GUILayout.Label("Mapping Setting", styles.boldLabel);
+        GUILayout.BeginVertical(styles.box);
+        GUILayout.Label("Mask Texture", styles.boldLabel);
+
+        EditorGUI.BeginChangeCheck();
+        m_RoadMask = EditorGUILayout.ObjectField("Mask", m_RoadMask, typeof (Texture2D), false) as Texture2D;
+        if (EditorGUI.EndChangeCheck())
+            NavMeshEditorUtils.SetMaskTexture(m_RoadMask);
+
+        if (GUILayout.Button("ApplyMask"))
+        {
+            ApplyMask();
+        }
+
+        GUILayout.EndVertical();
     }
 
     private void DrawBakeSettingGUI()
@@ -204,30 +225,22 @@ public class NavMeshPainterEditor : Editor
 
     private void DrawPaintingToolSceneGUI()
     {
-        if (IsToolHasSceneGUI(m_ToolType))
+        IPaintingTool tool = m_Target.GetPaintingTool();
+        if (tool == null)
+            return;
+        HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
+
+
+        if (m_Target.painter && m_Target.painter.renderMesh)
         {
-            IPaintingTool tool = m_Target.GetPaintingTool();
-            if (tool == null)
-                return;
-            HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
-            
-            
-            if (m_Target.painter && m_Target.painter.renderMesh)
-            {
-                var tooleditor = GetPaintingToolEditor(tool);
-                tooleditor.DrawSceneGUI(m_Target);
-            }
+            var tooleditor = GetPaintingToolEditor(tool);
+            tooleditor.DrawSceneGUI(m_Target);
         }
     }
-    
 
-    private bool IsToolHasSceneGUI(ToolType toolType)
+    private void DrawMappingSceneGUI()
     {
-        if (toolType == ToolType.Paint)
-            return true;
-        if (toolType == ToolType.Erase)
-            return true;
-        return false;
+        NavMeshEditorUtils.DrawMask(m_Target.GetRenderMesh(), Matrix4x4.identity);
     }
 
     private void ApplyPaint(IPaintingTool tool)
@@ -294,11 +307,30 @@ public class NavMeshPainterEditor : Editor
 
             NavMeshBuilder.BuildNavMesh();
             DestroyImmediate(mf.gameObject);
-
-
         }
     }
 
-    
+    private void ApplyMask()
+    {
+        if (m_RoadMask == null)
+            return;
+        RenderTexture rt = RenderTexture.GetTemporary(m_RoadMask.width, m_RoadMask.height, 0);
+        Graphics.Blit(m_RoadMask, rt);
+
+        RenderTexture active = RenderTexture.active;
+        RenderTexture.active = rt;
+        Texture2D cont = new Texture2D(rt.width, rt.height);
+        cont.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+        cont.Apply();
+        RenderTexture.active = active;
+
+        RenderTexture.ReleaseTemporary(rt);
+
+        m_RoadMask = null;
+        m_Target.SamplingFromTexture(cont);
+
+        DestroyImmediate(cont);
+        NavMeshEditorUtils.SetMaskTexture(null);
+    }
 
 }

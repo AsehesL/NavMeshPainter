@@ -37,6 +37,36 @@ namespace ASL.NavMesh
             }
         }
 
+        public Vector2 uv0
+        {
+            get
+            {
+                if (m_NodeLists == null || m_NodeLists.Count < 1)
+                    return default(Vector2);
+                return m_NodeLists[0].uv0;
+            }
+        }
+
+        public Vector2 uv1
+        {
+            get
+            {
+                if (m_NodeLists == null || m_NodeLists.Count < 1)
+                    return default(Vector2);
+                return m_NodeLists[0].uv1;
+            }
+        }
+
+        public Vector2 uv2
+        {
+            get
+            {
+                if (m_NodeLists == null || m_NodeLists.Count < 1)
+                    return default(Vector2);
+                return m_NodeLists[0].uv2;
+            }
+        }
+
         /// <summary>
         /// 节点列表
         /// </summary>
@@ -51,9 +81,9 @@ namespace ASL.NavMesh
         [SerializeField]
         private Bounds m_Bounds;
 
-        public NavMeshTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2, float area, int maxDepth)
+        public NavMeshTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2, Vector2 uv0, Vector2 uv1, Vector2 uv2, float area, int maxDepth)
         {
-            NavMeshTriangleNode root = new NavMeshTriangleNode(vertex0, vertex1, vertex2);
+            NavMeshTriangleNode root = new NavMeshTriangleNode(vertex0, vertex1, vertex2, uv0, uv1, uv2);
             m_NodeLists = new List<NavMeshTriangleNode>();
             m_NodeLists.Add(root);
 
@@ -76,7 +106,7 @@ namespace ASL.NavMesh
 
             this.m_Bounds = new Bounds(ct, si);
 
-            float currentArea = Vector3.Cross(vertex1 - vertex0, vertex2 - vertex0).magnitude*0.5f;
+            //float currentArea = Vector3.Cross(vertex1 - vertex0, vertex2 - vertex0).magnitude*0.5f;
             //m_Depth = Mathf.RoundToInt(currentArea/area*0.25f);
             //if (m_Depth < 0)
             //    m_Depth = 0;
@@ -92,6 +122,12 @@ namespace ASL.NavMesh
         {
             if (m_NodeLists.Count >= 1)
                 m_NodeLists[0].GenerateMesh(m_NodeLists, vlist, ilist);
+        }
+
+        public void SamplingFromTexture(Texture2D texture)
+        {
+            if (m_NodeLists.Count >= 1)
+                m_NodeLists[0].SamplingFromTexture(m_NodeLists, texture);
         }
 
         public void Draw(IPaintingTool tool, bool clear)

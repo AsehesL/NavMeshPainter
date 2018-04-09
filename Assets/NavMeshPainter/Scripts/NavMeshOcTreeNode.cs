@@ -86,6 +86,22 @@ namespace ASL.NavMesh
             }
         }
 
+        public void SamplingFromTexture(List<NavMeshOcTreeNode> nodeList, Texture2D texture)
+        {
+            for (int i = 0; i < m_ChildNodes.Length; i++)
+            {
+                if (m_ChildNodes[i] > 0)
+                    nodeList[m_ChildNodes[i]].SamplingFromTexture(nodeList, texture);
+            }
+            if (m_ItemList != null)
+            {
+                for (int i = 0; i < m_ItemList.Count; i++)
+                {
+                    m_ItemList[i].SamplingFromTexture(texture);
+                }
+            }
+        }
+
         private NavMeshOcTreeNode GetContainerNode(NavMeshTriangle item, List<NavMeshOcTreeNode> nodeList)
         {
             Vector3 halfSize = bounds.size / 2;

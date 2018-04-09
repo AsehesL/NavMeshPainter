@@ -18,6 +18,7 @@ namespace ASL.NavMesh.Editor
 
         public override void DrawGUI()
         {
+            GUILayout.Label("Settings", NavMeshPainterEditor.styles.boldLabel);
             var t = target as NavMeshLineTool;
             if (t == null)
                 return;
@@ -25,8 +26,6 @@ namespace ASL.NavMesh.Editor
             t.width = Mathf.Max(0.001f, EditorGUILayout.FloatField("Width", t.width));
             t.maxHeight = Mathf.Max(0,
                         EditorGUILayout.FloatField("MaxHeight", t.maxHeight));
-
-            GUILayout.Label("Settings", NavMeshPainterEditor.styles.boldLabel);
         }
 
         protected override void OnSceneGUI(NavMeshPainter targetPainter)

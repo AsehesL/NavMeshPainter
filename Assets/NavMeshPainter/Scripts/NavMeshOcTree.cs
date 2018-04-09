@@ -83,6 +83,12 @@ namespace ASL.NavMesh
             return mesh;
         }
 
+        public void SamplingFromTexture(Texture2D texture)
+        {
+            if (m_NodeLists != null && m_NodeLists.Count > 0)
+                m_NodeLists[0].SamplingFromTexture(m_NodeLists, texture);
+        }
+
         public void Draw(IPaintingTool tool, bool clear = false)
         {
             if (m_NodeLists != null && m_NodeLists.Count > 0)

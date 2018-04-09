@@ -61,11 +61,30 @@ namespace ASL.NavMesh.Editor
             return result;
         }
 
+        public static void SetCheckerBoardCellSize(float size)
+        {
+            GLMaterial.SetFloat("_CellSize", size*0.25f);
+        }
+
+        public static void SetMaskTexture(Texture2D texture)
+        {
+            GLMaterial.SetTexture("_Mask", texture);
+        }
+
         public static void DrawCheckerBoard(Mesh mesh, Matrix4x4 matrix)
         {
             if (mesh && GLMaterial)
             {
                 GLMaterial.SetPass(0);
+                Graphics.DrawMeshNow(mesh, matrix);
+            }
+        }
+
+        public static void DrawMask(Mesh mesh, Matrix4x4 matrix)
+        {
+            if (mesh && GLMaterial)
+            {
+                GLMaterial.SetPass(4);
                 Graphics.DrawMeshNow(mesh, matrix);
             }
         }
