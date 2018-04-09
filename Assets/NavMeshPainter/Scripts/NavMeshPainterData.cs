@@ -10,15 +10,11 @@ namespace ASL.NavMesh
 
         public NavMeshOcTree ocTree;
 
-        public float Area { get { return m_Area; } }
-
-        [SerializeField]
-        private float m_Area;
-
-        public void Create(GameObject[] gameObjects, bool containChilds, float angle, float area, int maxDepth)
+        public void Create(GameObject[] gameObjects, bool containChilds, float angle, int maxDepth)
         {
             Vector3 max = new Vector3(-Mathf.Infinity, -Mathf.Infinity, -Mathf.Infinity);
             Vector3 min = new Vector3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
+            float maxArea = 0;
 
             List<NavMeshTriangle> triangles = new List<NavMeshTriangle>();
 
@@ -26,9 +22,9 @@ namespace ASL.NavMesh
             {
                 if (!gameObjects[i].activeSelf)
                     continue;
-                FindTriangle(gameObjects[i].transform, triangles, angle, area, maxDepth, ref max, ref min);
+                FindTriangle(gameObjects[i].transform, triangles, angle, ref max, ref min, ref maxArea);
                 if (containChilds)
-                    FindTriangleInChild(gameObjects[i].transform, triangles, angle, area, maxDepth, ref max, ref min);
+                    FindTriangleInChild(gameObjects[i].transform, triangles, angle, ref max, ref min, ref maxArea);
             }
 
             Vector3 size = max - min;
@@ -49,6 +45,8 @@ namespace ASL.NavMesh
 
             for (int i = 0; i < triangles.Count; i++)
             {
+                triangles[i].Subdivide(maxDepth, maxArea);
+
                 ocTree.Add(triangles[i]);
                 ilist.Add(vlist.Count);
                 vlist.Add(triangles[i].vertex0);
@@ -66,8 +64,6 @@ namespace ASL.NavMesh
             renderMesh.SetUVs(0, ulist);
             renderMesh.SetTriangles(ilist, 0);
             renderMesh.RecalculateNormals();
-
-            m_Area = area;
         }
 
         public void Draw(IPaintingTool tool)
@@ -92,10 +88,10 @@ namespace ASL.NavMesh
             return Mathf.Min(x, z);
         }
 
-        public Mesh GenerateMesh()
+        public Mesh GenerateMesh(Color color)
         {
             if (ocTree != null)
-                return ocTree.GenerateMesh();
+                return ocTree.GenerateMesh(color);
             return null;
         }
 
@@ -105,8 +101,8 @@ namespace ASL.NavMesh
                 ocTree.SamplingFromTexture(texture);
         }
 
-        private void FindTriangle(Transform transform, List<NavMeshTriangle> triangles, float angle, float area, int maxDepth, ref Vector3 max,
-            ref Vector3 min)
+        private void FindTriangle(Transform transform, List<NavMeshTriangle> triangles, float angle, ref Vector3 max,
+            ref Vector3 min, ref float maxArea)
         {
             MeshFilter mf = transform.GetComponent<MeshFilter>();
             if (!mf || !mf.sharedMesh)
@@ -145,18 +141,21 @@ namespace ASL.NavMesh
                 min = Vector3.Min(min, v1);
                 min = Vector3.Min(min, v2);
 
-                NavMeshTriangle triangle = new NavMeshTriangle(v0, v1, v2, u0, u1, u2, area, maxDepth);
+                NavMeshTriangle triangle = new NavMeshTriangle(v0, v1, v2, u0, u1, u2);
+                float area = triangle.GetArea();
+                if (area > maxArea)
+                    maxArea = area;
                 triangles.Add(triangle);
             }
         }
 
-        private void FindTriangleInChild(Transform transform, List<NavMeshTriangle> triangles, float angle, float area, int maxDepth, ref Vector3 max, ref Vector3 min)
+        private void FindTriangleInChild(Transform transform, List<NavMeshTriangle> triangles, float angle, ref Vector3 max, ref Vector3 min, ref float maxArea)
         {
             for (int i = 0; i < transform.childCount; i++)
             {
                 Transform child = transform.GetChild(i);
                 if (child.gameObject.activeSelf)
-                    FindTriangle(child, triangles, angle, area, maxDepth, ref max, ref min);
+                    FindTriangle(child, triangles, angle, ref max, ref min, ref maxArea);
             }
         }
 

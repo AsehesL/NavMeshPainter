@@ -81,7 +81,7 @@ namespace ASL.NavMesh
         [SerializeField]
         private Bounds m_Bounds;
 
-        public NavMeshTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2, Vector2 uv0, Vector2 uv1, Vector2 uv2, float area, int maxDepth)
+        public NavMeshTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2, Vector2 uv0, Vector2 uv1, Vector2 uv2)
         {
             NavMeshTriangleNode root = new NavMeshTriangleNode(vertex0, vertex1, vertex2, uv0, uv1, uv2);
             m_NodeLists = new List<NavMeshTriangleNode>();
@@ -106,15 +106,34 @@ namespace ASL.NavMesh
 
             this.m_Bounds = new Bounds(ct, si);
 
-            //float currentArea = Vector3.Cross(vertex1 - vertex0, vertex2 - vertex0).magnitude*0.5f;
-            //m_Depth = Mathf.RoundToInt(currentArea/area*0.25f);
-            //if (m_Depth < 0)
-            //    m_Depth = 0;
-            //if (m_Depth > maxDepth)
-            //    m_Depth = maxDepth;
-            //m_Depth = 4;
+            
+        }
 
-            root.Subdivide(4, m_NodeLists);
+        public void Subdivide(int maxDepth, float maxArea)
+        {
+            if (m_NodeLists != null && m_NodeLists.Count >= 1)
+            {
+                float tcount = Mathf.Pow(4, maxDepth);
+                float marea = maxArea/tcount;
+                float carea = GetArea();
+                for (int i = 0; i <= maxDepth; i++)
+                {
+                    float dp = Mathf.Pow(4, i);
+                    float area = carea / dp;
+                    float m = Mathf.Round(area/marea);
+                    if (m <= 1.0f)
+                    {
+                        maxDepth = i;
+                        break;
+                    }
+                }
+                m_NodeLists[0].Subdivide(maxDepth, m_NodeLists);
+            }
+        }
+
+        public float GetArea()
+        {
+            return Vector3.Cross(vertex1 - vertex0, vertex2 - vertex0).magnitude * 0.5f;
         }
 
 

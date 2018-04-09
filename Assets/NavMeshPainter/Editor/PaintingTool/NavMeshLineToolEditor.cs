@@ -18,14 +18,14 @@ namespace ASL.NavMesh.Editor
 
         public override void DrawGUI()
         {
-            GUILayout.Label("Settings", NavMeshPainterEditor.styles.boldLabel);
+            GUILayout.Label(NavMeshPainterEditor.styles.setting, NavMeshPainterEditor.styles.boldLabel);
             var t = target as NavMeshLineTool;
             if (t == null)
                 return;
 
-            t.width = Mathf.Max(0.001f, EditorGUILayout.FloatField("Width", t.width));
+            t.width = Mathf.Max(0.001f, EditorGUILayout.FloatField(NavMeshPainterEditor.styles.width, t.width));
             t.maxHeight = Mathf.Max(0,
-                        EditorGUILayout.FloatField("MaxHeight", t.maxHeight));
+                        EditorGUILayout.FloatField(NavMeshPainterEditor.styles.maxHeight, t.maxHeight));
         }
 
         protected override void OnSceneGUI(NavMeshPainter targetPainter)

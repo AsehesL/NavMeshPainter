@@ -13,6 +13,8 @@ public class NavMeshPainter : MonoBehaviour
 
     public PaintingToolType paintTool;
 
+    public Color navMeshWireColor = Color.green;
+
     public NavMeshPainterData painter;
 
     public NavMeshBrushTool brush;
@@ -56,10 +58,10 @@ public class NavMeshPainter : MonoBehaviour
             painter.Erase(tool);
     }
 
-    public Mesh GenerateMesh()
+    public Mesh GenerateMesh(Color color)
     {
         if (painter != null)
-            return painter.GenerateMesh();
+            return painter.GenerateMesh(color);
         return null;
     }
 
@@ -72,6 +74,6 @@ public class NavMeshPainter : MonoBehaviour
     void OnDrawGizmosSelected()
     {
         if (painter != null)
-            painter.DrawGizmos(Color.green);
+            painter.DrawGizmos(navMeshWireColor);
     }
 }

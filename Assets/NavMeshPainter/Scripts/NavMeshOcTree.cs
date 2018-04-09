@@ -70,14 +70,18 @@ namespace ASL.NavMesh
             }
         }
 
-        public Mesh GenerateMesh()
+        public Mesh GenerateMesh(Color color)
         {
             List<Vector3> vlist = new List<Vector3>();
             List<int> ilist = new List<int>();
             if (m_NodeLists != null && m_NodeLists.Count > 0)
                 m_NodeLists[0].GenerateMesh(m_NodeLists, vlist, ilist);
             Mesh mesh = new Mesh();
+            List<Color> clist = new List<Color>();
+            for (int i = 0; i < vlist.Count; i++)
+                clist.Add(color);
             mesh.SetVertices(vlist);
+            mesh.SetColors(clist);
             mesh.SetTriangles(ilist, 0);
             mesh.hideFlags = HideFlags.HideAndDontSave;
             return mesh;

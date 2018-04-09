@@ -16,30 +16,30 @@ namespace ASL.NavMesh.Editor
             if (t == null)
                 return;
 
-            GUILayout.Label("Settings", NavMeshPainterEditor.styles.boldLabel);
+            GUILayout.Label(NavMeshPainterEditor.styles.setting, NavMeshPainterEditor.styles.boldLabel);
 
             if (t.brushType == NavMeshBrushType.Box)
             {
                 t.xSize = Mathf.Max(0.001f,
-                    EditorGUILayout.FloatField("XSize", t.xSize));
+                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.xSize, t.xSize));
                 t.zSize = Mathf.Max(0.001f,
-                    EditorGUILayout.FloatField("ZSize", t.zSize));
+                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.zSize, t.zSize));
                 t.maxHeight = Mathf.Max(0,
-                    EditorGUILayout.FloatField("MaxHeight", t.maxHeight));
+                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.maxHeight, t.maxHeight));
             }else if (t.brushType == NavMeshBrushType.Cylinder)
             {
                 t.xSize = Mathf.Max(0.001f,
-                    EditorGUILayout.FloatField("Radius", t.xSize));
+                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.radius, t.xSize));
                 t.maxHeight = Mathf.Max(0,
-                    EditorGUILayout.FloatField("MaxHeight", t.maxHeight));
+                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.maxHeight, t.maxHeight));
             }
             else if (t.brushType == NavMeshBrushType.Sphere)
             {
                 t.xSize = Mathf.Max(0.001f,
-                    EditorGUILayout.FloatField("Radius", t.xSize));
+                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.radius, t.xSize));
             }
 
-            t.brushType = (NavMeshBrushType)EditorGUILayout.EnumPopup("BrushType", t.brushType);
+            t.brushType = (NavMeshBrushType)EditorGUILayout.EnumPopup(NavMeshPainterEditor.styles.brushType, t.brushType);
         }
 
         protected override void OnRaycast(NavMeshPainter targetPainter, RaycastHit hit)
