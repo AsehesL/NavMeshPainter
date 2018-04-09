@@ -214,6 +214,10 @@ public class NavMeshPainterEditor : Editor
         {
             ApplyMask();
         }
+        if (GUILayout.Button("Bake"))
+        {
+            Bake();
+        }
 
         GUILayout.EndVertical();
     }
