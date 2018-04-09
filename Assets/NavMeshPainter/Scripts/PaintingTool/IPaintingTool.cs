@@ -9,10 +9,14 @@ namespace ASL.NavMeshPainter
     public interface IPaintingTool
     {
 
-        void DrawToolGizmos();
-
         bool IntersectsBounds(Bounds bounds);
 
         bool IntersectsTriangle(NavMeshTriangleNode node);
+
+        bool OnMouseDown(Vector3 position);
+        bool OnMouseUp();
+        void OnMouseMove(Vector3 position);
+        bool OnMouseDrag(Vector3 position);
+        void ResetState();
     }
 }

@@ -36,20 +36,20 @@ namespace ASL.NavMeshPainter
             return this;
         }
 
-        public void Draw(NavMeshBrushTool brush, List<NavMeshOcTreeNode> nodeList, bool clear)
+        public void Draw(IPaintingTool tool, List<NavMeshOcTreeNode> nodeList, bool clear)
         {
             for (int i = 0; i < m_ChildNodes.Length; i++)
             {
                 if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].Draw(brush, nodeList, clear);
+                    nodeList[m_ChildNodes[i]].Draw(tool, nodeList, clear);
             }
 
-            if (brush.Bounds.Intersects(this.bounds))
+            if (tool.IntersectsBounds(this.bounds))
             {
                 for (int i = 0; i < m_ItemList.Count; i++)
                 {
-                    if (brush.Bounds.Intersects(m_ItemList[i].bounds))
-                        m_ItemList[i].Draw(brush, clear);
+                    if (tool.IntersectsBounds(m_ItemList[i].bounds))
+                        m_ItemList[i].Draw(tool, clear);
                 }
             }
         }
@@ -82,38 +82,6 @@ namespace ASL.NavMeshPainter
                 for (int i = 0; i < m_ItemList.Count; i++)
                 {
                     m_ItemList[i].GenerateMesh(vlist, ilist);
-                }
-            }
-        }
-
-        public void Check(List<NavMeshOcTreeNode> nodeList)
-        {
-            for (int i = 0; i < m_ChildNodes.Length; i++)
-            {
-                if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].Check(nodeList);
-            }
-            if (m_ItemList != null)
-            {
-                for (int i = 0; i < m_ItemList.Count; i++)
-                {
-                    m_ItemList[i].Check();
-                }
-            }
-        }
-
-        public void CheckTriangle(List<NavMeshOcTreeNode> nodeList)
-        {
-            for (int i = 0; i < m_ChildNodes.Length; i++)
-            {
-                if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].CheckTriangle(nodeList);
-            }
-            if (m_ItemList != null)
-            {
-                for (int i = 0; i < m_ItemList.Count; i++)
-                {
-                    m_ItemList[i].CheckTriangle();
                 }
             }
         }

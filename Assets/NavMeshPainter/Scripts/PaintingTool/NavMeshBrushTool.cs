@@ -12,25 +12,22 @@ namespace ASL.NavMeshPainter
             Square = 1,
         }
 
+        private enum State
+        {
+            None,
+            Drag,
+        }
+
         public float size;
         public Vector3 position;
         public float maxHeight;
         public BrushType brushType;
 
+        private State m_CurrentState;
+
         public Bounds Bounds
         {
             get { return new Bounds(position, new Vector3(size*2, maxHeight*2, size*2)); }
-        }
-
-        public void DrawToolGizmos()
-        {
-            Bounds.DrawBounds(Color.blue);
-        }
-
-        public void DrawTool(Material renderMaterial)
-        {
-            renderMaterial.SetVector("_BrushPos", position);
-            renderMaterial.SetVector("_BrushSize", new Vector3(size, maxHeight, (float)brushType));
         }
 
         public bool IntersectsBounds(Bounds bounds)
@@ -66,6 +63,32 @@ namespace ASL.NavMeshPainter
             if (dis > size)
                 return false;
             return true;
+        }
+
+        public bool OnMouseDown(Vector3 position)
+        {
+            return false;
+        }
+
+        public bool OnMouseUp()
+        {
+            return false;
+        }
+
+        public void OnMouseMove(Vector3 position)
+        {
+            this.position = position;
+        }
+
+        public bool OnMouseDrag(Vector3 position)
+        {
+            this.position = position;
+            return true;
+        }
+
+        public void ResetState()
+        {
+            m_CurrentState = State.None;
         }
     }
 }

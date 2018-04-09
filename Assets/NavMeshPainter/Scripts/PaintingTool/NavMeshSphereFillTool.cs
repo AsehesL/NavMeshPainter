@@ -7,11 +7,6 @@ namespace ASL.NavMeshPainter
     public class NavMeshSphereFillTool : IPaintingTool
     {
 
-        public void DrawToolGizmos()
-        {
-           
-        }
-
         public bool IntersectsBounds(Bounds bounds)
         {
             return false;
@@ -20,6 +15,31 @@ namespace ASL.NavMeshPainter
         public bool IntersectsTriangle(NavMeshTriangleNode node)
         {
             return false;
+        }
+
+        public bool OnMouseDown(Vector3 position)
+        {
+            return false;
+        }
+
+        public void OnMouseMove(Vector3 position)
+        {
+          
+        }
+
+        public bool OnMouseUp()
+        {
+            return false;
+        }
+
+        public bool OnMouseDrag(Vector3 position)
+        {
+            return false;
+        }
+
+        public void ResetState()
+        {
+         
         }
     }
 }

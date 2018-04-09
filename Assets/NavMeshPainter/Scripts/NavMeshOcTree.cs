@@ -35,17 +35,6 @@ namespace ASL.NavMeshPainter
         [SerializeField]
         private List<NavMeshOcTreeNode> m_NodeLists;
 
-        ///// <summary>
-        ///// 数据列表
-        ///// </summary>
-        //[SerializeField]
-        //private List<NavMeshTriangle> m_DataList;
-        /// <summary>
-        /// 数据所在节点索引
-        /// </summary>
-        //[SerializeField]
-        //private List<int> m_NodeIndexList;
-
         /// <summary>
         /// 构造八叉树
         /// </summary>
@@ -81,18 +70,6 @@ namespace ASL.NavMeshPainter
             }
         }
 
-        public void Check()
-        {
-            if (m_NodeLists != null && m_NodeLists.Count > 0)
-                m_NodeLists[0].Check(m_NodeLists);
-        }
-
-        public void CheckTriangle()
-        {
-            if (m_NodeLists != null && m_NodeLists.Count > 0)
-                m_NodeLists[0].CheckTriangle(m_NodeLists);
-        }
-
         public Mesh GenerateMesh()
         {
             List<Vector3> vlist = new List<Vector3>();
@@ -106,10 +83,10 @@ namespace ASL.NavMeshPainter
             return mesh;
         }
 
-        public void Draw(NavMeshBrushTool trigger, bool clear = false)
+        public void Draw(IPaintingTool tool, bool clear = false)
         {
             if (m_NodeLists != null && m_NodeLists.Count > 0)
-                m_NodeLists[0].Draw(trigger, m_NodeLists, clear);
+                m_NodeLists[0].Draw(tool, m_NodeLists, clear);
         }
 
         public void DrawGizmos()

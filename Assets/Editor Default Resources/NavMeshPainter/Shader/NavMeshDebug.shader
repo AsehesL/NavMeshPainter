@@ -1,4 +1,4 @@
-﻿Shader "Unlit/NavMeshDebug"
+﻿Shader "Hidden/NavMeshDebug"
 {
 	Properties
 	{
@@ -12,7 +12,7 @@
 		Tags { "RenderType"="Transparent" "Queue" = "Transparent" }
 		LOD 100
 
-		Pass
+		Pass //CheckerBoard
 		{
 			zwrite off
 			offset -1,-1
@@ -63,6 +63,82 @@
 				col.rgb = lerp(col.rgb, _BrushColor.rgb, _BrushColor.a*atten);
 
 				return col;
+			}
+			ENDCG
+		}
+
+		Pass //Line
+		{
+			zwrite off
+			blend srcalpha oneminussrcalpha
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+
+			#include "UnityCG.cginc"
+
+			struct appdata
+			{
+				float4 vertex : POSITION;
+				float4 color  : COLOR;
+			};
+
+			struct v2f
+			{
+				float4 color : COLOR;
+				float4 vertex : SV_POSITION;
+			};
+
+			v2f vert(appdata v)
+			{
+				v2f o;
+				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.color = v.color;
+				return o;
+			}
+
+			float4 frag(v2f i) : SV_Target
+			{
+				return i.color;
+			}
+			ENDCG
+		}
+
+		Pass  //Line SeeThrough
+		{
+			zwrite off
+			ztest gequal
+			blend srcalpha oneminussrcalpha
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+
+			#include "UnityCG.cginc"
+
+			struct appdata
+			{
+				float4 vertex : POSITION;
+				float4 color  : COLOR;
+			};
+
+			struct v2f
+			{
+				float4 color : COLOR;
+				float4 vertex : SV_POSITION;
+			};
+
+			v2f vert(appdata v)
+			{
+				v2f o;
+				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.color = v.color;
+				return o;
+			}
+
+			float4 frag(v2f i) : SV_Target
+			{
+				i.color.a *= 0.1;
+				return i.color;
 			}
 			ENDCG
 		}

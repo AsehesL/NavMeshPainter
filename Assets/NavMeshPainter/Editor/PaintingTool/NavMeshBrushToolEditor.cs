@@ -2,34 +2,42 @@
 using UnityEditor;
 using System.Collections;
 
-namespace ASL.NavMeshPainter
+namespace ASL.NavMeshPainter.Editor
 {
-    [CustomPropertyDrawer(typeof(NavMeshBrushTool))]
-    public class NavMeshBrushToolEditor : PropertyDrawer
+    //[CustomPropertyDrawer(typeof(NavMeshBrushTool))]
+    [CustomNavMeshToolEditor(typeof(NavMeshBrushTool))]
+    public class NavMeshBrushToolEditor : NavMeshToolEditor
     {
+        
 
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI()
         {
-            //base.OnGUI(position, property, label);
-            //EditorGUILayout.FloatField()
-            var size = property.FindPropertyRelative("size");
-            var height = property.FindPropertyRelative("maxHeight");
-            var bt = property.FindPropertyRelative("brushType");
+            var t = target as NavMeshBrushTool;
+            if (t == null)
+                return;
 
-            size.floatValue = Mathf.Max(0.001f,
-                EditorGUI.FloatField(new Rect(position.x, position.y, position.width, 18),size.name, size.floatValue));
-            height.floatValue = Mathf.Max(0,
-               EditorGUI.FloatField(new Rect(position.x, position.y + 20, position.width, 18), height.name, height.floatValue));
+            GUILayout.Label("Settings", NavMeshPainterEditor.styles.boldLabel);
+            t.size = Mathf.Max(0.001f,
+                EditorGUILayout.FloatField("Size", t.size));
+            t.maxHeight = Mathf.Max(0,
+                EditorGUILayout.FloatField("MaxHeight", t.maxHeight));
 
-            EditorGUI.PropertyField(new Rect(position.x, position.y + 40, position.width, 18), bt);
-
-            property.serializedObject.ApplyModifiedProperties();
+            t.brushType = (NavMeshBrushTool.BrushType)EditorGUILayout.EnumPopup("BrushType", t.brushType);
         }
 
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        public override void OnSceneGUI(Material renderMaterial)
         {
-            //return base.GetPropertyHeight(property, label);
-            return 60;
+            var t = target as NavMeshBrushTool;
+            if (t == null)
+                return;
+
+            NavMeshEditorUtils.DrawBounds(t.Bounds, Color.blue);
+
+            if (renderMaterial == null)
+                return;
+            renderMaterial.SetVector("_BrushPos", t.position);
+            renderMaterial.SetVector("_BrushSize", new Vector3(t.size, t.maxHeight, (float)t.brushType));
+            renderMaterial.SetColor("_BrushColor", new Color(0, 0.5f, 1, 0.5f));
         }
     }
 }

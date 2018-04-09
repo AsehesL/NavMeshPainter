@@ -65,16 +65,16 @@ namespace ASL.NavMeshPainter
             m_Area = area;
         }
 
-        public void Draw(NavMeshBrushTool brush)
+        public void Draw(IPaintingTool tool)
         {
             if (ocTree != null)
-                ocTree.Draw(brush);
+                ocTree.Draw(tool);
         }
 
-        public void Erase(NavMeshBrushTool brush)
+        public void Erase(IPaintingTool tool)
         {
             if (ocTree != null)
-                ocTree.Draw(brush, true);
+                ocTree.Draw(tool, true);
         }
 
         public Mesh GenerateMesh()
@@ -82,18 +82,6 @@ namespace ASL.NavMeshPainter
             if (ocTree != null)
                 return ocTree.GenerateMesh();
             return null;
-        }
-
-        public void Check()
-        {
-            if (ocTree != null)
-                ocTree.Check();
-        }
-
-        public void CheckTriangle()
-        {
-            if (ocTree != null)
-                ocTree.CheckTriangle();
         }
 
         private void FindTriangle(Transform transform, List<NavMeshTriangle> triangles, float angle, float area, int maxDepth, ref Vector3 max,
@@ -144,16 +132,6 @@ namespace ASL.NavMeshPainter
                 if (child.gameObject.activeSelf)
                     FindTriangle(child, triangles, angle, area, maxDepth, ref max, ref min);
             }
-        }
-
-        public void DrawMesh(Material renderMaterial)
-        {
-            if (renderMesh && renderMaterial)
-            {
-                renderMaterial.SetPass(0);
-                Graphics.DrawMeshNow(renderMesh, Matrix4x4.identity);
-            }
-            //Graphics.DrawMesh(renderMesh)
         }
 
         public void DrawGizmos(Color color)

@@ -43,10 +43,6 @@ namespace ASL.NavMeshPainter
         [SerializeField]
         private List<NavMeshTriangleNode> m_NodeLists;
 
-        //[SerializeField] private int m_Depth;
-
-        //[SerializeField] private bool m_Subdivide;
-
         /// <summary>
         /// 三角形的AABB包围盒
         /// </summary>
@@ -91,18 +87,6 @@ namespace ASL.NavMeshPainter
             root.Subdivide(4, m_NodeLists);
         }
 
-        public void Check()
-        {
-            if (m_NodeLists.Count >= 1)
-                m_NodeLists[0].Check(m_NodeLists);
-        }
-
-        public void CheckTriangle()
-        {
-            if (m_NodeLists.Count >= 1)
-                m_NodeLists[0].CheckTriangle(m_NodeLists);
-        }
-
 
         public void GenerateMesh(List<Vector3> vlist, List<int> ilist)
         {
@@ -110,16 +94,11 @@ namespace ASL.NavMeshPainter
                 m_NodeLists[0].GenerateMesh(m_NodeLists, vlist, ilist);
         }
 
-        public void Draw(NavMeshBrushTool brush, bool clear)
+        public void Draw(IPaintingTool tool, bool clear)
         {
             if (m_NodeLists.Count >= 1)
             {
-//                if (!m_Subdivide)
-//                {
-//                    m_NodeLists[0].Subdivide(m_Depth, m_NodeLists);
-//                    m_Subdivide = true;
-//                }
-                m_NodeLists[0].Paint(!clear, brush.position, brush.size, brush.maxHeight, m_NodeLists);
+                m_NodeLists[0].Draw(!clear, tool, m_NodeLists);
             }
         }
 

@@ -62,68 +62,42 @@ namespace ASL.NavMeshPainter
             right.Subdivide(depth - 1, nodelist);
         }
 
-        public void Paint(bool paint, Vector3 brushPos, float radius, float height, List<NavMeshTriangleNode> nodelist)
+        public void Draw(bool paint, IPaintingTool tool, List<NavMeshTriangleNode> nodelist)
         {
-            if (IsHitBrush(brushPos, radius, height))
+            if (tool.IntersectsTriangle(this))
             {
-                SetPaintMark(paint, brushPos, radius, height, nodelist);
-            }
-//            bool isHit = IsHitBrush(vertex0, brushPos, radius, height);
-//            if (isHit)
-//            {
-//                Debug.Log("HitV0");
-//                SetPaintMark(paint, brushPos, radius, height, nodelist);
-//                return;
-//            }
-//            isHit = IsHitBrush(vertex1, brushPos, radius, height);
-//            if (isHit)
-//            {
-//                Debug.Log("HitV1");
-//                SetPaintMark(paint, brushPos, radius, height, nodelist);
-//                return;
-//            }
-//            isHit = IsHitBrush(vertex2, brushPos, radius, height);
-//            if (isHit)
-//            {
-//                Debug.Log("HitV2");
-//                SetPaintMark(paint, brushPos, radius, height, nodelist);
-//                return;
-//            }
+                bool cotinuePaint = isBePainted != paint || isMix;
+                if (!cotinuePaint)
+                    return;
 
-        }
-
-        public void SetPaintMark(bool paint, Vector3 brushPos, float radius, float height, List<NavMeshTriangleNode> nodelist)
-        {
-            bool cotinuePaint = isBePainted != paint || isMix;
-            if (!cotinuePaint)
-                return;
-
-            NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodelist.Count
-                    ? nodelist[m_CenterNodeIndex]
+                NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodelist.Count
+                        ? nodelist[m_CenterNodeIndex]
+                        : null;
+                NavMeshTriangleNode top = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodelist.Count
+                    ? nodelist[m_TopNodeIndex]
                     : null;
-            NavMeshTriangleNode top = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodelist.Count
-                ? nodelist[m_TopNodeIndex]
-                : null;
-            NavMeshTriangleNode left = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodelist.Count
-                ? nodelist[m_LeftNodeIndex]
-                : null;
-            NavMeshTriangleNode right = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodelist.Count
-                ? nodelist[m_RightNodeIndex]
-                : null;
+                NavMeshTriangleNode left = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodelist.Count
+                    ? nodelist[m_LeftNodeIndex]
+                    : null;
+                NavMeshTriangleNode right = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodelist.Count
+                    ? nodelist[m_RightNodeIndex]
+                    : null;
 
-            if (center != null)
-                center.Paint(paint, brushPos, radius, height, nodelist);
+                if (center != null)
+                    center.Draw(paint, tool, nodelist);
 
-            if (top != null)
-                top.Paint(paint, brushPos, radius, height, nodelist);
+                if (top != null)
+                    top.Draw(paint, tool, nodelist);
 
-            if (left != null)
-                left.Paint(paint, brushPos, radius, height, nodelist);
+                if (left != null)
+                    left.Draw(paint, tool, nodelist);
 
-            if (right != null)
-                right.Paint(paint, brushPos, radius, height, nodelist);
+                if (right != null)
+                    right.Draw(paint, tool, nodelist);
 
-            ResetPaintMark(paint, center, top, left, right);
+                ResetPaintMark(paint, center, top, left, right);
+            }
+
         }
 
         public void DrawTriangle(List<NavMeshTriangleNode> nodeList)
@@ -160,66 +134,6 @@ namespace ASL.NavMeshPainter
                     Gizmos.DrawLine(vertex1, vertex2);
                 }
             }
-        }
-
-        public void Check(List<NavMeshTriangleNode> nodeList)
-        {
-            if (!isMix)
-            {
-                if (isBePainted)
-                {
-                    Debug.Log("Paint");
-                }
-            }
-            else
-            {
-                NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodeList.Count
-                    ? nodeList[m_CenterNodeIndex]
-                    : null;
-                NavMeshTriangleNode top = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodeList.Count
-                    ? nodeList[m_TopNodeIndex]
-                    : null;
-                NavMeshTriangleNode left = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodeList.Count
-                    ? nodeList[m_LeftNodeIndex]
-                    : null;
-                NavMeshTriangleNode right = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodeList.Count
-                    ? nodeList[m_RightNodeIndex]
-                    : null;
-                if (center != null)
-                    center.Check(nodeList);
-                if (top != null)
-                    top.Check(nodeList);
-                if (left != null)
-                    left.Check(nodeList);
-                if (right != null)
-                    right.Check(nodeList);
-            }
-        }
-
-        public void CheckTriangle(List<NavMeshTriangleNode> nodeList)
-        {
-            Debug.Log("Triangle:" + vertex0 + "," + vertex1 + "," + vertex2+",Max:"+max+",Min:"+min);
-
-            NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodeList.Count
-                    ? nodeList[m_CenterNodeIndex]
-                    : null;
-            NavMeshTriangleNode top = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodeList.Count
-                ? nodeList[m_TopNodeIndex]
-                : null;
-            NavMeshTriangleNode left = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodeList.Count
-                ? nodeList[m_LeftNodeIndex]
-                : null;
-            NavMeshTriangleNode right = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodeList.Count
-                ? nodeList[m_RightNodeIndex]
-                : null;
-            if (center != null)
-                center.Check(nodeList);
-            if (top != null)
-                top.Check(nodeList);
-            if (left != null)
-                left.Check(nodeList);
-            if (right != null)
-                right.Check(nodeList);
         }
 
         public void GenerateMesh(List<NavMeshTriangleNode> nodeList, List<Vector3> vlist, List<int> ilist)
@@ -261,17 +175,7 @@ namespace ASL.NavMeshPainter
             }
         }
 
-//        private bool IsHitBrush(Vector3 pos, Vector3 brushPos, float radius, float height)
-//        {
-//            float deltaH = Mathf.Abs(pos.y - brushPos.y);
-//            if (deltaH > height)
-//                return false;
-//            float dis = Vector2.Distance(new Vector2(pos.x, pos.z), new Vector2(brushPos.x, brushPos.z));
-//            Debug.Log("Pos:"+pos+",BrushPos:"+brushPos+ ",Dis:" + dis + "," + radius);
-//            return dis < radius;
-//        }
-
-        private bool IsHitBrush(Vector3 brushPos, float radius, float height)
+        private bool IsHitTool(Vector3 brushPos, float radius, float height)
         {
             if (max.y < brushPos.y - height || min.y > brushPos.y + height)
                 return false;
@@ -284,8 +188,6 @@ namespace ASL.NavMeshPainter
                 return false;
             return true;
         }
-
-
 
         private void ResetPaintMark(bool paint, NavMeshTriangleNode center, NavMeshTriangleNode top, NavMeshTriangleNode left, NavMeshTriangleNode right)
         {

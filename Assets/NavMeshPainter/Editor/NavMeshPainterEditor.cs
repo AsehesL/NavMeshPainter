@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Collections;
+using System.Collections.Generic;
 using ASL.NavMeshPainter;
+using ASL.NavMeshPainter.Editor;
 using UnityEditor.AI;
 
 [CustomEditor(typeof(NavMeshPainter))]
@@ -16,16 +17,13 @@ public class NavMeshPainterEditor : Editor
         Bake,
     }
 
-    
-
-    private class Styles
+    public class Styles
     {
         public GUIStyle buttonLeft = "ButtonLeft";
         public GUIStyle buttonMid = "ButtonMid";
         public GUIStyle buttonRight = "ButtonRight";
         public GUIStyle command = "Command";
         public GUIStyle box = "box";
-        public GUIStyle toolbar = "Toolbar";
         public GUIStyle boldLabel = "BoldLabel";
 
         public GUIContent[] toolIcons = new GUIContent[]
@@ -44,35 +42,19 @@ public class NavMeshPainterEditor : Editor
         public GUIContent sphereIcon = EditorGUIUtility.IconContent("NavMeshPainter/sphere.png");
     }
 
-    private static NavMeshPainterEditor.Styles styles;
+    public static NavMeshPainterEditor.Styles styles;
 
-    private static System.Reflection.MethodInfo intersectRayMesh
-    {
-        get
-        {
-            if (m_IntersectRayMesh == null)
-            {
-                var tp = typeof(HandleUtility);
-                m_IntersectRayMesh = tp.GetMethod("IntersectRayMesh",
-                    System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-            }
-            return m_IntersectRayMesh;
-        }
-    }
-    private static System.Reflection.MethodInfo m_IntersectRayMesh;
-
-    private SerializedProperty m_NavMeshBrush;
-
-
-    private Material m_DebugMaterial;
+    //private NavMeshToolEditor m_NavMeshBrush;
+    //private NavMeshToolEditor m_NavMeshLineTool;
+    //private NavMeshToolEditor m_NavMeshBoxFillTool;
+    //private NavMeshToolEditor m_NavMeshCylinderFillTool;
+    //private NavMeshToolEditor m_NavMeshSphereFillTool;
 
     private NavMeshPainter m_Target;
 
-    private bool m_IsPainting;
-
-    private bool m_IsDrawing;
-
     private ToolType m_ToolType = ToolType.None;
+
+    private Dictionary<System.Type, NavMeshToolEditor> m_ToolEditors;
 
     [MenuItem("Tools/Create NavMeshPainter")]
     static void Init()
@@ -98,7 +80,15 @@ public class NavMeshPainterEditor : Editor
     void OnEnable()
     {
         m_Target = (NavMeshPainter) target;
-        m_NavMeshBrush = serializedObject.FindProperty("brush");
+
+        if (m_Target)
+            m_Target.ResetState();
+
+//        m_NavMeshBrush = serializedObject.FindProperty("brush");
+//        m_NavMeshLineTool = serializedObject.FindProperty("lineTool");
+//        m_NavMeshBoxFillTool = serializedObject.FindProperty("boxFillTool");
+//        m_NavMeshCylinderFillTool = serializedObject.FindProperty("cylinderFillTool");
+//        m_NavMeshSphereFillTool = serializedObject.FindProperty("sphereFillTool");
     }
 
     void OnSceneGUI()
@@ -107,53 +97,23 @@ public class NavMeshPainterEditor : Editor
         {
             styles = new Styles();
         }
-        if (m_DebugMaterial == null)
-        {
-            m_DebugMaterial = new Material(Shader.Find("Unlit/NavMeshDebug"));
-            m_DebugMaterial.hideFlags = HideFlags.HideAndDontSave;
-            if (m_Target.painter)
-                m_DebugMaterial.SetFloat("_CellSize", Mathf.Sqrt(m_Target.painter.Area*200));
-            else
-                m_DebugMaterial.SetFloat("_CellSize", 2.5f);
-        }
+//        if (m_DebugMaterial == null)
+//        {
+//            m_DebugMaterial = new Material((Shader)EditorGUIUtility.Load("NavMeshPainter/Shader/NavMeshDebug.shader"));
+//            
+//            m_DebugMaterial.hideFlags = HideFlags.HideAndDontSave;
+//            if (m_Target.painter)
+//                m_DebugMaterial.SetFloat("_CellSize", Mathf.Sqrt(m_Target.painter.Area*200));
+//            else
+//                m_DebugMaterial.SetFloat("_CellSize", 2.5f);
+//        }
         if (m_Target.painter)
         {
             //m_DebugMaterial.SetVector("_BrushPos");
-            m_Target.painter.DrawMesh(m_DebugMaterial);
+            //m_Target.painter.DrawMesh(m_DebugMaterial);
+            NavMeshEditorUtils.DrawCheckerBoard(m_Target.painter.renderMesh, Matrix4x4.identity);
         }
-        if (m_IsPainting)
-        {
-            HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
-            RaycastHit hit;
-            if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
-            {
-                m_IsDrawing = true;
-            }
-            if (Event.current.type == EventType.MouseUp)
-            {
-                m_IsDrawing = false;
-            }
-            if (m_Target.painter && m_Target.painter.renderMesh)
-            {
-                if (RayCastInSceneView(m_Target.painter.renderMesh, out hit))
-                {
-                    m_Target.brush.position = hit.point;
-                    //m_DebugMaterial.SetColor("_BrushColor", new Color(0, 0.5f, 1, 0.5f));
-                    m_DebugMaterial.SetVector("_BrushPos", m_Target.brush.position);
-                    m_DebugMaterial.SetVector("_BrushSize", new Vector2(m_Target.brush.size, m_Target.brush.maxHeight));
-
-                    if (m_IsDrawing && Event.current.type == EventType.MouseDrag)
-                    {
-                        if (m_Target.painter)
-                            m_Target.painter.Draw(m_Target.brush);
-                    }
-                }
-                else
-                {
-                    //m_DebugMaterial.SetColor("_BrushColor", new Color(0, 0.5f, 1, 0.0f));
-                }
-            }
-        }
+        DrawPaintingToolSceneGUI();
 
     }
 
@@ -173,43 +133,16 @@ public class NavMeshPainterEditor : Editor
             case ToolType.Paint:
                 DrawPaintSettingGUI();
                 break;
+            case ToolType.Erase:
+                DrawPaintSettingGUI(true);
+                break;
+            case ToolType.Mapping:
+                DrawTextureMappingGUI();
+                break;
+            case ToolType.Bake:
+                DrawBakeSettingGUI();
+                break;
         }
-
-        if (GUILayout.Button("Check"))
-        {
-            if (m_Target.painter)
-            {
-                m_Target.painter.Check();
-            }
-        }
-        if (GUILayout.Button("CheckTriangle"))
-        {
-            if (m_Target.painter)
-            {
-                m_Target.painter.CheckTriangle();
-            }
-        }
-        if (GUILayout.Button("Bake"))
-        {
-            if (m_Target.painter)
-            {
-                MeshFilter mf = new GameObject("StForBake").AddComponent<MeshFilter>();
-                //mf.gameObject.hideFlags = HideFlags.HideAndDontSave;
-                mf.gameObject.isStatic = true;
-                mf.sharedMesh = m_Target.painter.GenerateMesh();
-
-                MeshRenderer mr = mf.gameObject.AddComponent<MeshRenderer>();
-                mr.sharedMaterial = new Material(Shader.Find("Unlit/Color"));
-                mr.sharedMaterial.hideFlags = HideFlags.HideAndDontSave;
-                mr.sharedMaterial.SetColor("_Color", Color.red);
-
-                NavMeshBuilder.BuildNavMesh();
-                DestroyImmediate(mf.gameObject);
-
-                
-            }
-        }
-        m_IsPainting = GUILayout.Toggle(m_IsPainting, "绘制", GUI.skin.FindStyle("Button"));
     }
 
     private void DrawToolsGUI()
@@ -222,18 +155,13 @@ public class NavMeshPainterEditor : Editor
         if (num != selectedTool)
         {
             this.m_ToolType = (ToolType)num;
-//            InspectorWindow.RepaintAllInspectors();
-            //if (Toolbar.get != null)
-            //{
-            //    Toolbar.get.Repaint();
-            //}
         }
         GUILayout.FlexibleSpace();
 
         GUILayout.EndHorizontal();
     }
 
-    private void DrawPaintSettingGUI()
+    private void DrawPaintSettingGUI(bool erase = false)
     {
         GUILayout.Label("Paint Setting", styles.boldLabel);
         GUILayout.BeginVertical(styles.box);
@@ -241,7 +169,8 @@ public class NavMeshPainterEditor : Editor
 
         GUILayout.BeginHorizontal();
 
-        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintingToolType.Brush, styles.brushIcon,
+        var brushIcon = erase ? styles.eraserIcon : styles.brushIcon;
+        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintingToolType.Brush, brushIcon,
             styles.buttonLeft, GUILayout.Width(35))
             ? PaintingToolType.Brush
             : m_Target.paintTool;
@@ -268,49 +197,154 @@ public class NavMeshPainterEditor : Editor
 
         GUILayout.EndHorizontal();
 
-        GUILayout.Label("Settings", styles.boldLabel);
-
-        var tooleditor = GetPaintingToolEditor(m_Target.paintTool);
+        var tooleditor = GetPaintingToolEditor(m_Target.GetPaintingTool());
         if (tooleditor != null)
-            EditorGUILayout.PropertyField(tooleditor);
-        //IPaintingTool tool = m_Target.GetPaintingTool();
-        //if (tool != null)
-        //    tool.DrawGUI();
+        {
+            tooleditor.OnGUI();
+        }
+        //EditorGUILayout.PropertyField(tooleditor);
+
+        if (GUILayout.Button("Bake"))
+        {
+            Bake();
+        }
 
         GUILayout.EndVertical();
     }
 
-    private SerializedProperty GetPaintingToolEditor(PaintingToolType type)
+    private void DrawTextureMappingGUI()
     {
-        switch (type)
-        {
-            case PaintingToolType.Brush:
-                return m_NavMeshBrush;
-        }
-        return null;
+        
     }
 
-
-    private static bool RayCastInSceneView(Mesh mesh, out RaycastHit hit)
+    private void DrawBakeSettingGUI()
     {
-        hit = default(RaycastHit);
-        if (!mesh)
-            return false;
-        if (UnityEditor.Tools.viewTool != ViewTool.Pan)
-            return false;
-        HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
-        Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-        SceneView.RepaintAll();
-        if (RaycastMesh(ray, mesh, Matrix4x4.identity, out hit))
+        
+    }
+
+    private void DrawPaintingToolSceneGUI()
+    {
+        if (IsToolHasSceneGUI(m_ToolType))
+        {
+            IPaintingTool tool = m_Target.GetPaintingTool();
+            if (tool == null)
+                return;
+            HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
+            RaycastHit hit;
+            
+            
+            if (m_Target.painter && m_Target.painter.renderMesh)
+            {
+                if (NavMeshEditorUtils.RayCastInSceneView(m_Target.painter.renderMesh, out hit))
+                {
+                    var tooleditor = GetPaintingToolEditor(tool);
+                    if (tooleditor != null)
+                        tooleditor.OnSceneGUI(NavMeshEditorUtils.GLMaterial);
+
+                    if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
+                    {
+                        if (tool.OnMouseDown(hit.point))
+                            ApplyPaint(tool);
+                    }
+
+                    if (Event.current.type == EventType.MouseDrag)
+                    {
+                        if(tool.OnMouseDrag(hit.point))
+                            ApplyPaint(tool);
+                    }
+                    if (Event.current.type == EventType.MouseMove)
+                    {
+                        tool.OnMouseMove(hit.point);
+                    }
+                }
+            }
+
+            if (Event.current.type == EventType.MouseUp)
+            {
+                if(tool.OnMouseUp())
+                    ApplyPaint(tool);
+            }
+        }
+    }
+    
+
+    private bool IsToolHasSceneGUI(ToolType toolType)
+    {
+        if (toolType == ToolType.Paint)
+            return true;
+        if (toolType == ToolType.Erase)
             return true;
         return false;
     }
-    private static bool RaycastMesh(Ray ray, Mesh mesh, Matrix4x4 matrix, out RaycastHit hit)
+
+    private void ApplyPaint(IPaintingTool tool)
     {
-        var parameters = new object[] { ray, mesh, matrix, null };
-        bool result = (bool)intersectRayMesh.Invoke(null, parameters);
-        hit = (RaycastHit)parameters[3];
-        return result;
+        if (m_Target.painter != null && tool != null)
+        {
+            if (m_ToolType == ToolType.Paint)
+                m_Target.painter.Draw(tool);
+            else if (m_ToolType == ToolType.Erase)
+                m_Target.painter.Erase(tool);
+        }
     }
+
+    private NavMeshToolEditor GetPaintingToolEditor(IPaintingTool tool)
+    {
+        System.Type tooltype = tool.GetType();
+        NavMeshToolEditor editor = null;
+        if (m_ToolEditors == null)
+        {
+            m_ToolEditors = new Dictionary<System.Type, NavMeshToolEditor>();
+            System.Reflection.Assembly assembly = this.GetType().Assembly;
+            var types = assembly.GetTypes();
+            foreach (var type in types)
+            {
+                if (type.IsSubclassOf(typeof (NavMeshToolEditor)))
+                {
+                    var attributes = type.GetCustomAttributes(typeof (CustomNavMeshToolEditorAttribute), false);
+                    foreach (var att in attributes)
+                    {
+                        CustomNavMeshToolEditorAttribute a = att as CustomNavMeshToolEditorAttribute;
+                        if (a == null)
+                            continue;
+                        if (!m_ToolEditors.ContainsKey(a.navMeshToolType))
+                        {
+                            m_ToolEditors[a.navMeshToolType] = (NavMeshToolEditor)System.Activator.CreateInstance(type);
+
+                        }
+                    }
+                }
+            }
+        }
+        if (m_ToolEditors.ContainsKey(tooltype))
+        {
+            editor = m_ToolEditors[tooltype];
+            editor.SetTool(tool);
+        }
+        return editor;
+    }
+
+    private void Bake()
+    {
+        if (m_Target.painter)
+        {
+            MeshFilter mf = new GameObject("StForBake").AddComponent<MeshFilter>();
+            //mf.gameObject.hideFlags = HideFlags.HideAndDontSave;
+            mf.gameObject.isStatic = true;
+            mf.sharedMesh = m_Target.painter.GenerateMesh();
+
+            MeshRenderer mr = mf.gameObject.AddComponent<MeshRenderer>();
+            mr.sharedMaterial = new Material(Shader.Find("Unlit/Color"));
+            mr.sharedMaterial.hideFlags = HideFlags.HideAndDontSave;
+            mr.sharedMaterial.SetColor("_Color", Color.red);
+
+            NavMeshBuilder.BuildNavMesh();
+            DestroyImmediate(mf.gameObject);
+
+
+        }
+    }
+
+    
 
 }
