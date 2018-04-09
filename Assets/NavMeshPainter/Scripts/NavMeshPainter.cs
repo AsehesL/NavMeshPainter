@@ -1,14 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
-using ASL.NavMeshPainter;
+using ASL.NavMesh;
 
 public enum PaintingToolType
 {
     Brush,
     Line,
-    Box,
-    Sphere,
-    Cylinder
 }
 
 public class NavMeshPainter : MonoBehaviour
@@ -20,9 +17,6 @@ public class NavMeshPainter : MonoBehaviour
 
     public NavMeshBrushTool brush;
     public NavMeshLineTool lineTool;
-    public NavMeshBoxFillTool boxFillTool;
-    public NavMeshCylinderFillTool cylinderFillTool;
-    public NavMeshSphereFillTool sphereFillTool;
 
     public IPaintingTool GetPaintingTool()
     {
@@ -30,30 +24,36 @@ public class NavMeshPainter : MonoBehaviour
         {
             case PaintingToolType.Brush:
                 return brush;
-            case PaintingToolType.Box:
-                return boxFillTool;
-            case PaintingToolType.Cylinder:
-                return cylinderFillTool;
             case PaintingToolType.Line:
                 return lineTool;
-            case PaintingToolType.Sphere:
-                return sphereFillTool;
         }
         return null;
     }
 
-    public void ResetState()
+    public Mesh GetRenderMesh()
     {
-        if (brush != null)
-            brush.ResetState();
-        if (lineTool != null)
-            lineTool.ResetState();
-        if (boxFillTool != null)
-            boxFillTool.ResetState();
-        if (cylinderFillTool != null)
-            cylinderFillTool.ResetState();
-        if (sphereFillTool != null)
-            sphereFillTool.ResetState();
+        if (painter != null)
+            return painter.renderMesh;
+        return null;
+    }
+
+    public void Draw(IPaintingTool tool)
+    {
+        if (painter != null)
+            painter.Draw(tool);
+    }
+
+    public void Erase(IPaintingTool tool)
+    {
+        if (painter != null)
+            painter.Erase(tool);
+    }
+
+    public Mesh GenerateMesh()
+    {
+        if (painter != null)
+            return painter.GenerateMesh();
+        return null;
     }
 
     void OnDrawGizmosSelected()

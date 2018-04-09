@@ -2,7 +2,7 @@
 using UnityEditor;
 using System.Collections;
 
-namespace ASL.NavMeshPainter.Editor
+namespace ASL.NavMesh.Editor
 {
     //[CustomPropertyDrawer(typeof(NavMeshBrushTool))]
     [CustomNavMeshToolEditor(typeof(NavMeshBrushTool))]
@@ -10,34 +10,59 @@ namespace ASL.NavMeshPainter.Editor
     {
         
 
-        public override void OnGUI()
+        public override void DrawGUI()
         {
             var t = target as NavMeshBrushTool;
             if (t == null)
                 return;
 
             GUILayout.Label("Settings", NavMeshPainterEditor.styles.boldLabel);
-            t.size = Mathf.Max(0.001f,
-                EditorGUILayout.FloatField("Size", t.size));
-            t.maxHeight = Mathf.Max(0,
-                EditorGUILayout.FloatField("MaxHeight", t.maxHeight));
 
-            t.brushType = (NavMeshBrushTool.BrushType)EditorGUILayout.EnumPopup("BrushType", t.brushType);
+            if (t.brushType == NavMeshBrushType.Box)
+            {
+                t.xSize = Mathf.Max(0.001f,
+                    EditorGUILayout.FloatField("XSize", t.xSize));
+                t.zSize = Mathf.Max(0.001f,
+                    EditorGUILayout.FloatField("ZSize", t.zSize));
+                t.maxHeight = Mathf.Max(0,
+                    EditorGUILayout.FloatField("MaxHeight", t.maxHeight));
+            }else if (t.brushType == NavMeshBrushType.Cylinder)
+            {
+                t.xSize = Mathf.Max(0.001f,
+                    EditorGUILayout.FloatField("Radius", t.xSize));
+                t.maxHeight = Mathf.Max(0,
+                    EditorGUILayout.FloatField("MaxHeight", t.maxHeight));
+            }
+            else if (t.brushType == NavMeshBrushType.Sphere)
+            {
+                t.xSize = Mathf.Max(0.001f,
+                    EditorGUILayout.FloatField("Radius", t.xSize));
+            }
+
+            t.brushType = (NavMeshBrushType)EditorGUILayout.EnumPopup("BrushType", t.brushType);
         }
 
-        public override void OnSceneGUI(Material renderMaterial)
+        protected override void OnRaycast(NavMeshPainter targetPainter, RaycastHit hit)
         {
             var t = target as NavMeshBrushTool;
             if (t == null)
                 return;
+            t.position = hit.point;
+            if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
+            {
+                ApplyPaint();
+            }
+        }
 
-            NavMeshEditorUtils.DrawBounds(t.Bounds, Color.blue);
-
-            if (renderMaterial == null)
-                return;
-            renderMaterial.SetVector("_BrushPos", t.position);
-            renderMaterial.SetVector("_BrushSize", new Vector3(t.size, t.maxHeight, (float)t.brushType));
-            renderMaterial.SetColor("_BrushColor", new Color(0, 0.5f, 1, 0.5f));
+        protected override void OnSceneGUI(NavMeshPainter targetPainter)
+        {
+            var t = this.target as NavMeshBrushTool;
+            if (t != null)
+            {
+                NavMeshEditorUtils.DrawBounds(t.Bounds, Color.blue);
+                NavMeshEditorUtils.DrawBrush(targetPainter.GetRenderMesh(), Matrix4x4.identity, t.position, t.xSize, t.zSize, t.maxHeight,
+                    t.brushType);
+            }
         }
     }
 }

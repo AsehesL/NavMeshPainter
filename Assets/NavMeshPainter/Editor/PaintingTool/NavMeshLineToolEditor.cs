@@ -2,54 +2,118 @@
 using System.Collections;
 using UnityEditor;
 
-namespace ASL.NavMeshPainter.Editor
+namespace ASL.NavMesh.Editor
 {
 //    [CustomPropertyDrawer(typeof (NavMeshLineTool))]
     [CustomNavMeshToolEditor(typeof (NavMeshLineTool))]
     public class NavMeshLineToolEditor : NavMeshToolEditor
     {
-
-        public override void OnGUI()
+        private enum State
         {
+            None,
+            Drag,
         }
 
-        public override void OnSceneGUI(Material renderMaterial)
+        private State m_CurrentState;
+
+        public override void DrawGUI()
         {
-            renderMaterial.SetColor("_BrushColor", Color.clear);
+            var t = target as NavMeshLineTool;
+            if (t == null)
+                return;
+
+            t.width = Mathf.Max(0.001f, EditorGUILayout.FloatField("Width", t.width));
+            t.maxHeight = Mathf.Max(0,
+                        EditorGUILayout.FloatField("MaxHeight", t.maxHeight));
+
+            GUILayout.Label("Settings", NavMeshPainterEditor.styles.boldLabel);
         }
 
-        private void DrawArea()
+        protected override void OnSceneGUI(NavMeshPainter targetPainter)
         {
-//            Gizmos.color = Color.blue;
-//
-//            Vector3 toEnd = endPos - beginPos;
-//
-//            Vector3 hVector = Vector3.Cross(toEnd, Vector3.up).normalized;
-//
-//            Vector3 p0 = beginPos - hVector * width * 0.5f - Vector3.up * maxHeight;
-//            Vector3 p1 = beginPos - hVector * width * 0.5f + Vector3.up * maxHeight;
-//            Vector3 p2 = beginPos + hVector * width * 0.5f + Vector3.up * maxHeight;
-//            Vector3 p3 = beginPos + hVector * width * 0.5f - Vector3.up * maxHeight;
-//
-//            Vector3 p4 = endPos - hVector * width * 0.5f - Vector3.up * maxHeight;
-//            Vector3 p5 = endPos - hVector * width * 0.5f + Vector3.up * maxHeight;
-//            Vector3 p6 = endPos + hVector * width * 0.5f + Vector3.up * maxHeight;
-//            Vector3 p7 = endPos + hVector * width * 0.5f - Vector3.up * maxHeight;
-//
-//            Gizmos.DrawLine(p0, p1);
-//            Gizmos.DrawLine(p1, p2);
-//            Gizmos.DrawLine(p2, p3);
-//            Gizmos.DrawLine(p3, p0);
-//
-//            Gizmos.DrawLine(p4, p5);
-//            Gizmos.DrawLine(p5, p6);
-//            Gizmos.DrawLine(p6, p7);
-//            Gizmos.DrawLine(p7, p4);
-//
-//            Gizmos.DrawLine(p0, p4);
-//            Gizmos.DrawLine(p1, p5);
-//            Gizmos.DrawLine(p2, p6);
-//            Gizmos.DrawLine(p3, p7);
+            NavMeshEditorUtils.ClearBrush();
+            var t = target as NavMeshLineTool;
+            if (t == null)
+                return;
+            if (m_CurrentState == State.Drag)
+            {
+                DrawArea(t, Color.blue);
+            }
+            else
+            {
+                NavMeshEditorUtils.DrawWireCube(t.beginPos, new Vector3(t.width, t.maxHeight, t.width), Color.blue);
+            }
+            if (Event.current.type == EventType.MouseUp)
+            {
+                if (m_CurrentState == State.Drag)
+                {
+                    m_CurrentState = State.None;
+                    ApplyPaint();
+                }
+            }
+        }
+
+        protected override void OnRaycast(NavMeshPainter targetPainter, RaycastHit hit)
+        {
+            var t = target as NavMeshLineTool;
+            if (t == null)
+                return;
+            if (Event.current.type == EventType.MouseMove)
+            {
+                if (m_CurrentState == State.None)
+                {
+                    t.beginPos = hit.point;
+                }
+            }
+            if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
+            {
+                if (m_CurrentState == State.None)
+                {
+                    t.beginPos = hit.point;
+                    t.endPos = hit.point;
+                    m_CurrentState = State.Drag;
+                }
+            }
+            if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
+            {
+                if (m_CurrentState == State.Drag)
+                {
+                    t.endPos = hit.point;
+                }
+            }
+        }
+
+        private void DrawArea(NavMeshLineTool tool, Color color)
+        {
+
+            Vector3 toEnd = tool.endPos - tool.beginPos;
+
+            Vector3 hVector = Vector3.Cross(toEnd, Vector3.up).normalized;
+
+            Vector3 p0 = tool.beginPos - hVector * tool.width * 0.5f - Vector3.up * tool.maxHeight;
+            Vector3 p1 = tool.beginPos - hVector * tool.width * 0.5f + Vector3.up * tool.maxHeight;
+            Vector3 p2 = tool.beginPos + hVector * tool.width * 0.5f + Vector3.up * tool.maxHeight;
+            Vector3 p3 = tool.beginPos + hVector * tool.width * 0.5f - Vector3.up * tool.maxHeight;
+
+            Vector3 p4 = tool.endPos - hVector * tool.width * 0.5f - Vector3.up * tool.maxHeight;
+            Vector3 p5 = tool.endPos - hVector * tool.width * 0.5f + Vector3.up * tool.maxHeight;
+            Vector3 p6 = tool.endPos + hVector * tool.width * 0.5f + Vector3.up * tool.maxHeight;
+            Vector3 p7 = tool.endPos + hVector * tool.width * 0.5f - Vector3.up * tool.maxHeight;
+
+            NavMeshEditorUtils.DrawLine(p0, p1, color);
+            NavMeshEditorUtils.DrawLine(p1, p2, color);
+            NavMeshEditorUtils.DrawLine(p2, p3, color);
+            NavMeshEditorUtils.DrawLine(p3, p0, color);
+
+            NavMeshEditorUtils.DrawLine(p4, p5, color);
+            NavMeshEditorUtils.DrawLine(p5, p6, color);
+            NavMeshEditorUtils.DrawLine(p6, p7, color);
+            NavMeshEditorUtils.DrawLine(p7, p4, color);
+
+            NavMeshEditorUtils.DrawLine(p0, p4, color);
+            NavMeshEditorUtils.DrawLine(p1, p5, color);
+            NavMeshEditorUtils.DrawLine(p2, p6, color);
+            NavMeshEditorUtils.DrawLine(p3, p7, color);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace ASL.NavMeshPainter
+namespace ASL.NavMesh
 {
     /// <summary>
     /// 绘画工具接口
@@ -12,11 +12,6 @@ namespace ASL.NavMeshPainter
         bool IntersectsBounds(Bounds bounds);
 
         bool IntersectsTriangle(NavMeshTriangleNode node);
-
-        bool OnMouseDown(Vector3 position);
-        bool OnMouseUp();
-        void OnMouseMove(Vector3 position);
-        bool OnMouseDrag(Vector3 position);
-        void ResetState();
+       
     }
 }

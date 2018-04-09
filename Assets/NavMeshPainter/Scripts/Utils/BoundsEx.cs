@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace ASL.NavMeshPainter
+namespace ASL.NavMesh
 {
     /// <summary>
     /// Bounds扩展类

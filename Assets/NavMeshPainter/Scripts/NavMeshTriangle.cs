@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace ASL.NavMeshPainter
+namespace ASL.NavMesh
 {
     [System.Serializable]
     public class NavMeshTriangle

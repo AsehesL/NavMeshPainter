@@ -2,7 +2,7 @@
 using System.Collections;
 using System;
 
-namespace ASL.NavMeshPainter.Editor
+namespace ASL.NavMesh.Editor
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class CustomNavMeshToolEditorAttribute : Attribute

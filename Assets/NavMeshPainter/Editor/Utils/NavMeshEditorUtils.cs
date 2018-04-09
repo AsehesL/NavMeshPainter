@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEditor;
 
-namespace ASL.NavMeshPainter.Editor
+namespace ASL.NavMesh.Editor
 {
     internal class NavMeshEditorUtils
     {
@@ -85,6 +85,25 @@ namespace ASL.NavMeshPainter.Editor
         public static void DrawBounds(Bounds bounds, Color color)
         {
             DrawWireCube(bounds.center, bounds.size, color);
+        }
+
+        public static void DrawBrush(Mesh mesh, Matrix4x4 matrix, Vector3 position, float xsize, float zsize, float height, NavMeshBrushType brushType)
+        {
+            if (mesh && GLMaterial)
+            {
+                float type = brushType == NavMeshBrushType.Box ? 1 : 0;
+                GLMaterial.SetPass(3);
+                GLMaterial.SetVector("_BrushPos", position);
+                GLMaterial.SetVector("_BrushSize", new Vector4(xsize, zsize, height, type));
+                GLMaterial.SetColor("_BrushColor", new Color(0, 0.5f, 1, 0.5f));
+                Graphics.DrawMeshNow(mesh, matrix);
+            }
+            
+        }
+
+        public static void ClearBrush()
+        {
+            GLMaterial.SetColor("_BrushColor", Color.clear);
         }
 
         private static void DrawLineInternal(Vector3 from, Vector3 to, Color color, bool seeThrough)

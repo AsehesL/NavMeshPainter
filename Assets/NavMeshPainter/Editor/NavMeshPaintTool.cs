@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using ASL.NavMeshPainter;
+using ASL.NavMesh;
 
 public class NavMeshPaintTool : EditorWindow
 {

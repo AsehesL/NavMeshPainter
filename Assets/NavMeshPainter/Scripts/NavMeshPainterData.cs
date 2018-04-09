@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ASL.NavMeshPainter
+namespace ASL.NavMesh
 {
     public class NavMeshPainterData : ScriptableObject
     {
