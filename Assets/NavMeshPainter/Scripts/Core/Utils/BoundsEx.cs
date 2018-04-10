@@ -10,18 +10,6 @@ namespace ASL.NavMesh
     {
 
         /// <summary>
-        /// 绘制Bounds
-        /// </summary>
-        /// <param name="bounds"></param>
-        /// <param name="color"></param>
-        public static void DrawBounds(this Bounds bounds, Color color)
-        {
-            Gizmos.color = color;
-
-            Gizmos.DrawWireCube(bounds.center, bounds.size);
-        }
-
-        /// <summary>
         /// 是否包含另一个Bounds
         /// </summary>
         /// <param name="bounds"></param>

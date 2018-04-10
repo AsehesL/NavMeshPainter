@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace ASL.NavMesh
 {
+    /// <summary>
+    /// 八叉树节点
+    /// </summary>
     [System.Serializable]
     internal class NavMeshOcTreeNode 
     {
@@ -36,12 +39,12 @@ namespace ASL.NavMesh
             return this;
         }
 
-        public void Draw(IPaintingTool tool, List<NavMeshOcTreeNode> nodeList, bool clear)
+        public void Interesect(IPaintingTool tool, List<NavMeshOcTreeNode> nodeList, bool erase)
         {
             for (int i = 0; i < m_ChildNodes.Length; i++)
             {
                 if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].Draw(tool, nodeList, clear);
+                    nodeList[m_ChildNodes[i]].Interesect(tool, nodeList, erase);
             }
 
             if (tool.IntersectsBounds(this.bounds))
@@ -49,23 +52,7 @@ namespace ASL.NavMesh
                 for (int i = 0; i < m_ItemList.Count; i++)
                 {
                     if (tool.IntersectsBounds(m_ItemList[i].bounds))
-                        m_ItemList[i].Draw(tool, clear);
-                }
-            }
-        }
-
-        public void DrawNode(List<NavMeshOcTreeNode> nodeList)
-        {
-            for (int i = 0; i < m_ChildNodes.Length; i++)
-            {
-                if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].DrawNode(nodeList);
-            }
-            if (m_ItemList != null)
-            {
-                for (int i = 0; i < m_ItemList.Count; i++)
-                {
-                    m_ItemList[i].DrawTriangle();
+                        m_ItemList[i].Interesect(tool, erase);
                 }
             }
         }
@@ -98,6 +85,22 @@ namespace ASL.NavMesh
                 for (int i = 0; i < m_ItemList.Count; i++)
                 {
                     m_ItemList[i].SamplingFromTexture(texture, blendMode);
+                }
+            }
+        }
+
+        public void DrawNodeGizmos(List<NavMeshOcTreeNode> nodeList)
+        {
+            for (int i = 0; i < m_ChildNodes.Length; i++)
+            {
+                if (m_ChildNodes[i] > 0)
+                    nodeList[m_ChildNodes[i]].DrawNodeGizmos(nodeList);
+            }
+            if (m_ItemList != null)
+            {
+                for (int i = 0; i < m_ItemList.Count; i++)
+                {
+                    m_ItemList[i].DrawTriangleGizmos();
                 }
             }
         }

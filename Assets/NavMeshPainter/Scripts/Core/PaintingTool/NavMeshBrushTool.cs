@@ -3,19 +3,35 @@ using System.Collections;
 
 namespace ASL.NavMesh
 {
-    public enum NavMeshBrushType
-    {
-        Cylinder = 0,
-        Sphere =  1,
-        Box = 2,
-    }
+    /// <summary>
+    /// 笔刷工具
+    /// </summary>
     [System.Serializable]
     public class NavMeshBrushTool : IPaintingTool
     {
-        public float xSize;
-        public float zSize;
+        /// <summary>
+        /// 笔刷类型
+        /// </summary>
+        public enum NavMeshBrushType
+        {
+            /// <summary>
+            /// 圆柱形
+            /// </summary>
+            Cylinder = 0,
+            /// <summary>
+            /// 球形
+            /// </summary>
+            Sphere = 1,
+            /// <summary>
+            /// 立方体
+            /// </summary>
+            Box = 2,
+        }
+
+        public float length;
+        public float width;
         public Vector3 position;
-        public float maxHeight;
+        public float height;
         public NavMeshBrushType brushType;
 
         public Bounds Bounds
@@ -23,10 +39,10 @@ namespace ASL.NavMesh
             get
             {
                 if (brushType == NavMeshBrushType.Box)
-                    return new Bounds(position, new Vector3(xSize*2, maxHeight*2, zSize*2));
+                    return new Bounds(position, new Vector3(length, height, width));
                 else if (brushType == NavMeshBrushType.Cylinder)
-                    return new Bounds(position, new Vector3(xSize*2, maxHeight*2, xSize*2));
-                else return new Bounds(position, new Vector3(xSize*2, xSize*2, xSize*2));
+                    return new Bounds(position, new Vector3(length*2, height, length*2));
+                else return new Bounds(position, new Vector3(length*2, length*2, length*2));
             }
         }
 
@@ -58,14 +74,14 @@ namespace ASL.NavMesh
 
         private bool InteresectsTriangleByCylinder(Vector3 max, Vector3 min)
         {
-            if (max.y < position.y - maxHeight || min.y > position.y + maxHeight)
+            if (max.y < position.y - height*0.5f || min.y > position.y + height*0.5f)
                 return false;
             Vector2 nearestpos = default(Vector2);
             nearestpos.x = Mathf.Clamp(position.x, min.x, max.x);
             nearestpos.y = Mathf.Clamp(position.z, min.z, max.z);
             float dis = Vector2.Distance(nearestpos, new Vector2(position.x, position.z));
 
-            if (dis > xSize)
+            if (dis > length)
                 return false;
             return true;
         }
@@ -78,7 +94,7 @@ namespace ASL.NavMesh
             nearestpos.z = Mathf.Clamp(position.z, min.z, max.z);
             float dis = Vector3.Distance(nearestpos, position);
 
-            if (dis > xSize)
+            if (dis > length)
                 return false;
             return true;
         }

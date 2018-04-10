@@ -4,26 +4,34 @@ using System.Collections.Generic;
 
 namespace ASL.NavMesh
 {
+    /// <summary>
+    /// NavMesh三角面细分节点
+    /// </summary>
     [System.Serializable]
     public class NavMeshTriangleNode 
     {
-
-//        public Vector3 vertex0;
-//        public Vector3 vertex1;
-//        public Vector3 vertex2;
-//
-//        public Vector2 uv0;
-//        public Vector2 uv1;
-//        public Vector2 uv2;
-//
-//        public Vector3 max;
-//        public Vector3 min;
-
+        #region 权重坐标公式：(1-u-v)*v0+u*v1+v*v2   u+v=1
+        /// <summary>
+        /// 权重坐标0
+        /// </summary>
         public Vector2 weight0;
+        /// <summary>
+        /// 权重坐标1
+        /// </summary>
         public Vector2 weight1;
+        /// <summary>
+        /// 权重坐标2
+        /// </summary>
         public Vector2 weight2;
+        #endregion
 
+        /// <summary>
+        /// 标记是否被绘制
+        /// </summary>
         public bool isBePainted;
+        /// <summary>
+        /// 是否标记为混合：如果标记为混合，表示子节点存在颜色不相同的情况，不进行节点合并
+        /// </summary>
         public bool isMix;
         
         [SerializeField] private int m_CenterNodeIndex = -1;
@@ -33,33 +41,20 @@ namespace ASL.NavMesh
 
         public NavMeshTriangleNode(Vector2 weight0, Vector2 weight1, Vector2 weight2)
         {
-//            this.vertex0 = vertex0;
-//            this.vertex1 = vertex1;
-//            this.vertex2 = vertex2;
-//            this.uv0 = uv0;
-//            this.uv1 = uv1;
-//            this.uv2 = uv2;
-//            max = Vector3.Max(vertex0, vertex1);
-//            max = Vector3.Max(max, vertex2);
-//            min = Vector3.Min(vertex0, vertex1);
-//            min = Vector3.Min(min, vertex2);
-
             this.weight0 = weight0;
             this.weight1 = weight1;
             this.weight2 = weight2;
         }
 
+        /// <summary>
+        /// 进行细分递归
+        /// </summary>
+        /// <param name="depth"></param>
+        /// <param name="nodelist"></param>
         public void Subdivide(int depth, List<NavMeshTriangleNode> nodelist)
         {
             if (depth <= 0)
                 return;
-//            Vector3 half01 = vertex0 + (vertex1 - vertex0) * 0.5f;
-//            Vector3 half02 = vertex0 + (vertex2 - vertex0) * 0.5f;
-//            Vector3 half12 = vertex1 + (vertex2 - vertex1) * 0.5f;
-//
-//            Vector2 halfuv01 = uv0 + (uv1 - uv0)*0.5f;
-//            Vector2 halfuv02 = uv0 + (uv2 - uv0)*0.5f;
-//            Vector2 halfuv12 = uv1 + (uv2 - uv1)*0.5f;
 
             Vector2 halfw01 = weight0 + (weight1 - weight0)*0.5f;
             Vector2 halfw02 = weight0 + (weight2 - weight0)*0.5f;
@@ -85,14 +80,14 @@ namespace ASL.NavMesh
             right.Subdivide(depth - 1, nodelist);
         }
 
-        public void Draw(bool paint, IPaintingTool tool, Vector3 v0, Vector3 v1, Vector3 v2, List<NavMeshTriangleNode> nodelist)
+        public void Interesect(IPaintingTool tool, bool erase, Vector3 v0, Vector3 v1, Vector3 v2, List<NavMeshTriangleNode> nodelist)
         {
             Vector3 vertex0 = (1 - weight0.x - weight0.y) * v0 + weight0.x * v1 + weight0.y * v2;
             Vector3 vertex1 = (1 - weight1.x - weight1.y) * v0 + weight1.x * v1 + weight1.y * v2;
             Vector3 vertex2 = (1 - weight2.x - weight2.y) * v0 + weight2.x * v1 + weight2.y * v2;
             if (tool.IntersectsTriangle(vertex0, vertex1, vertex2))
             {
-                bool cotinuePaint = isBePainted != paint || isMix;
+                bool cotinuePaint = isBePainted != !erase || isMix;
                 if (!cotinuePaint)
                     return;
 
@@ -110,23 +105,23 @@ namespace ASL.NavMesh
                     : null;
 
                 if (center != null)
-                    center.Draw(paint, tool, v0, v1, v2, nodelist);
+                    center.Interesect(tool, erase, v0, v1, v2, nodelist);
 
                 if (top != null)
-                    top.Draw(paint, tool, v0, v1, v2, nodelist);
+                    top.Interesect(tool, erase, v0, v1, v2, nodelist);
 
                 if (left != null)
-                    left.Draw(paint, tool, v0, v1, v2, nodelist);
+                    left.Interesect(tool, erase, v0, v1, v2, nodelist);
 
                 if (right != null)
-                    right.Draw(paint, tool, v0, v1, v2, nodelist);
+                    right.Interesect(tool, erase, v0, v1, v2, nodelist);
 
-                ResetPaintMark(paint, center, top, left, right);
+                ResetPaintMark(!erase, center, top, left, right);
             }
 
         }
 
-        public void DrawTriangle(Vector3 v0, Vector3 v1, Vector3 v2, List<NavMeshTriangleNode> nodeList)
+        public void DrawTriangleGizmos(Vector3 v0, Vector3 v1, Vector3 v2, List<NavMeshTriangleNode> nodeList)
         {
             if (isMix)
             {
@@ -143,13 +138,13 @@ namespace ASL.NavMesh
                     ? nodeList[m_RightNodeIndex]
                     : null;
                 if (center != null)
-                    center.DrawTriangle(v0, v1, v2, nodeList);
+                    center.DrawTriangleGizmos(v0, v1, v2, nodeList);
                 if (top != null)
-                    top.DrawTriangle(v0, v1, v2, nodeList);
+                    top.DrawTriangleGizmos(v0, v1, v2, nodeList);
                 if (left != null)
-                    left.DrawTriangle(v0, v1, v2, nodeList);
+                    left.DrawTriangleGizmos(v0, v1, v2, nodeList);
                 if (right != null)
-                    right.DrawTriangle(v0, v1, v2, nodeList);
+                    right.DrawTriangleGizmos(v0, v1, v2, nodeList);
             }
             else
             {

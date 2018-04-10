@@ -4,12 +4,58 @@ using UnityEngine;
 
 namespace ASL.NavMesh
 {
+    /// <summary>
+    /// 绘制工具
+    /// </summary>
+    public enum PaintingToolType
+    {
+        /// <summary>
+        /// 笔刷
+        /// </summary>
+        Brush,
+        /// <summary>
+        /// 画线
+        /// </summary>
+        Line,
+    }
+
+    /// <summary>
+    /// 蒙版贴图混合方式
+    /// </summary>
+    public enum TextureBlendMode
+    {
+        /// <summary>
+        /// 添加
+        /// </summary>
+        Add,
+        /// <summary>
+        /// 替换
+        /// </summary>
+        Replace,
+    }
+
+    /// <summary>
+    /// 导航网格绘制数据
+    /// </summary>
     public class NavMeshPainterData : ScriptableObject
     {
+        /// <summary>
+        /// 用于渲染的mesh
+        /// </summary>
         public Mesh renderMesh;
 
+        /// <summary>
+        /// 八叉树
+        /// </summary>
         public NavMeshOcTree ocTree;
 
+        /// <summary>
+        /// 创建Data
+        /// </summary>
+        /// <param name="gameObjects">物体列表</param>
+        /// <param name="containChilds">是否包含子物体</param>
+        /// <param name="angle">与法线夹角</param>
+        /// <param name="maxDepth"></param>
         public void Create(GameObject[] gameObjects, bool containChilds, float angle, int maxDepth)
         {
             Vector3 max = new Vector3(-Mathf.Infinity, -Mathf.Infinity, -Mathf.Infinity);
@@ -66,16 +112,16 @@ namespace ASL.NavMesh
             renderMesh.RecalculateNormals();
         }
 
-        public void Draw(IPaintingTool tool)
+        public void Paint(IPaintingTool tool)
         {
             if (ocTree != null)
-                ocTree.Draw(tool);
+                ocTree.Interesect(tool);
         }
 
         public void Erase(IPaintingTool tool)
         {
             if (ocTree != null)
-                ocTree.Draw(tool, true);
+                ocTree.Interesect(tool, true);
         }
 
         public float GetMinSize()

@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace ASL.NavMesh
 {
+    /// <summary>
+    /// 八叉树
+    /// </summary>
     [System.Serializable]
     public class NavMeshOcTree
     {
@@ -45,7 +48,6 @@ namespace ASL.NavMesh
         {
             this.m_MaxDepth = maxDepth;
             this.m_NodeLists = new List<NavMeshOcTreeNode>();
-            //this.m_NodeIndexList = new List<int>();
             this.m_NodeLists.Add(new NavMeshOcTreeNode(new Bounds(center, size)));
         }
 
@@ -63,13 +65,17 @@ namespace ASL.NavMesh
                     int index = m_NodeLists.IndexOf(node);
                     if (index >= 0)
                     {
-                        //m_NodeIndexList.Add(index);
                         m_Count++;
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// 生成mesh
+        /// </summary>
+        /// <param name="color">mesh顶点色</param>
+        /// <returns></returns>
         public Mesh GenerateMesh(Color color)
         {
             List<Vector3> vlist = new List<Vector3>();
@@ -87,22 +93,32 @@ namespace ASL.NavMesh
             return mesh;
         }
 
+        /// <summary>
+        /// 从贴图采样
+        /// </summary>
+        /// <param name="texture">目标贴图</param>
+        /// <param name="blendMode">混合模式</param>
         public void SamplingFromTexture(Texture2D texture, TextureBlendMode blendMode)
         {
             if (m_NodeLists != null && m_NodeLists.Count > 0)
                 m_NodeLists[0].SamplingFromTexture(m_NodeLists, texture, blendMode);
         }
 
-        public void Draw(IPaintingTool tool, bool clear = false)
+        /// <summary>
+        /// 相交测试
+        /// </summary>
+        /// <param name="tool">绘画工具</param>
+        /// <param name="erase">是否擦除</param>
+        public void Interesect(IPaintingTool tool, bool erase = false)
         {
             if (m_NodeLists != null && m_NodeLists.Count > 0)
-                m_NodeLists[0].Draw(tool, m_NodeLists, clear);
+                m_NodeLists[0].Interesect(tool, m_NodeLists, erase);
         }
 
         public void DrawGizmos()
         {
             if (m_NodeLists != null && m_NodeLists.Count > 0)
-                m_NodeLists[0].DrawNode(m_NodeLists);
+                m_NodeLists[0].DrawNodeGizmos(m_NodeLists);
         }
     }
 

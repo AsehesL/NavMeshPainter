@@ -3,6 +3,9 @@ using System.Collections;
 
 namespace ASL.NavMesh
 {
+    /// <summary>
+    /// 线条绘制工具
+    /// </summary>
     [System.Serializable]
     public class NavMeshLineTool : IPaintingTool
     {
@@ -10,7 +13,7 @@ namespace ASL.NavMesh
         public float width;
         public Vector3 beginPos;
         public Vector3 endPos;
-        public float maxHeight;
+        public float height;
 
         public bool IntersectsBounds(Bounds bounds)
         {
@@ -18,15 +21,15 @@ namespace ASL.NavMesh
 
             Vector3 hVector = Vector3.Cross(toEnd, Vector3.up).normalized;
 
-            Vector3 p0 = beginPos - hVector * width * 0.5f - Vector3.up * maxHeight;
-            Vector3 p1 = beginPos - hVector * width * 0.5f + Vector3.up * maxHeight;
-            Vector3 p2 = beginPos + hVector * width * 0.5f + Vector3.up * maxHeight;
-            Vector3 p3 = beginPos + hVector * width * 0.5f - Vector3.up * maxHeight;
+            Vector3 p0 = beginPos - hVector * width * 0.5f - Vector3.up * height;
+            Vector3 p1 = beginPos - hVector * width * 0.5f + Vector3.up * height;
+            Vector3 p2 = beginPos + hVector * width * 0.5f + Vector3.up * height;
+            Vector3 p3 = beginPos + hVector * width * 0.5f - Vector3.up * height;
 
-            Vector3 p4 = endPos - hVector * width * 0.5f - Vector3.up * maxHeight;
-            Vector3 p5 = endPos - hVector * width * 0.5f + Vector3.up * maxHeight;
-            Vector3 p6 = endPos + hVector * width * 0.5f + Vector3.up * maxHeight;
-            Vector3 p7 = endPos + hVector * width * 0.5f - Vector3.up * maxHeight;
+            Vector3 p4 = endPos - hVector * width * 0.5f - Vector3.up * height;
+            Vector3 p5 = endPos - hVector * width * 0.5f + Vector3.up * height;
+            Vector3 p6 = endPos + hVector * width * 0.5f + Vector3.up * height;
+            Vector3 p7 = endPos + hVector * width * 0.5f - Vector3.up * height;
 
             Vector3 max = Vector3.Max(p0, p1);
             max = Vector3.Max(max, p2);
@@ -94,7 +97,7 @@ namespace ASL.NavMesh
 
             Bounds tbd = new Bounds(tcenter, tsize);
 
-            Bounds lbd = new Bounds(Vector3.zero, new Vector3(width, maxHeight, toEnd.magnitude));
+            Bounds lbd = new Bounds(Vector3.zero, new Vector3(width, height, toEnd.magnitude));
 
             return lbd.Intersects(tbd);
         }

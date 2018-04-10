@@ -70,8 +70,7 @@ namespace ASL.NavMesh.Editor
                 return;
             if (m_Data != null)
             {
-                m_Data.Create(Selection.gameObjects, m_ContainChilds, m_Angle, m_MaxDepth);
-                //AssetDatabase.AddObjectToAsset(m_Data.renderMesh, m_Data);
+                m_Data.Create(Selection.gameObjects, m_ContainChilds, m_Angle*0.5f, m_MaxDepth);
             }
             else
             {
@@ -81,7 +80,7 @@ namespace ASL.NavMesh.Editor
                 {
 
                     m_Data = NavMeshPainterData.CreateInstance<NavMeshPainterData>();
-                    m_Data.Create(Selection.gameObjects, m_ContainChilds, m_Angle, m_MaxDepth);
+                    m_Data.Create(Selection.gameObjects, m_ContainChilds, m_Angle*0.5f, m_MaxDepth);
 
                     AssetDatabase.CreateAsset(m_Data, savePath);
                     AssetDatabase.AddObjectToAsset(m_Data.renderMesh, m_Data);

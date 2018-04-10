@@ -24,8 +24,8 @@ namespace ASL.NavMesh.Editor
                 return;
 
             t.width = Mathf.Max(0.001f, EditorGUILayout.FloatField(NavMeshPainterEditor.styles.width, t.width));
-            t.maxHeight = Mathf.Max(0,
-                        EditorGUILayout.FloatField(NavMeshPainterEditor.styles.maxHeight, t.maxHeight));
+            t.height = Mathf.Max(0,
+                        EditorGUILayout.FloatField(NavMeshPainterEditor.styles.maxHeight, t.height));
         }
 
         protected override void OnSceneGUI(NavMeshPainter targetPainter)
@@ -40,7 +40,7 @@ namespace ASL.NavMesh.Editor
             }
             else
             {
-                NavMeshEditorUtils.DrawWireCube(t.beginPos, new Vector3(t.width, t.maxHeight, t.width), Color.blue);
+                NavMeshEditorUtils.DrawWireCube(t.beginPos, new Vector3(t.width, t.height, t.width), Color.blue);
             }
             if (Event.current.type == EventType.MouseUp)
             {
@@ -89,15 +89,15 @@ namespace ASL.NavMesh.Editor
 
             Vector3 hVector = Vector3.Cross(toEnd, Vector3.up).normalized;
 
-            Vector3 p0 = tool.beginPos - hVector * tool.width * 0.5f - Vector3.up * tool.maxHeight;
-            Vector3 p1 = tool.beginPos - hVector * tool.width * 0.5f + Vector3.up * tool.maxHeight;
-            Vector3 p2 = tool.beginPos + hVector * tool.width * 0.5f + Vector3.up * tool.maxHeight;
-            Vector3 p3 = tool.beginPos + hVector * tool.width * 0.5f - Vector3.up * tool.maxHeight;
+            Vector3 p0 = tool.beginPos - hVector * tool.width * 0.5f - Vector3.up * tool.height;
+            Vector3 p1 = tool.beginPos - hVector * tool.width * 0.5f + Vector3.up * tool.height;
+            Vector3 p2 = tool.beginPos + hVector * tool.width * 0.5f + Vector3.up * tool.height;
+            Vector3 p3 = tool.beginPos + hVector * tool.width * 0.5f - Vector3.up * tool.height;
 
-            Vector3 p4 = tool.endPos - hVector * tool.width * 0.5f - Vector3.up * tool.maxHeight;
-            Vector3 p5 = tool.endPos - hVector * tool.width * 0.5f + Vector3.up * tool.maxHeight;
-            Vector3 p6 = tool.endPos + hVector * tool.width * 0.5f + Vector3.up * tool.maxHeight;
-            Vector3 p7 = tool.endPos + hVector * tool.width * 0.5f - Vector3.up * tool.maxHeight;
+            Vector3 p4 = tool.endPos - hVector * tool.width * 0.5f - Vector3.up * tool.height;
+            Vector3 p5 = tool.endPos - hVector * tool.width * 0.5f + Vector3.up * tool.height;
+            Vector3 p6 = tool.endPos + hVector * tool.width * 0.5f + Vector3.up * tool.height;
+            Vector3 p7 = tool.endPos + hVector * tool.width * 0.5f - Vector3.up * tool.height;
 
             NavMeshEditorUtils.DrawLine(p0, p1, color);
             NavMeshEditorUtils.DrawLine(p1, p2, color);

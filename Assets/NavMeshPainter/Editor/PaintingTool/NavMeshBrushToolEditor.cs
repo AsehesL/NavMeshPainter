@@ -18,28 +18,28 @@ namespace ASL.NavMesh.Editor
 
             GUILayout.Label(NavMeshPainterEditor.styles.setting, NavMeshPainterEditor.styles.boldLabel);
 
-            if (t.brushType == NavMeshBrushType.Box)
+            if (t.brushType == NavMeshBrushTool.NavMeshBrushType.Box)
             {
-                t.xSize = Mathf.Max(0.001f,
-                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.xSize, t.xSize));
-                t.zSize = Mathf.Max(0.001f,
-                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.zSize, t.zSize));
-                t.maxHeight = Mathf.Max(0,
-                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.maxHeight, t.maxHeight));
-            }else if (t.brushType == NavMeshBrushType.Cylinder)
+                t.length = Mathf.Max(0.001f,
+                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.xSize, t.length));
+                t.width = Mathf.Max(0.001f,
+                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.zSize, t.width));
+                t.height = Mathf.Max(0,
+                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.maxHeight, t.height));
+            }else if (t.brushType == NavMeshBrushTool.NavMeshBrushType.Cylinder)
             {
-                t.xSize = Mathf.Max(0.001f,
-                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.radius, t.xSize));
-                t.maxHeight = Mathf.Max(0,
-                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.maxHeight, t.maxHeight));
+                t.length = Mathf.Max(0.001f,
+                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.radius, t.length));
+                t.height = Mathf.Max(0,
+                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.maxHeight, t.height));
             }
-            else if (t.brushType == NavMeshBrushType.Sphere)
+            else if (t.brushType == NavMeshBrushTool.NavMeshBrushType.Sphere)
             {
-                t.xSize = Mathf.Max(0.001f,
-                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.radius, t.xSize));
+                t.length = Mathf.Max(0.001f,
+                    EditorGUILayout.FloatField(NavMeshPainterEditor.styles.radius, t.length));
             }
 
-            t.brushType = (NavMeshBrushType)EditorGUILayout.EnumPopup(NavMeshPainterEditor.styles.brushType, t.brushType);
+            t.brushType = (NavMeshBrushTool.NavMeshBrushType)EditorGUILayout.EnumPopup(NavMeshPainterEditor.styles.brushType, t.brushType);
         }
 
         protected override void OnRaycast(NavMeshPainter targetPainter, RaycastHit hit)
@@ -60,7 +60,7 @@ namespace ASL.NavMesh.Editor
             if (t != null)
             {
                 NavMeshEditorUtils.DrawBounds(t.Bounds, Color.blue);
-                NavMeshEditorUtils.DrawBrush(targetPainter.GetRenderMesh(), Matrix4x4.identity, t.position, t.xSize, t.zSize, t.maxHeight,
+                NavMeshEditorUtils.DrawBrush(targetPainter.GetRenderMesh(), Matrix4x4.identity, t.position, t.length, t.width, t.height,
                     t.brushType);
             }
         }

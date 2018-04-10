@@ -2,21 +2,13 @@
 using System.Collections;
 using ASL.NavMesh;
 
-public enum PaintingToolType
-{
-    Brush,
-    Line,
-}
 
-public enum TextureBlendMode
-{
-    Add,
-    Replace,
-}
-
+/// <summary>
+/// 导航网格绘制器
+/// </summary>
 public class NavMeshPainter : MonoBehaviour
 {
-    
+
     public PaintingToolType paintTool;
 
     public Color navMeshWireColor = Color.green;
@@ -55,7 +47,7 @@ public class NavMeshPainter : MonoBehaviour
     public void Draw(IPaintingTool tool)
     {
         if (painter != null)
-            painter.Draw(tool);
+            painter.Paint(tool);
     }
 
     public void Erase(IPaintingTool tool)

@@ -106,11 +106,11 @@ namespace ASL.NavMesh.Editor
             DrawWireCube(bounds.center, bounds.size, color);
         }
 
-        public static void DrawBrush(Mesh mesh, Matrix4x4 matrix, Vector3 position, float xsize, float zsize, float height, NavMeshBrushType brushType)
+        public static void DrawBrush(Mesh mesh, Matrix4x4 matrix, Vector3 position, float xsize, float zsize, float height, NavMeshBrushTool.NavMeshBrushType brushType)
         {
             if (mesh && GLMaterial)
             {
-                float type = brushType == NavMeshBrushType.Box ? 1 : 0;
+                float type = brushType == NavMeshBrushTool.NavMeshBrushType.Box ? 1 : 0;
                 GLMaterial.SetPass(3);
                 GLMaterial.SetVector("_BrushPos", position);
                 GLMaterial.SetVector("_BrushSize", new Vector4(xsize, zsize, height, type));

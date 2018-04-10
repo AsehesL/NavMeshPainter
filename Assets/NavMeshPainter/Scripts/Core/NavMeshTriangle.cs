@@ -4,68 +4,12 @@ using System.Collections.Generic;
 
 namespace ASL.NavMesh
 {
+    /// <summary>
+    /// NavMesh三角面
+    /// </summary>
     [System.Serializable]
     public class NavMeshTriangle
     {
-//        public Vector3 vertex0
-//        {
-//            get
-//            {
-//                if (m_NodeLists == null || m_NodeLists.Count < 1)
-//                    return default(Vector3);
-//                return m_NodeLists[0].vertex0;
-//            }
-//        }
-//
-//        public Vector3 vertex1
-//        {
-//            get
-//            {
-//                if (m_NodeLists == null || m_NodeLists.Count < 1)
-//                    return default(Vector3);
-//                return m_NodeLists[0].vertex1;
-//            }
-//        }
-//
-//        public Vector3 vertex2
-//        {
-//            get
-//            {
-//                if (m_NodeLists == null || m_NodeLists.Count < 1)
-//                    return default(Vector3);
-//                return m_NodeLists[0].vertex2;
-//            }
-//        }
-//
-//        public Vector2 uv0
-//        {
-//            get
-//            {
-//                if (m_NodeLists == null || m_NodeLists.Count < 1)
-//                    return default(Vector2);
-//                return m_NodeLists[0].uv0;
-//            }
-//        }
-//
-//        public Vector2 uv1
-//        {
-//            get
-//            {
-//                if (m_NodeLists == null || m_NodeLists.Count < 1)
-//                    return default(Vector2);
-//                return m_NodeLists[0].uv1;
-//            }
-//        }
-//
-//        public Vector2 uv2
-//        {
-//            get
-//            {
-//                if (m_NodeLists == null || m_NodeLists.Count < 1)
-//                    return default(Vector2);
-//                return m_NodeLists[0].uv2;
-//            }
-//        }
 
         public Vector3 vertex0;
         public Vector3 vertex1;
@@ -122,8 +66,14 @@ namespace ASL.NavMesh
             this.uv2 = uv2;
         }
 
+        /// <summary>
+        /// 节点细分
+        /// </summary>
+        /// <param name="maxDepth">最大深度</param>
+        /// <param name="maxArea">最大三角面积</param>
         public void Subdivide(int maxDepth, float maxArea)
         {
+            //根据最大三角面积及最大深度，确定当前三角面的细分深度
             if (m_NodeLists != null && m_NodeLists.Count >= 1)
             {
                 float tcount = Mathf.Pow(4, maxDepth);
@@ -144,6 +94,10 @@ namespace ASL.NavMesh
             }
         }
 
+        /// <summary>
+        /// 获得当前三角面的面积
+        /// </summary>
+        /// <returns></returns>
         public float GetArea()
         {
             return Vector3.Cross(vertex1 - vertex0, vertex2 - vertex0).magnitude * 0.5f;
@@ -162,18 +116,18 @@ namespace ASL.NavMesh
                 m_NodeLists[0].SamplingFromTexture(uv0, uv1, uv2, m_NodeLists, texture, blendMode);
         }
 
-        public void Draw(IPaintingTool tool, bool clear)
+        public void Interesect(IPaintingTool tool, bool erase)
         {
             if (m_NodeLists.Count >= 1)
             {
-                m_NodeLists[0].Draw(!clear, tool, vertex0, vertex1, vertex2, m_NodeLists);
+                m_NodeLists[0].Interesect(tool, erase, vertex0, vertex1, vertex2, m_NodeLists);
             }
         }
 
-        public void DrawTriangle()
+        public void DrawTriangleGizmos()
         {
             if (m_NodeLists.Count >= 1)
-                m_NodeLists[0].DrawTriangle(vertex0, vertex1, vertex2, m_NodeLists);
+                m_NodeLists[0].DrawTriangleGizmos(vertex0, vertex1, vertex2, m_NodeLists);
         }
     }
 }

@@ -182,7 +182,7 @@
 			}
 			ENDCG
 		}
-		Pass
+		Pass //Mask
 		{
 			zwrite off
 			offset -1,-1
