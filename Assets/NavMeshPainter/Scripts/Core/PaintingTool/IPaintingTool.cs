@@ -11,7 +11,7 @@ namespace ASL.NavMesh
 
         bool IntersectsBounds(Bounds bounds);
 
-        bool IntersectsTriangle(NavMeshTriangleNode node);
+        bool IntersectsTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2);
        
     }
 }

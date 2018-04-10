@@ -7,65 +7,72 @@ namespace ASL.NavMesh
     [System.Serializable]
     public class NavMeshTriangle
     {
-        public Vector3 vertex0
-        {
-            get
-            {
-                if (m_NodeLists == null || m_NodeLists.Count < 1)
-                    return default(Vector3);
-                return m_NodeLists[0].vertex0;
-            }
-        }
+//        public Vector3 vertex0
+//        {
+//            get
+//            {
+//                if (m_NodeLists == null || m_NodeLists.Count < 1)
+//                    return default(Vector3);
+//                return m_NodeLists[0].vertex0;
+//            }
+//        }
+//
+//        public Vector3 vertex1
+//        {
+//            get
+//            {
+//                if (m_NodeLists == null || m_NodeLists.Count < 1)
+//                    return default(Vector3);
+//                return m_NodeLists[0].vertex1;
+//            }
+//        }
+//
+//        public Vector3 vertex2
+//        {
+//            get
+//            {
+//                if (m_NodeLists == null || m_NodeLists.Count < 1)
+//                    return default(Vector3);
+//                return m_NodeLists[0].vertex2;
+//            }
+//        }
+//
+//        public Vector2 uv0
+//        {
+//            get
+//            {
+//                if (m_NodeLists == null || m_NodeLists.Count < 1)
+//                    return default(Vector2);
+//                return m_NodeLists[0].uv0;
+//            }
+//        }
+//
+//        public Vector2 uv1
+//        {
+//            get
+//            {
+//                if (m_NodeLists == null || m_NodeLists.Count < 1)
+//                    return default(Vector2);
+//                return m_NodeLists[0].uv1;
+//            }
+//        }
+//
+//        public Vector2 uv2
+//        {
+//            get
+//            {
+//                if (m_NodeLists == null || m_NodeLists.Count < 1)
+//                    return default(Vector2);
+//                return m_NodeLists[0].uv2;
+//            }
+//        }
 
-        public Vector3 vertex1
-        {
-            get
-            {
-                if (m_NodeLists == null || m_NodeLists.Count < 1)
-                    return default(Vector3);
-                return m_NodeLists[0].vertex1;
-            }
-        }
-
-        public Vector3 vertex2
-        {
-            get
-            {
-                if (m_NodeLists == null || m_NodeLists.Count < 1)
-                    return default(Vector3);
-                return m_NodeLists[0].vertex2;
-            }
-        }
-
-        public Vector2 uv0
-        {
-            get
-            {
-                if (m_NodeLists == null || m_NodeLists.Count < 1)
-                    return default(Vector2);
-                return m_NodeLists[0].uv0;
-            }
-        }
-
-        public Vector2 uv1
-        {
-            get
-            {
-                if (m_NodeLists == null || m_NodeLists.Count < 1)
-                    return default(Vector2);
-                return m_NodeLists[0].uv1;
-            }
-        }
-
-        public Vector2 uv2
-        {
-            get
-            {
-                if (m_NodeLists == null || m_NodeLists.Count < 1)
-                    return default(Vector2);
-                return m_NodeLists[0].uv2;
-            }
-        }
+        public Vector3 vertex0;
+        public Vector3 vertex1;
+        public Vector3 vertex2;
+        public Vector2 uv0;
+        public Vector2 uv1;
+        public Vector2 uv2;
 
         /// <summary>
         /// 节点列表
@@ -83,7 +90,8 @@ namespace ASL.NavMesh
 
         public NavMeshTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2, Vector2 uv0, Vector2 uv1, Vector2 uv2)
         {
-            NavMeshTriangleNode root = new NavMeshTriangleNode(vertex0, vertex1, vertex2, uv0, uv1, uv2);
+            //NavMeshTriangleNode root = new NavMeshTriangleNode(vertex0, vertex1, vertex2, uv0, uv1, uv2);
+            NavMeshTriangleNode root = new NavMeshTriangleNode(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1));
             m_NodeLists = new List<NavMeshTriangleNode>();
             m_NodeLists.Add(root);
 
@@ -106,7 +114,12 @@ namespace ASL.NavMesh
 
             this.m_Bounds = new Bounds(ct, si);
 
-            
+            this.vertex0 = vertex0;
+            this.vertex1 = vertex1;
+            this.vertex2 = vertex2;
+            this.uv0 = uv0;
+            this.uv1 = uv1;
+            this.uv2 = uv2;
         }
 
         public void Subdivide(int maxDepth, float maxArea)
@@ -140,27 +153,27 @@ namespace ASL.NavMesh
         public void GenerateMesh(List<Vector3> vlist, List<int> ilist)
         {
             if (m_NodeLists.Count >= 1)
-                m_NodeLists[0].GenerateMesh(m_NodeLists, vlist, ilist);
+                m_NodeLists[0].GenerateMesh(vertex0, vertex1, vertex2, m_NodeLists, vlist, ilist);
         }
 
         public void SamplingFromTexture(Texture2D texture, TextureBlendMode blendMode)
         {
             if (m_NodeLists.Count >= 1)
-                m_NodeLists[0].SamplingFromTexture(m_NodeLists, texture, blendMode);
+                m_NodeLists[0].SamplingFromTexture(uv0, uv1, uv2, m_NodeLists, texture, blendMode);
         }
 
         public void Draw(IPaintingTool tool, bool clear)
         {
             if (m_NodeLists.Count >= 1)
             {
-                m_NodeLists[0].Draw(!clear, tool, m_NodeLists);
+                m_NodeLists[0].Draw(!clear, tool, vertex0, vertex1, vertex2, m_NodeLists);
             }
         }
 
         public void DrawTriangle()
         {
             if (m_NodeLists.Count >= 1)
-                m_NodeLists[0].DrawTriangle(m_NodeLists);
+                m_NodeLists[0].DrawTriangle(vertex0, vertex1, vertex2, m_NodeLists);
         }
     }
 }

@@ -8,16 +8,20 @@ namespace ASL.NavMesh
     public class NavMeshTriangleNode 
     {
 
-        public Vector3 vertex0;
-        public Vector3 vertex1;
-        public Vector3 vertex2;
+//        public Vector3 vertex0;
+//        public Vector3 vertex1;
+//        public Vector3 vertex2;
+//
+//        public Vector2 uv0;
+//        public Vector2 uv1;
+//        public Vector2 uv2;
+//
+//        public Vector3 max;
+//        public Vector3 min;
 
-        public Vector2 uv0;
-        public Vector2 uv1;
-        public Vector2 uv2;
-
-        public Vector3 max;
-        public Vector3 min;
+        public Vector2 weight0;
+        public Vector2 weight1;
+        public Vector2 weight2;
 
         public bool isBePainted;
         public bool isMix;
@@ -27,36 +31,44 @@ namespace ASL.NavMesh
         [SerializeField] private int m_LeftNodeIndex = -1;
         [SerializeField] private int m_RightNodeIndex = -1;
 
-        public NavMeshTriangleNode(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2, Vector2 uv0, Vector2 uv1, Vector2 uv2)
+        public NavMeshTriangleNode(Vector2 weight0, Vector2 weight1, Vector2 weight2)
         {
-            this.vertex0 = vertex0;
-            this.vertex1 = vertex1;
-            this.vertex2 = vertex2;
-            this.uv0 = uv0;
-            this.uv1 = uv1;
-            this.uv2 = uv2;
-            max = Vector3.Max(vertex0, vertex1);
-            max = Vector3.Max(max, vertex2);
-            min = Vector3.Min(vertex0, vertex1);
-            min = Vector3.Min(min, vertex2);
+//            this.vertex0 = vertex0;
+//            this.vertex1 = vertex1;
+//            this.vertex2 = vertex2;
+//            this.uv0 = uv0;
+//            this.uv1 = uv1;
+//            this.uv2 = uv2;
+//            max = Vector3.Max(vertex0, vertex1);
+//            max = Vector3.Max(max, vertex2);
+//            min = Vector3.Min(vertex0, vertex1);
+//            min = Vector3.Min(min, vertex2);
+
+            this.weight0 = weight0;
+            this.weight1 = weight1;
+            this.weight2 = weight2;
         }
 
         public void Subdivide(int depth, List<NavMeshTriangleNode> nodelist)
         {
             if (depth <= 0)
                 return;
-            Vector3 half01 = vertex0 + (vertex1 - vertex0) * 0.5f;
-            Vector3 half02 = vertex0 + (vertex2 - vertex0) * 0.5f;
-            Vector3 half12 = vertex1 + (vertex2 - vertex1) * 0.5f;
+//            Vector3 half01 = vertex0 + (vertex1 - vertex0) * 0.5f;
+//            Vector3 half02 = vertex0 + (vertex2 - vertex0) * 0.5f;
+//            Vector3 half12 = vertex1 + (vertex2 - vertex1) * 0.5f;
+//
+//            Vector2 halfuv01 = uv0 + (uv1 - uv0)*0.5f;
+//            Vector2 halfuv02 = uv0 + (uv2 - uv0)*0.5f;
+//            Vector2 halfuv12 = uv1 + (uv2 - uv1)*0.5f;
 
-            Vector2 halfuv01 = uv0 + (uv1 - uv0)*0.5f;
-            Vector2 halfuv02 = uv0 + (uv2 - uv0)*0.5f;
-            Vector2 halfuv12 = uv1 + (uv2 - uv1)*0.5f;
+            Vector2 halfw01 = weight0 + (weight1 - weight0)*0.5f;
+            Vector2 halfw02 = weight0 + (weight2 - weight0)*0.5f;
+            Vector2 halfw12 = weight1 + (weight2 - weight1)*0.5f;
 
-            NavMeshTriangleNode center = new NavMeshTriangleNode(half01, half12, half02, halfuv01, halfuv12, halfuv02);
-            NavMeshTriangleNode top = new NavMeshTriangleNode(half01, vertex1, half12, halfuv01, uv1, halfuv12);
-            NavMeshTriangleNode left = new NavMeshTriangleNode(vertex0, half01, half02, uv0, halfuv01, halfuv02);
-            NavMeshTriangleNode right = new NavMeshTriangleNode(half02, half12, vertex2, halfuv02, halfuv12, uv2);
+            NavMeshTriangleNode center = new NavMeshTriangleNode(halfw01, halfw12, halfw02);
+            NavMeshTriangleNode top = new NavMeshTriangleNode(halfw01, weight1, halfw12);
+            NavMeshTriangleNode left = new NavMeshTriangleNode(weight0, halfw01, halfw02);
+            NavMeshTriangleNode right = new NavMeshTriangleNode(halfw02, halfw12, weight2);
 
             m_CenterNodeIndex = nodelist.Count;
             nodelist.Add(center);
@@ -73,9 +85,12 @@ namespace ASL.NavMesh
             right.Subdivide(depth - 1, nodelist);
         }
 
-        public void Draw(bool paint, IPaintingTool tool, List<NavMeshTriangleNode> nodelist)
+        public void Draw(bool paint, IPaintingTool tool, Vector3 v0, Vector3 v1, Vector3 v2, List<NavMeshTriangleNode> nodelist)
         {
-            if (tool.IntersectsTriangle(this))
+            Vector3 vertex0 = (1 - weight0.x - weight0.y) * v0 + weight0.x * v1 + weight0.y * v2;
+            Vector3 vertex1 = (1 - weight1.x - weight1.y) * v0 + weight1.x * v1 + weight1.y * v2;
+            Vector3 vertex2 = (1 - weight2.x - weight2.y) * v0 + weight2.x * v1 + weight2.y * v2;
+            if (tool.IntersectsTriangle(vertex0, vertex1, vertex2))
             {
                 bool cotinuePaint = isBePainted != paint || isMix;
                 if (!cotinuePaint)
@@ -95,23 +110,23 @@ namespace ASL.NavMesh
                     : null;
 
                 if (center != null)
-                    center.Draw(paint, tool, nodelist);
+                    center.Draw(paint, tool, v0, v1, v2, nodelist);
 
                 if (top != null)
-                    top.Draw(paint, tool, nodelist);
+                    top.Draw(paint, tool, v0, v1, v2, nodelist);
 
                 if (left != null)
-                    left.Draw(paint, tool, nodelist);
+                    left.Draw(paint, tool, v0, v1, v2, nodelist);
 
                 if (right != null)
-                    right.Draw(paint, tool, nodelist);
+                    right.Draw(paint, tool, v0, v1, v2, nodelist);
 
                 ResetPaintMark(paint, center, top, left, right);
             }
 
         }
 
-        public void DrawTriangle(List<NavMeshTriangleNode> nodeList)
+        public void DrawTriangle(Vector3 v0, Vector3 v1, Vector3 v2, List<NavMeshTriangleNode> nodeList)
         {
             if (isMix)
             {
@@ -128,18 +143,22 @@ namespace ASL.NavMesh
                     ? nodeList[m_RightNodeIndex]
                     : null;
                 if (center != null)
-                    center.DrawTriangle(nodeList);
+                    center.DrawTriangle(v0, v1, v2, nodeList);
                 if (top != null)
-                    top.DrawTriangle(nodeList);
+                    top.DrawTriangle(v0, v1, v2, nodeList);
                 if (left != null)
-                    left.DrawTriangle(nodeList);
+                    left.DrawTriangle(v0, v1, v2, nodeList);
                 if (right != null)
-                    right.DrawTriangle(nodeList);
+                    right.DrawTriangle(v0, v1, v2, nodeList);
             }
             else
             {
                 if (isBePainted)
                 {
+                    Vector3 vertex0 = (1 - weight0.x - weight0.y) * v0 + weight0.x * v1 + weight0.y * v2;
+                    Vector3 vertex1 = (1 - weight1.x - weight1.y) * v0 + weight1.x * v1 + weight1.y * v2;
+                    Vector3 vertex2 = (1 - weight2.x - weight2.y) * v0 + weight2.x * v1 + weight2.y * v2;
+
                     Gizmos.DrawLine(vertex0, vertex1);
                     Gizmos.DrawLine(vertex0, vertex2);
                     Gizmos.DrawLine(vertex1, vertex2);
@@ -147,12 +166,16 @@ namespace ASL.NavMesh
             }
         }
 
-        public void GenerateMesh(List<NavMeshTriangleNode> nodeList, List<Vector3> vlist, List<int> ilist)
+        public void GenerateMesh(Vector3 v0, Vector3 v1, Vector3 v2, List<NavMeshTriangleNode> nodeList, List<Vector3> vlist, List<int> ilist)
         {
             if (!isMix)
             {
                 if (isBePainted)
                 {
+                    Vector3 vertex0 = (1 - weight0.x - weight0.y) * v0 + weight0.x * v1 + weight0.y * v2;
+                    Vector3 vertex1 = (1 - weight1.x - weight1.y) * v0 + weight1.x * v1 + weight1.y * v2;
+                    Vector3 vertex2 = (1 - weight2.x - weight2.y) * v0 + weight2.x * v1 + weight2.y * v2;
+
                     ilist.Add(vlist.Count);
                     vlist.Add(vertex0);
                     ilist.Add(vlist.Count);
@@ -176,17 +199,17 @@ namespace ASL.NavMesh
                     ? nodeList[m_RightNodeIndex]
                     : null;
                 if (center != null)
-                    center.GenerateMesh(nodeList, vlist, ilist);
+                    center.GenerateMesh(v0, v1, v2, nodeList, vlist, ilist);
                 if (top != null)
-                    top.GenerateMesh(nodeList, vlist, ilist);
+                    top.GenerateMesh(v0, v1, v2, nodeList, vlist, ilist);
                 if (left != null)
-                    left.GenerateMesh(nodeList, vlist, ilist);
+                    left.GenerateMesh(v0, v1, v2, nodeList, vlist, ilist);
                 if (right != null)
-                    right.GenerateMesh(nodeList, vlist, ilist);
+                    right.GenerateMesh(v0, v1, v2, nodeList, vlist, ilist);
             }
         }
 
-        public void SamplingFromTexture(List<NavMeshTriangleNode> nodeList, Texture2D texture, TextureBlendMode blendMode)
+        public void SamplingFromTexture(Vector2 u0, Vector2 u1, Vector2 u2, List<NavMeshTriangleNode> nodeList, Texture2D texture, TextureBlendMode blendMode)
         {
             NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodeList.Count
                         ? nodeList[m_CenterNodeIndex]
@@ -202,18 +225,18 @@ namespace ASL.NavMesh
                 : null;
 
             if (center != null)
-                center.SamplingFromTexture(nodeList, texture, blendMode);
+                center.SamplingFromTexture(u0, u1, u2, nodeList, texture, blendMode);
 
             if (top != null)
-                top.SamplingFromTexture(nodeList, texture, blendMode);
+                top.SamplingFromTexture(u0, u1, u2, nodeList, texture, blendMode);
 
             if (left != null)
-                left.SamplingFromTexture(nodeList, texture, blendMode);
+                left.SamplingFromTexture(u0, u1, u2, nodeList, texture, blendMode);
 
             if (right != null)
-                right.SamplingFromTexture(nodeList, texture, blendMode);
+                right.SamplingFromTexture(u0, u1, u2, nodeList, texture, blendMode);
 
-            bool isInMask = SamplingTexture(texture);
+            bool isInMask = SamplingTexture(u0, u1, u2, texture);
             if (blendMode == TextureBlendMode.Add)
             {
                 if (isInMask)
@@ -251,8 +274,12 @@ namespace ASL.NavMesh
             isMix = false;
         }
 
-        private bool SamplingTexture(Texture2D texture)
+        private bool SamplingTexture(Vector2 u0, Vector2 u1, Vector2 u2, Texture2D texture)
         {
+            Vector2 uv0 = (1 - weight0.x - weight0.y)*u0 + weight0.x*u1 + weight0.y*u2;
+            Vector2 uv1 = (1 - weight1.x - weight1.y)*u0 + weight1.x*u1 + weight1.y*u2;
+            Vector2 uv2 = (1 - weight2.x - weight2.y)*u0 + weight2.x*u1 + weight2.y*u2;
+
             Vector2 uv = (uv0 + uv1 + uv2)/3;
             int x = (int) (uv.x*texture.width);
             int y = (int) (uv.y*texture.height);

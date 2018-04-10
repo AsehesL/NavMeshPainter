@@ -51,7 +51,7 @@ namespace ASL.NavMesh
             return bd.Intersects(bounds);
         }
 
-        public bool IntersectsTriangle(NavMeshTriangleNode node)
+        public bool IntersectsTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2)
         {
             Vector3 toEnd = (endPos - beginPos);
             Vector3 center = beginPos + toEnd * 0.5f;
@@ -82,9 +82,9 @@ namespace ASL.NavMesh
 
             m = m.inverse;
 
-            Vector3 p0 = m.MultiplyPoint(node.vertex0);
-            Vector3 p1 = m.MultiplyPoint(node.vertex1);
-            Vector3 p2 = m.MultiplyPoint(node.vertex2);
+            Vector3 p0 = m.MultiplyPoint(vertex0);
+            Vector3 p1 = m.MultiplyPoint(vertex1);
+            Vector3 p2 = m.MultiplyPoint(vertex2);
 
             Vector3 max = Vector3.Max(p2, Vector3.Max(p0, p1));
             Vector3 min = Vector3.Min(p2, Vector3.Min(p0, p1));

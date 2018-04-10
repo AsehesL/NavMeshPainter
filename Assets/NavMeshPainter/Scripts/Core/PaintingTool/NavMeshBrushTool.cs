@@ -35,32 +35,34 @@ namespace ASL.NavMesh
             return this.Bounds.Intersects(bounds);
         }
 
-        public bool IntersectsTriangle(NavMeshTriangleNode node)
+        public bool IntersectsTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2)
         {
+            Vector3 max = Vector3.Max(vertex0, Vector3.Max(vertex1, vertex2));
+            Vector3 min = Vector3.Min(vertex0, Vector3.Min(vertex1, vertex2));
             if (brushType == NavMeshBrushType.Box)
-                return InteresectsTriangleByBoxBrush(node);
+                return InteresectsTriangleByBoxBrush(max, min);
             else if (brushType == NavMeshBrushType.Cylinder)
-                return InteresectsTriangleByCylinder(node);
+                return InteresectsTriangleByCylinder(max, min);
             else
-                return InteresectsTriangleBySphere(node);
+                return InteresectsTriangleBySphere(max, min);
         }
 
-        private bool InteresectsTriangleByBoxBrush(NavMeshTriangleNode node)
+        private bool InteresectsTriangleByBoxBrush(Vector3 max, Vector3 min)
         {
             
-            Vector3 size = node.max - node.min;
-            Vector3 center = node.min + size*0.5f;
+            Vector3 size = max - min;
+            Vector3 center = min + size*0.5f;
             Bounds bd = new Bounds(center, size);
             return bd.Intersects(this.Bounds);
         }
 
-        private bool InteresectsTriangleByCylinder(NavMeshTriangleNode node)
+        private bool InteresectsTriangleByCylinder(Vector3 max, Vector3 min)
         {
-            if (node.max.y < position.y - maxHeight || node.min.y > position.y + maxHeight)
+            if (max.y < position.y - maxHeight || min.y > position.y + maxHeight)
                 return false;
             Vector2 nearestpos = default(Vector2);
-            nearestpos.x = Mathf.Clamp(position.x, node.min.x, node.max.x);
-            nearestpos.y = Mathf.Clamp(position.z, node.min.z, node.max.z);
+            nearestpos.x = Mathf.Clamp(position.x, min.x, max.x);
+            nearestpos.y = Mathf.Clamp(position.z, min.z, max.z);
             float dis = Vector2.Distance(nearestpos, new Vector2(position.x, position.z));
 
             if (dis > xSize)
@@ -68,12 +70,12 @@ namespace ASL.NavMesh
             return true;
         }
 
-        private bool InteresectsTriangleBySphere(NavMeshTriangleNode node)
+        private bool InteresectsTriangleBySphere(Vector3 max, Vector3 min)
         {
             Vector3 nearestpos = default(Vector3);
-            nearestpos.x = Mathf.Clamp(position.x, node.min.x, node.max.x);
-            nearestpos.y = Mathf.Clamp(position.y, node.min.y, node.max.y);
-            nearestpos.z = Mathf.Clamp(position.z, node.min.z, node.max.z);
+            nearestpos.x = Mathf.Clamp(position.x, min.x, max.x);
+            nearestpos.y = Mathf.Clamp(position.y, min.y, max.y);
+            nearestpos.z = Mathf.Clamp(position.z, min.z, max.z);
             float dis = Vector3.Distance(nearestpos, position);
 
             if (dis > xSize)
