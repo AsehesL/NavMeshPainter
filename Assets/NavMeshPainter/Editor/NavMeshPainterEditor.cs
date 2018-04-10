@@ -6,83 +6,12 @@ using ASL.NavMesh.Editor;
 using UnityEditor.AI;
 
 [CustomEditor(typeof(NavMeshPainter))]
-public class NavMeshPainterEditor : Editor
+public class NavMeshPainterEditor : NavMeshPainterEditorBase
 {
-    public enum ToolType
-    {
-        None = -1,
-        Paint,
-        Erase,
-        Mapping,
-        Bake,
-    }
-
-    public class Styles
-    {
-        public GUIStyle buttonLeft = "ButtonLeft";
-        public GUIStyle buttonMid = "ButtonMid";
-        public GUIStyle buttonRight = "ButtonRight";
-        public GUIStyle command = "Command";
-        public GUIStyle box = "box";
-        public GUIStyle boldLabel = "BoldLabel";
-
-        public GUIContent[] toolIcons = new GUIContent[]
-        {
-            EditorGUIUtility.IconContent("NavMeshPainter/add.png", "|Paint the NavMesh"),
-            EditorGUIUtility.IconContent("NavMeshPainter/reduce.png", "|Erase the NavMesh"),
-            EditorGUIUtility.IconContent("NavMeshPainter/texture.png", "|Sampling from texture"),
-            EditorGUIUtility.IconContent("NavMeshPainter/nm.png", "|Bake Setting")
-        };
-
-        public GUIContent brushIcon = EditorGUIUtility.IconContent("NavMeshPainter/brush.png");
-        public GUIContent eraserIcon = EditorGUIUtility.IconContent("NavMeshPainter/eraser.png");
-        public GUIContent lineIcon = EditorGUIUtility.IconContent("NavMeshPainter/line.png");
-        public GUIContent boxIcon = EditorGUIUtility.IconContent("NavMeshPainter/box.png");
-        public GUIContent cylinderIcon = EditorGUIUtility.IconContent("NavMeshPainter/cylinder.png");
-        public GUIContent sphereIcon = EditorGUIUtility.IconContent("NavMeshPainter/sphere.png");
-        public GUIContent checkerboardIcon = EditorGUIUtility.IconContent("NavMeshPainter/checkerboard.png");
-
-        public GUIContent paintSetting = new GUIContent("Paint Setting");
-        public GUIContent paintTool = new GUIContent("Paint Tool");
-        public GUIContent bake = new GUIContent("Bake");
-        public GUIContent mappingSetting = new GUIContent("Mapping Setting");
-        public GUIContent maskTexture = new GUIContent("Mask Texture");
-        public GUIContent mask = new GUIContent("Mask");
-        public GUIContent applyMask = new GUIContent("ApplyMask");
-        public GUIContent setting = new GUIContent("Settings");
-        public GUIContent xSize = new GUIContent("XSize");
-        public GUIContent zSize = new GUIContent("ZSize");
-        public GUIContent maxHeight = new GUIContent("MaxHeight");
-        public GUIContent radius = new GUIContent("Radius");
-        public GUIContent brushType = new GUIContent("BrushType");
-        public GUIContent width = new GUIContent("Width");
-        public GUIContent painterData = new GUIContent("PainterData");
-        public GUIContent create = new GUIContent("Create New Data");
-        public GUIContent generateMesh = new GUIContent("Refresh Preview Mesh");
-        public GUIContent wireColor = new GUIContent("WireColor");
-        public GUIContent previewMeshColor = new GUIContent("PreviewMesh Color");
-        public GUIContent blendMode = new GUIContent("BlendMode");
-    }
-
-    public static NavMeshPainterEditor.Styles styles
-    {
-        get
-        {
-            if (s_Styles == null)
-                s_Styles = new Styles();
-            return s_Styles;
-        }
-    }
-
-    private static NavMeshPainterEditor.Styles s_Styles;
 
     private NavMeshPainter m_Target;
-
-    private ToolType m_ToolType = ToolType.None;
-
+    
     private Dictionary<System.Type, NavMeshToolEditor> m_ToolEditors;
-
-    private bool m_ShowCheckerBoard = true;
 
     private Texture2D m_RoadMask;
 
@@ -103,16 +32,16 @@ public class NavMeshPainterEditor : Editor
     {
         m_Target = (NavMeshPainter) target;
 
-        ResetCheckerBoardCellSize();
+        ResetCheckerBoard();
         NavMeshEditorUtils.SetMaskTexture(null);
     }
 
     void OnSceneGUI()
     {
-        if(m_ShowCheckerBoard)
+        if(showCheckerBoard)
             NavMeshEditorUtils.DrawCheckerBoard(m_Target.GetRenderMesh(), Matrix4x4.identity);
 
-        switch (m_ToolType)
+        switch (toolType)
         {
             case ToolType.Erase:
             case ToolType.Paint:
@@ -133,7 +62,7 @@ public class NavMeshPainterEditor : Editor
             return;
         }
         DrawToolsGUI();
-        switch (m_ToolType)
+        switch (toolType)
         {
             case ToolType.None:
 
@@ -163,37 +92,12 @@ public class NavMeshPainterEditor : Editor
                 NavMeshPainterData;
         if(EditorGUI.EndChangeCheck())
             if (m_Target.data != null)
-                ResetCheckerBoardCellSize();
+                ResetCheckerBoard();
         if (GUILayout.Button(styles.create))
         {
             CreateNewNavMeshPainterData();
         }
         EditorGUILayout.HelpBox("No PainterData has been setted!", MessageType.Error);
-    }
-
-    private void DrawToolsGUI()
-    {
-        GUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-
-        EditorGUI.BeginChangeCheck();
-        m_ShowCheckerBoard = GUILayout.Toggle(m_ShowCheckerBoard, styles.checkerboardIcon, styles.command);
-        if (EditorGUI.EndChangeCheck())
-        {
-            ResetCheckerBoardCellSize();
-        }
-
-        EditorGUILayout.Space();
-
-        int selectedTool = (int)this.m_ToolType;
-        int num = GUILayout.Toolbar(selectedTool, styles.toolIcons, styles.command, new GUILayoutOption[0]);
-        if (num != selectedTool)
-        {
-            this.m_ToolType = (ToolType)num;
-        }
-        GUILayout.FlexibleSpace();
-
-        GUILayout.EndHorizontal();
     }
 
     private void DrawPaintSettingGUI(bool erase = false)
@@ -266,7 +170,7 @@ public class NavMeshPainterEditor : Editor
                 NavMeshPainterData;
         if (EditorGUI.EndChangeCheck())
             if (m_Target.data != null)
-                ResetCheckerBoardCellSize();
+                ResetCheckerBoard();
 
         m_Target.navMeshWireColor = EditorGUILayout.ColorField(styles.wireColor, m_Target.navMeshWireColor);
         m_PreviewMeshColor = EditorGUILayout.ColorField(styles.previewMeshColor, m_PreviewMeshColor);
@@ -310,15 +214,16 @@ public class NavMeshPainterEditor : Editor
     {
         if (tool != null)
         {
-            if (m_ToolType == ToolType.Paint)
+            if (toolType == ToolType.Paint)
                 m_Target.Draw(tool);
-            else if (m_ToolType == ToolType.Erase)
+            else if (toolType == ToolType.Erase)
                 m_Target.Erase(tool);
         }
     }
 
-    private void ResetCheckerBoardCellSize()
+    protected override void ResetCheckerBoard()
     {
+        base.ResetCheckerBoard();
         float minSize = m_Target.GetMinSize();
         NavMeshEditorUtils.SetCheckerBoardCellSize(minSize);
     }

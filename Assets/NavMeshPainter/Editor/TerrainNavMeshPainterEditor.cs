@@ -5,11 +5,19 @@ using ASL.NavMesh;
 using ASL.NavMesh.Editor;
 
 [CustomEditor(typeof(TerrainNavMeshPainter))]
-public class TerrainNavMeshPainterEditor : Editor
+public class TerrainNavMeshPainterEditor : NavMeshPainterEditorBase
 {
+   
+
     private TerrainNavMeshPainter m_Target;
 
     private TerrainNavMeshProjector m_Projector;
+
+    [MenuItem("GameObject/NavMeshPainter/Create TerrainNavMeshPainter")]
+    static void Create()
+    {
+        TerrainNavMeshPainter painter = new GameObject("TerrainNavMesh Painter").AddComponent<TerrainNavMeshPainter>();
+    }
 
     void OnEnable()
     {
@@ -36,12 +44,70 @@ public class TerrainNavMeshPainterEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        base.OnInspectorGUI();
-
-        if (GUILayout.Button("Bake"))
+        //        base.OnInspectorGUI();
+        //
+        //        if (GUILayout.Button("Bake"))
+        //        {
+        //            Bake();
+        //        }
+        if (m_Target.targetTerrain == null || m_Target.maskTexture == null)
         {
-            Bake();
+            DrawNoDataGUI();
+            return;
         }
+        DrawToolsGUI();
+        switch (toolType)
+        {
+            case ToolType.None:
+
+                break;
+            case ToolType.Paint:
+                //DrawPaintSettingGUI();
+                break;
+            case ToolType.Erase:
+                //DrawPaintSettingGUI(true);
+                break;
+            case ToolType.Mapping:
+                //DrawTextureMappingGUI();
+                break;
+            case ToolType.Bake:
+                //DrawBakeSettingGUI();
+                break;
+        }
+
+        EditorGUILayout.Space();
+    }
+
+    private void DrawNoDataGUI()
+    {
+        EditorGUI.BeginChangeCheck();
+        m_Target.targetTerrain =
+            EditorGUILayout.ObjectField(styles.painterData, m_Target.targetTerrain, typeof(Terrain), false) as
+                Terrain;
+        if (EditorGUI.EndChangeCheck())
+        {
+            m_Projector.SetTerrain(m_Target.targetTerrain);
+        }
+
+        EditorGUI.BeginChangeCheck();
+        m_Target.maskTexture =
+            EditorGUILayout.ObjectField(styles.painterData, m_Target.maskTexture, typeof (Texture2D), false) as
+                Texture2D;
+        if (EditorGUI.EndChangeCheck())
+        {
+            m_Projector.SetMask(m_Target.maskTexture);
+        }
+
+        if (GUILayout.Button(styles.create))
+        {
+            //CreateNewNavMeshPainterData();
+        }
+        EditorGUILayout.HelpBox("No PainterData has been setted!", MessageType.Error);
+    }
+
+    protected override void ResetCheckerBoard()
+    {
+        base.ResetCheckerBoard();
     }
 
     private void Bake()

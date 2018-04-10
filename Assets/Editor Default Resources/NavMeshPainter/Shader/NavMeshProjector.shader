@@ -3,6 +3,7 @@
 	Properties
 	{
 		_CellSize("CellSize", float) = 40
+		_CheckerBoardAlpha ("CheckerBoardAlpha", float) = 1
 		_RoadMask ("RoadMask", 2D) = "black" {}
 		_MaskColor ("MaskColor", color) = (1,0,0.8,0.5)
 	}
@@ -37,6 +38,8 @@
 
 			sampler2D _RoadMask;
 			float4 _MaskColor;
+
+			half _CheckerBoardAlpha;
 			
 			v2f vert (appdata v)
 			{
