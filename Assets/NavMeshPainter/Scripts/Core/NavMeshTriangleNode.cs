@@ -204,6 +204,62 @@ namespace ASL.NavMesh
             }
         }
 
+        public void GenerateMesh(Vector2 u0, Vector2 u1, Vector2 u2, List<NavMeshTriangleNode> nodeList, List<Vector3> vlist, List<int> ilist, Terrain terrain)
+        {
+            if (!isMix)
+            {
+                if (isBePainted)
+                {
+
+                    Vector2 uv0 = (1 - weight0.x - weight0.y) * u0 + weight0.x * u1 + weight0.y * u2;
+                    Vector2 uv1 = (1 - weight1.x - weight1.y) * u0 + weight1.x * u1 + weight1.y * u2;
+                    Vector2 uv2 = (1 - weight2.x - weight2.y) * u0 + weight2.x * u1 + weight2.y * u2;
+
+                    Vector3 vertex0 = new Vector3(uv0.x*terrain.terrainData.size.x, 0, uv0.y*terrain.terrainData.size.z);
+                    Vector3 vertex1 = new Vector3(uv1.x * terrain.terrainData.size.x, 0, uv1.y * terrain.terrainData.size.z);
+                    Vector3 vertex2 = new Vector3(uv2.x * terrain.terrainData.size.x, 0, uv2.y * terrain.terrainData.size.z);
+
+                    vertex0.y = terrain.terrainData.GetInterpolatedHeight(uv0.x, uv0.y);
+                    vertex1.y = terrain.terrainData.GetInterpolatedHeight(uv1.x, uv1.y);
+                    vertex2.y = terrain.terrainData.GetInterpolatedHeight(uv2.x, uv2.y);
+
+                    vertex0 = vertex0 + terrain.transform.position;
+                    vertex1 = vertex1 + terrain.transform.position;
+                    vertex2 = vertex2 + terrain.transform.position;
+
+                    ilist.Add(vlist.Count);
+                    vlist.Add(vertex0);
+                    ilist.Add(vlist.Count);
+                    vlist.Add(vertex1);
+                    ilist.Add(vlist.Count);
+                    vlist.Add(vertex2);
+                }
+            }
+            else
+            {
+                NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodeList.Count
+                    ? nodeList[m_CenterNodeIndex]
+                    : null;
+                NavMeshTriangleNode top = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodeList.Count
+                    ? nodeList[m_TopNodeIndex]
+                    : null;
+                NavMeshTriangleNode left = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodeList.Count
+                    ? nodeList[m_LeftNodeIndex]
+                    : null;
+                NavMeshTriangleNode right = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodeList.Count
+                    ? nodeList[m_RightNodeIndex]
+                    : null;
+                if (center != null)
+                    center.GenerateMesh(u0, u1, u2, nodeList, vlist, ilist, terrain);
+                if (top != null)
+                    top.GenerateMesh(u0, u1, u2, nodeList, vlist, ilist, terrain);
+                if (left != null)
+                    left.GenerateMesh(u0, u1, u2, nodeList, vlist, ilist, terrain);
+                if (right != null)
+                    right.GenerateMesh(u0, u1, u2, nodeList, vlist, ilist, terrain);
+            }
+        }
+
         public void SamplingFromTexture(Vector2 u0, Vector2 u1, Vector2 u2, List<NavMeshTriangleNode> nodeList, Texture2D texture, TextureBlendMode blendMode)
         {
             NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodeList.Count

@@ -9,5 +9,11 @@ public class TerrainNavMeshPainter : MonoBehaviour
 
     public NavMeshTextureBrushTool brush;
 
-    public TerrainNavMeshPainterData data;
+    public Texture2D maskTexture;
+
+    public int meshWidth;
+
+    public int meshHeight;
+
+    public int maxDepth;
 }

@@ -66,6 +66,17 @@ namespace ASL.NavMesh
             this.uv2 = uv2;
         }
 
+        public NavMeshTriangle(Vector2 uv0, Vector2 uv1, Vector2 uv2)
+        {
+            NavMeshTriangleNode root = new NavMeshTriangleNode(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1));
+            m_NodeLists = new List<NavMeshTriangleNode>();
+            m_NodeLists.Add(root);
+
+            this.uv0 = uv0;
+            this.uv1 = uv1;
+            this.uv2 = uv2;
+        }
+
         /// <summary>
         /// 节点细分
         /// </summary>
@@ -94,6 +105,14 @@ namespace ASL.NavMesh
             }
         }
 
+        public void Subdivide(int depth)
+        {
+            if (m_NodeLists != null && m_NodeLists.Count >= 1)
+            {
+                m_NodeLists[0].Subdivide(depth, m_NodeLists);
+            }
+        }
+
         /// <summary>
         /// 获得当前三角面的面积
         /// </summary>
@@ -108,6 +127,12 @@ namespace ASL.NavMesh
         {
             if (m_NodeLists.Count >= 1)
                 m_NodeLists[0].GenerateMesh(vertex0, vertex1, vertex2, m_NodeLists, vlist, ilist);
+        }
+
+        public void GenerateMesh(List<Vector3> vlist, List<int> ilist, Terrain terrain)
+        {
+            if (m_NodeLists.Count >= 1)
+                m_NodeLists[0].GenerateMesh(uv0, uv1, uv2, m_NodeLists, vlist, ilist, terrain);
         }
 
         public void SamplingFromTexture(Texture2D texture, TextureBlendMode blendMode)
