@@ -127,7 +127,7 @@ public class NavMeshPainterEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        if (m_Target.painter == null)
+        if (m_Target.data == null)
         {
             DrawNoDataGUI();
             return;
@@ -158,11 +158,11 @@ public class NavMeshPainterEditor : Editor
     private void DrawNoDataGUI()
     {
         EditorGUI.BeginChangeCheck();
-        m_Target.painter =
-            EditorGUILayout.ObjectField(styles.painterData, m_Target.painter, typeof (NavMeshPainterData), false) as
+        m_Target.data =
+            EditorGUILayout.ObjectField(styles.painterData, m_Target.data, typeof (NavMeshPainterData), false) as
                 NavMeshPainterData;
         if(EditorGUI.EndChangeCheck())
-            if (m_Target.painter != null)
+            if (m_Target.data != null)
                 ResetCheckerBoardCellSize();
         if (GUILayout.Button(styles.create))
         {
@@ -261,11 +261,11 @@ public class NavMeshPainterEditor : Editor
     {
         GUILayout.Label(styles.setting, styles.boldLabel);
         EditorGUI.BeginChangeCheck();
-        m_Target.painter =
-            EditorGUILayout.ObjectField(styles.painterData, m_Target.painter, typeof(NavMeshPainterData), false) as
+        m_Target.data =
+            EditorGUILayout.ObjectField(styles.painterData, m_Target.data, typeof(NavMeshPainterData), false) as
                 NavMeshPainterData;
         if (EditorGUI.EndChangeCheck())
-            if (m_Target.painter != null)
+            if (m_Target.data != null)
                 ResetCheckerBoardCellSize();
 
         m_Target.navMeshWireColor = EditorGUILayout.ColorField(styles.wireColor, m_Target.navMeshWireColor);
@@ -294,7 +294,7 @@ public class NavMeshPainterEditor : Editor
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
 
 
-        if (m_Target.painter && m_Target.painter.renderMesh)
+        if (m_Target.data && m_Target.data.renderMesh)
         {
             var tooleditor = GetPaintingToolEditor(tool);
             tooleditor.DrawSceneGUI(m_Target);

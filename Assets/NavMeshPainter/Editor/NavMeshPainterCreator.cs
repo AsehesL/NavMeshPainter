@@ -89,7 +89,7 @@ namespace ASL.NavMesh.Editor
             }
             if (m_Painter != null)
             {
-                m_Painter.painter = m_Data;
+                m_Painter.data = m_Data;
                 m_Painter = null;
             }
             m_Data = null;

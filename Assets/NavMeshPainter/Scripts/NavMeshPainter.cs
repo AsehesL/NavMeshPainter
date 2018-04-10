@@ -13,7 +13,7 @@ public class NavMeshPainter : MonoBehaviour
 
     public Color navMeshWireColor = Color.green;
 
-    public NavMeshPainterData painter;
+    public NavMeshPainterData data;
 
     public NavMeshBrushTool brush;
     public NavMeshLineTool lineTool;
@@ -32,46 +32,46 @@ public class NavMeshPainter : MonoBehaviour
 
     public float GetMinSize()
     {
-        if (painter != null)
-            return painter.GetMinSize();
+        if (data != null)
+            return data.GetMinSize();
         return 0;
     }
 
     public Mesh GetRenderMesh()
     {
-        if (painter != null)
-            return painter.renderMesh;
+        if (data != null)
+            return data.renderMesh;
         return null;
     }
 
     public void Draw(IPaintingTool tool)
     {
-        if (painter != null)
-            painter.Paint(tool);
+        if (data != null)
+            data.Paint(tool);
     }
 
     public void Erase(IPaintingTool tool)
     {
-        if (painter != null)
-            painter.Erase(tool);
+        if (data != null)
+            data.Erase(tool);
     }
 
     public Mesh GenerateMesh(Color color)
     {
-        if (painter != null)
-            return painter.GenerateMesh(color);
+        if (data != null)
+            return data.GenerateMesh(color);
         return null;
     }
 
     public void SamplingFromTexture(Texture2D texture, TextureBlendMode blendMode)
     {
-        if (painter != null)
-            painter.SamplingFromTexture(texture, blendMode);
+        if (data != null)
+            data.SamplingFromTexture(texture, blendMode);
     }
 
     void OnDrawGizmosSelected()
     {
-        if (painter != null)
-            painter.DrawGizmos(navMeshWireColor);
+        if (data != null)
+            data.DrawGizmos(navMeshWireColor);
     }
 }
