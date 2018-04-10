@@ -186,7 +186,7 @@ namespace ASL.NavMesh
             }
         }
 
-        public void SamplingFromTexture(List<NavMeshTriangleNode> nodeList, Texture2D texture)
+        public void SamplingFromTexture(List<NavMeshTriangleNode> nodeList, Texture2D texture, TextureBlendMode blendMode)
         {
             NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodeList.Count
                         ? nodeList[m_CenterNodeIndex]
@@ -202,20 +202,25 @@ namespace ASL.NavMesh
                 : null;
 
             if (center != null)
-                center.SamplingFromTexture(nodeList, texture);
+                center.SamplingFromTexture(nodeList, texture, blendMode);
 
             if (top != null)
-                top.SamplingFromTexture(nodeList, texture);
+                top.SamplingFromTexture(nodeList, texture, blendMode);
 
             if (left != null)
-                left.SamplingFromTexture(nodeList, texture);
+                left.SamplingFromTexture(nodeList, texture, blendMode);
 
             if (right != null)
-                right.SamplingFromTexture(nodeList, texture);
+                right.SamplingFromTexture(nodeList, texture, blendMode);
 
             bool isInMask = SamplingTexture(texture);
-            if (isInMask)
-                isBePainted = true;
+            if (blendMode == TextureBlendMode.Add)
+            {
+                if (isInMask)
+                    isBePainted = true;
+            }
+            else
+                isBePainted = isInMask;
 
             ResetPaintMark(isBePainted, center, top, left, right);
         }

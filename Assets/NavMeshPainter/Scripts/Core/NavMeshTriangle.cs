@@ -143,10 +143,10 @@ namespace ASL.NavMesh
                 m_NodeLists[0].GenerateMesh(m_NodeLists, vlist, ilist);
         }
 
-        public void SamplingFromTexture(Texture2D texture)
+        public void SamplingFromTexture(Texture2D texture, TextureBlendMode blendMode)
         {
             if (m_NodeLists.Count >= 1)
-                m_NodeLists[0].SamplingFromTexture(m_NodeLists, texture);
+                m_NodeLists[0].SamplingFromTexture(m_NodeLists, texture, blendMode);
         }
 
         public void Draw(IPaintingTool tool, bool clear)

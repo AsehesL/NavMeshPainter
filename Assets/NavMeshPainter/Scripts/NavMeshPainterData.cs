@@ -95,10 +95,10 @@ namespace ASL.NavMesh
             return null;
         }
 
-        public void SamplingFromTexture(Texture2D texture)
+        public void SamplingFromTexture(Texture2D texture, TextureBlendMode blendMode)
         {
             if (ocTree != null)
-                ocTree.SamplingFromTexture(texture);
+                ocTree.SamplingFromTexture(texture, blendMode);
         }
 
         private void FindTriangle(Transform transform, List<NavMeshTriangle> triangles, float angle, ref Vector3 max,

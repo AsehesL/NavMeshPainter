@@ -87,10 +87,10 @@ namespace ASL.NavMesh
             return mesh;
         }
 
-        public void SamplingFromTexture(Texture2D texture)
+        public void SamplingFromTexture(Texture2D texture, TextureBlendMode blendMode)
         {
             if (m_NodeLists != null && m_NodeLists.Count > 0)
-                m_NodeLists[0].SamplingFromTexture(m_NodeLists, texture);
+                m_NodeLists[0].SamplingFromTexture(m_NodeLists, texture, blendMode);
         }
 
         public void Draw(IPaintingTool tool, bool clear = false)

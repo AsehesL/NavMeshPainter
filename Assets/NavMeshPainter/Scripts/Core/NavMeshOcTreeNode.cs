@@ -86,18 +86,18 @@ namespace ASL.NavMesh
             }
         }
 
-        public void SamplingFromTexture(List<NavMeshOcTreeNode> nodeList, Texture2D texture)
+        public void SamplingFromTexture(List<NavMeshOcTreeNode> nodeList, Texture2D texture, TextureBlendMode blendMode)
         {
             for (int i = 0; i < m_ChildNodes.Length; i++)
             {
                 if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].SamplingFromTexture(nodeList, texture);
+                    nodeList[m_ChildNodes[i]].SamplingFromTexture(nodeList, texture, blendMode);
             }
             if (m_ItemList != null)
             {
                 for (int i = 0; i < m_ItemList.Count; i++)
                 {
-                    m_ItemList[i].SamplingFromTexture(texture);
+                    m_ItemList[i].SamplingFromTexture(texture, blendMode);
                 }
             }
         }

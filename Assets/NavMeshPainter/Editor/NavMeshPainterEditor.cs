@@ -61,6 +61,7 @@ public class NavMeshPainterEditor : Editor
         public GUIContent generateMesh = new GUIContent("Refresh Preview Mesh");
         public GUIContent wireColor = new GUIContent("WireColor");
         public GUIContent previewMeshColor = new GUIContent("PreviewMesh Color");
+        public GUIContent blendMode = new GUIContent("BlendMode");
     }
 
     public static NavMeshPainterEditor.Styles styles
@@ -89,6 +90,8 @@ public class NavMeshPainterEditor : Editor
     private GameObject m_PreviewMeshObj;
 
     private Material m_PreviewMaterial;
+
+    private TextureBlendMode m_ApplyTextureMode;
 
     [MenuItem("GameObject/NavMeshPainter/Create NavMeshPainter")]
     static void Create()
@@ -240,6 +243,8 @@ public class NavMeshPainterEditor : Editor
         if (EditorGUI.EndChangeCheck())
             NavMeshEditorUtils.SetMaskTexture(m_RoadMask);
 
+        m_ApplyTextureMode = (TextureBlendMode) EditorGUILayout.EnumPopup(styles.blendMode, m_ApplyTextureMode);
+
         if (GUILayout.Button(styles.applyMask))
         {
             ApplyMask();
@@ -379,7 +384,7 @@ public class NavMeshPainterEditor : Editor
         RenderTexture.ReleaseTemporary(rt);
 
         m_RoadMask = null;
-        m_Target.SamplingFromTexture(cont);
+        m_Target.SamplingFromTexture(cont, m_ApplyTextureMode);
 
         DestroyImmediate(cont);
         NavMeshEditorUtils.SetMaskTexture(null);

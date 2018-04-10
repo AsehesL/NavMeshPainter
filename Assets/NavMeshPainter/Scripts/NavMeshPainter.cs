@@ -8,9 +8,15 @@ public enum PaintingToolType
     Line,
 }
 
+public enum TextureBlendMode
+{
+    Add,
+    Replace,
+}
+
 public class NavMeshPainter : MonoBehaviour
 {
-
+    
     public PaintingToolType paintTool;
 
     public Color navMeshWireColor = Color.green;
@@ -65,10 +71,10 @@ public class NavMeshPainter : MonoBehaviour
         return null;
     }
 
-    public void SamplingFromTexture(Texture2D texture)
+    public void SamplingFromTexture(Texture2D texture, TextureBlendMode blendMode)
     {
         if (painter != null)
-            painter.SamplingFromTexture(texture);
+            painter.SamplingFromTexture(texture, blendMode);
     }
 
     void OnDrawGizmosSelected()
