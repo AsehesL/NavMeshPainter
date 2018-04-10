@@ -128,7 +128,7 @@ namespace ASL.NavMesh
         {
             if (ocTree == null)
                 return 0;
-            Bounds bd = ocTree.Bounds;
+            Bounds bd = ocTree.bounds;
             float x = bd.size.x;
             float z = bd.size.z;
             return Mathf.Min(x, z);

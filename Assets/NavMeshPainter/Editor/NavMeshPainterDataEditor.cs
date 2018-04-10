@@ -40,7 +40,7 @@ namespace ASL.NavMesh.Editor
         {
             GUILayout.Label(styles.info, styles.boldLabel);
 
-            EditorGUILayout.BoundsField(styles.bounds, m_Target.ocTree.Bounds);
+            EditorGUILayout.BoundsField(styles.bounds, m_Target.ocTree.bounds);
 
             EditorGUILayout.FloatField(styles.count, m_Target.ocTree.count);
 

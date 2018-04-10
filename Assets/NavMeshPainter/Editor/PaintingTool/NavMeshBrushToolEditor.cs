@@ -59,7 +59,7 @@ namespace ASL.NavMesh.Editor
             var t = this.target as NavMeshBrushTool;
             if (t != null)
             {
-                NavMeshEditorUtils.DrawBounds(t.Bounds, Color.blue);
+                NavMeshEditorUtils.DrawBounds(t.bounds, Color.blue);
                 NavMeshEditorUtils.DrawBrush(targetPainter.GetRenderMesh(), Matrix4x4.identity, t.position, t.length, t.width, t.height,
                     t.brushType);
             }

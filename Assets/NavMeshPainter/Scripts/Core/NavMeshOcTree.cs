@@ -16,7 +16,7 @@ namespace ASL.NavMesh
         /// <summary>
         /// 八叉树包围盒区域
         /// </summary>
-        public Bounds Bounds
+        public Bounds bounds
         {
             get
             {

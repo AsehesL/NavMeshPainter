@@ -34,7 +34,7 @@ namespace ASL.NavMesh
         public float height;
         public NavMeshBrushType brushType;
 
-        public Bounds Bounds
+        public Bounds bounds
         {
             get
             {
@@ -48,7 +48,7 @@ namespace ASL.NavMesh
 
         public bool IntersectsBounds(Bounds bounds)
         {
-            return this.Bounds.Intersects(bounds);
+            return this.bounds.Intersects(bounds);
         }
 
         public bool IntersectsTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2)
@@ -69,7 +69,7 @@ namespace ASL.NavMesh
             Vector3 size = max - min;
             Vector3 center = min + size*0.5f;
             Bounds bd = new Bounds(center, size);
-            return bd.Intersects(this.Bounds);
+            return bd.Intersects(this.bounds);
         }
 
         private bool InteresectsTriangleByCylinder(Vector3 max, Vector3 min)
