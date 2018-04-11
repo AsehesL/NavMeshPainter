@@ -15,6 +15,7 @@ namespace ASL.NavMesh.Editor
             public GUIContent maxDepth = new GUIContent("MaxDepth");
             public GUIContent create = new GUIContent("Create From Selection");
             public GUIContent containChilds = new GUIContent("Contain Childs");
+            public GUIContent forceSet = new GUIContent("Force SetDepth");
         }
 
         private static Styles styles
@@ -31,6 +32,7 @@ namespace ASL.NavMesh.Editor
 
         private float m_Angle;
         private int m_MaxDepth = 4;
+        private bool m_ForceSetDepth = false;
         private bool m_ContainChilds;
 
         private NavMeshPainterData m_Data;
@@ -56,7 +58,10 @@ namespace ASL.NavMesh.Editor
                 m_ContainChilds);
 
             m_MaxDepth = EditorGUI.IntSlider(new Rect(110, 45, position.width - 115, 20), styles.maxDepth, m_MaxDepth, 1,
-                5);
+                8);
+
+            m_ForceSetDepth = EditorGUI.Toggle(new Rect(110, 65, position.width - 115, 20), styles.forceSet,
+                m_ForceSetDepth);
 
             if (GUI.Button(new Rect(position.width - 155, position.height - 25, 150, 20), styles.create))
             {
@@ -70,7 +75,7 @@ namespace ASL.NavMesh.Editor
                 return;
             if (m_Data != null)
             {
-                m_Data.Create(Selection.gameObjects, m_ContainChilds, m_Angle*0.5f, m_MaxDepth);
+                m_Data.Create(Selection.gameObjects, m_ContainChilds, m_Angle*0.5f, m_MaxDepth, m_ForceSetDepth);
             }
             else
             {
@@ -80,7 +85,7 @@ namespace ASL.NavMesh.Editor
                 {
 
                     m_Data = NavMeshPainterData.CreateInstance<NavMeshPainterData>();
-                    m_Data.Create(Selection.gameObjects, m_ContainChilds, m_Angle*0.5f, m_MaxDepth);
+                    m_Data.Create(Selection.gameObjects, m_ContainChilds, m_Angle*0.5f, m_MaxDepth, m_ForceSetDepth);
 
                     AssetDatabase.CreateAsset(m_Data, savePath);
                     AssetDatabase.AddObjectToAsset(m_Data.renderMesh, m_Data);

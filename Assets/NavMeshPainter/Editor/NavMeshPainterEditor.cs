@@ -85,7 +85,7 @@ public class NavMeshPainterEditor : Editor
     private Texture2D m_RoadMask;
 
     private Color m_PreviewMeshColor = Color.red;
-    private GameObject m_PreviewMeshObj;
+    //private GameObject m_PreviewMeshObj;
 
     private Material m_PreviewMaterial;
 
@@ -103,8 +103,15 @@ public class NavMeshPainterEditor : Editor
     {
         m_Target = (NavMeshPainter) target;
 
+        BuildData();
+
         ResetCheckerBoard();
         NavMeshEditorUtils.SetMaskTexture(null);
+    }
+
+    void OnDisable()
+    {
+        SaveData();
     }
 
     void OnSceneGUI()
@@ -162,7 +169,10 @@ public class NavMeshPainterEditor : Editor
                 NavMeshPainterData;
         if(EditorGUI.EndChangeCheck())
             if (m_Target.data != null)
+            {
+                BuildData();
                 ResetCheckerBoard();
+            }
         if (GUILayout.Button(styles.create))
         {
             CreateNewNavMeshPainterData();
@@ -265,7 +275,10 @@ public class NavMeshPainterEditor : Editor
                 NavMeshPainterData;
         if (EditorGUI.EndChangeCheck())
             if (m_Target.data != null)
+            {
+                BuildData();
                 ResetCheckerBoard();
+            }
 
         m_Target.navMeshWireColor = EditorGUILayout.ColorField(styles.wireColor, m_Target.navMeshWireColor);
         m_PreviewMeshColor = EditorGUILayout.ColorField(styles.previewMeshColor, m_PreviewMeshColor);
@@ -363,27 +376,27 @@ public class NavMeshPainterEditor : Editor
         Mesh mesh = m_Target.GenerateMesh(m_PreviewMeshColor);
         if (mesh)
         {
-            if (m_PreviewMeshObj == null)
-            {
-                m_PreviewMeshObj = new GameObject("PreviewMesh");
-                m_PreviewMeshObj.transform.SetParent(m_Target.transform);
-                m_PreviewMeshObj.hideFlags = HideFlags.HideAndDontSave;
-                m_PreviewMeshObj.isStatic = true;
-            }
-            m_PreviewMeshObj.transform.position = Vector3.zero;
-            m_PreviewMeshObj.transform.eulerAngles = Vector3.zero;
-            MeshFilter mf = m_PreviewMeshObj.GetComponent<MeshFilter>();
+//            if (m_PreviewMeshObj == null)
+//            {
+//                m_PreviewMeshObj = new GameObject("PreviewMesh");
+//                m_PreviewMeshObj.transform.SetParent(m_Target.transform);
+//                m_PreviewMeshObj.hideFlags = HideFlags.HideAndDontSave;
+//                m_PreviewMeshObj.isStatic = true;
+//            }
+            m_Target.transform.position = Vector3.zero;
+            m_Target.transform.eulerAngles = Vector3.zero;
+            MeshFilter mf = m_Target.GetComponent<MeshFilter>();
             if (mf == null)
             {
-                mf = m_PreviewMeshObj.AddComponent<MeshFilter>();
+                mf = m_Target.gameObject.AddComponent<MeshFilter>();
                 mf.hideFlags = HideFlags.HideAndDontSave;
             }
             mf.sharedMesh = mesh;
 
-            MeshRenderer mr = m_PreviewMeshObj.GetComponent<MeshRenderer>();
+            MeshRenderer mr = m_Target.GetComponent<MeshRenderer>();
             if (mr == null)
             {
-                mr = m_PreviewMeshObj.AddComponent<MeshRenderer>();
+                mr = m_Target.gameObject.AddComponent<MeshRenderer>();
                 mr.hideFlags = HideFlags.HideAndDontSave;
             }
             if (m_PreviewMaterial == null)
@@ -432,5 +445,15 @@ public class NavMeshPainterEditor : Editor
             editor.SetTool(tool);
         }
         return editor;
+    }
+
+    private void BuildData()
+    {
+        m_Target.Init();
+    }
+
+    private void SaveData()
+    {
+        m_Target.Save();
     }
 }

@@ -32,6 +32,10 @@ namespace ASL.NavMesh
         [SerializeField]
         private Bounds m_Bounds;
 
+        [SerializeField] private int m_MaxDepth;
+
+        private NavMeshTriangleNode m_Root;
+
         public NavMeshTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2, Vector2 uv0, Vector2 uv1, Vector2 uv2)
         {
             //NavMeshTriangleNode root = new NavMeshTriangleNode(vertex0, vertex1, vertex2, uv0, uv1, uv2);
@@ -77,15 +81,38 @@ namespace ASL.NavMesh
             this.uv2 = uv2;
         }
 
+        public void Build()
+        {
+            if (m_NodeLists.Count >= 1)
+                m_NodeLists[0].Build(m_NodeLists);
+            m_Root = m_NodeLists[0];
+            m_NodeLists = null;
+        }
+
+        public void Save()
+        {
+            if (m_Root != null)
+            {
+                m_NodeLists = new List<NavMeshTriangleNode>();
+                m_NodeLists.Add(m_Root);
+                m_Root.Save(m_NodeLists);
+            }
+        }
+
         /// <summary>
         /// 节点细分
         /// </summary>
         /// <param name="maxDepth">最大深度</param>
         /// <param name="maxArea">最大三角面积</param>
-        public void Subdivide(int maxDepth, float maxArea)
+        public void SetMaxDepth(int maxDepth, float maxArea, bool forceSet = false)
         {
+            if (forceSet)
+            {
+                m_MaxDepth = maxDepth;
+                return;
+            }
             //根据最大三角面积及最大深度，确定当前三角面的细分深度
-            if (m_NodeLists != null && m_NodeLists.Count >= 1)
+            //if (m_NodeLists != null && m_NodeLists.Count >= 1)
             {
                 float tcount = Mathf.Pow(4, maxDepth);
                 float marea = maxArea/tcount;
@@ -101,15 +128,7 @@ namespace ASL.NavMesh
                         break;
                     }
                 }
-                m_NodeLists[0].Subdivide(maxDepth, m_NodeLists);
-            }
-        }
-
-        public void Subdivide(int depth)
-        {
-            if (m_NodeLists != null && m_NodeLists.Count >= 1)
-            {
-                m_NodeLists[0].Subdivide(depth, m_NodeLists);
+                m_MaxDepth = maxDepth;
             }
         }
 
@@ -125,34 +144,26 @@ namespace ASL.NavMesh
 
         public void GenerateMesh(List<Vector3> vlist, List<int> ilist)
         {
-            if (m_NodeLists.Count >= 1)
-                m_NodeLists[0].GenerateMesh(vertex0, vertex1, vertex2, m_NodeLists, vlist, ilist);
-        }
-
-        public void GenerateMesh(List<Vector3> vlist, List<int> ilist, Terrain terrain)
-        {
-            if (m_NodeLists.Count >= 1)
-                m_NodeLists[0].GenerateMesh(uv0, uv1, uv2, m_NodeLists, vlist, ilist, terrain);
+            if (m_Root != null)
+                m_Root.GenerateMesh(vertex0, vertex1, vertex2, vlist, ilist);
         }
 
         public void SamplingFromTexture(Texture2D texture, TextureBlendMode blendMode)
         {
-            if (m_NodeLists.Count >= 1)
-                m_NodeLists[0].SamplingFromTexture(uv0, uv1, uv2, m_NodeLists, texture, blendMode);
+            if (m_Root != null)
+                m_Root.SamplingFromTexture(uv0, uv1, uv2, texture, blendMode, 0, m_MaxDepth);
         }
 
         public void Interesect(IPaintingTool tool, bool erase)
         {
-            if (m_NodeLists.Count >= 1)
-            {
-                m_NodeLists[0].Interesect(tool, erase, vertex0, vertex1, vertex2, m_NodeLists);
-            }
+            if (m_Root != null)
+                m_Root.Interesect(tool, erase, vertex0, vertex1, vertex2, 0, m_MaxDepth);
         }
 
         public void DrawTriangleGizmos()
         {
-            if (m_NodeLists.Count >= 1)
-                m_NodeLists[0].DrawTriangleGizmos(vertex0, vertex1, vertex2, m_NodeLists);
+            if (m_Root != null)
+                m_Root.DrawTriangleGizmos(vertex0, vertex1, vertex2);
         }
     }
 }

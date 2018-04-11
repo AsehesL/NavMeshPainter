@@ -27,6 +27,38 @@ namespace ASL.NavMesh
             this.m_ItemList = new List<NavMeshTriangle>();
         }
 
+        public void Init(List<NavMeshOcTreeNode> nodeList)
+        {
+            for (int i = 0; i < m_ChildNodes.Length; i++)
+            {
+                if (m_ChildNodes[i] > 0)
+                    nodeList[m_ChildNodes[i]].Init(nodeList);
+            }
+            if (m_ItemList != null)
+            {
+                for (int i = 0; i < m_ItemList.Count; i++)
+                {
+                    m_ItemList[i].Build();
+                }
+            }
+        }
+
+        public void Save(List<NavMeshOcTreeNode> nodeList)
+        {
+            for (int i = 0; i < m_ChildNodes.Length; i++)
+            {
+                if (m_ChildNodes[i] > 0)
+                    nodeList[m_ChildNodes[i]].Save(nodeList);
+            }
+            if (m_ItemList != null)
+            {
+                for (int i = 0; i < m_ItemList.Count; i++)
+                {
+                    m_ItemList[i].Save();
+                }
+            }
+        }
+
         public NavMeshOcTreeNode Insert(NavMeshTriangle item, int depth, int maxDepth, List<NavMeshOcTreeNode> nodeList)
         {
             if (depth < maxDepth)

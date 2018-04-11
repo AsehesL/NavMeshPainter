@@ -43,7 +43,8 @@ namespace ASL.NavMesh
         /// <param name="containChilds">是否包含子物体</param>
         /// <param name="angle">与法线夹角</param>
         /// <param name="maxDepth"></param>
-        public void Create(GameObject[] gameObjects, bool containChilds, float angle, int maxDepth)
+        /// <param name="forceSetDepth"></param>
+        public void Create(GameObject[] gameObjects, bool containChilds, float angle, int maxDepth, bool forceSetDepth)
         {
             Vector3 max = new Vector3(-Mathf.Infinity, -Mathf.Infinity, -Mathf.Infinity);
             Vector3 min = new Vector3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
@@ -78,7 +79,7 @@ namespace ASL.NavMesh
 
             for (int i = 0; i < triangles.Count; i++)
             {
-                triangles[i].Subdivide(maxDepth, maxArea);
+                triangles[i].SetMaxDepth(maxDepth, maxArea, forceSetDepth);
 
                 ocTree.Add(triangles[i]);
                 ilist.Add(vlist.Count);
@@ -97,6 +98,18 @@ namespace ASL.NavMesh
             renderMesh.SetUVs(0, ulist);
             renderMesh.SetTriangles(ilist, 0);
             renderMesh.RecalculateNormals();
+        }
+
+        public void Init()
+        {
+            if (ocTree != null)
+                ocTree.Init();
+        }
+
+        public void Save()
+        {
+            if (ocTree != null)
+                ocTree.Save();
         }
 
         public void Paint(IPaintingTool tool)

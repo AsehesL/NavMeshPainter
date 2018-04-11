@@ -51,6 +51,18 @@ namespace ASL.NavMesh
             this.m_NodeLists.Add(new NavMeshOcTreeNode(new Bounds(center, size)));
         }
 
+        public void Init()
+        {
+            if (m_NodeLists != null && m_NodeLists.Count > 0)
+                m_NodeLists[0].Init(m_NodeLists);
+        }
+
+        public void Save()
+        {
+            if (m_NodeLists != null && m_NodeLists.Count > 0)
+                m_NodeLists[0].Save(m_NodeLists);
+        }
+
         /// <summary>
         /// 插入数据
         /// </summary>

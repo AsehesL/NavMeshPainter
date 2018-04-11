@@ -44,6 +44,18 @@ public class NavMeshPainter : MonoBehaviour
         return null;
     }
 
+    public void Init()
+    {
+        if (data)
+            data.Init();
+    }
+
+    public void Save()
+    {
+        if (data)
+            data.Save();
+    }
+
     public float GetMinSize()
     {
         if (data != null)

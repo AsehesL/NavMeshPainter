@@ -63,7 +63,8 @@ namespace ASL.NavMesh.Editor
 
         public static void SetCheckerBoardCellSize(float size)
         {
-            GLMaterial.SetFloat("_CellSize", size*0.25f);
+            //GLMaterial.SetFloat("_CellSize", size*0.25f);
+            GLMaterial.SetFloat("_CellSize", 30f/size);
         }
 
         public static void SetMaskTexture(Texture2D texture)

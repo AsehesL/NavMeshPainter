@@ -39,6 +39,13 @@ namespace ASL.NavMesh
         [SerializeField] private int m_LeftNodeIndex = -1;
         [SerializeField] private int m_RightNodeIndex = -1;
 
+        private NavMeshTriangleNode m_CenterNode;
+        private NavMeshTriangleNode m_TopNode;
+        private NavMeshTriangleNode m_LeftNode;
+        private NavMeshTriangleNode m_RightNode;
+
+        private int m_CurrentDepth;
+
         public NavMeshTriangleNode(Vector2 weight0, Vector2 weight1, Vector2 weight2)
         {
             this.weight0 = weight0;
@@ -46,41 +53,81 @@ namespace ASL.NavMesh
             this.weight2 = weight2;
         }
 
-        /// <summary>
-        /// 进行细分递归
-        /// </summary>
-        /// <param name="depth"></param>
-        /// <param name="nodelist"></param>
-        public void Subdivide(int depth, List<NavMeshTriangleNode> nodelist)
+        public void Build(List<NavMeshTriangleNode> nodelist)
         {
-            if (depth <= 0)
-                return;
+            m_CenterNode = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodelist.Count
+                        ? nodelist[m_CenterNodeIndex]
+                        : null;
+            m_TopNode = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodelist.Count
+                ? nodelist[m_TopNodeIndex]
+                : null;
+            m_LeftNode = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodelist.Count
+                ? nodelist[m_LeftNodeIndex]
+                : null;
+            m_RightNode = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodelist.Count
+                ? nodelist[m_RightNodeIndex]
+                : null;
 
-            Vector2 halfw01 = weight0 + (weight1 - weight0)*0.5f;
-            Vector2 halfw02 = weight0 + (weight2 - weight0)*0.5f;
-            Vector2 halfw12 = weight1 + (weight2 - weight1)*0.5f;
-
-            NavMeshTriangleNode center = new NavMeshTriangleNode(halfw01, halfw12, halfw02);
-            NavMeshTriangleNode top = new NavMeshTriangleNode(halfw01, weight1, halfw12);
-            NavMeshTriangleNode left = new NavMeshTriangleNode(weight0, halfw01, halfw02);
-            NavMeshTriangleNode right = new NavMeshTriangleNode(halfw02, halfw12, weight2);
-
-            m_CenterNodeIndex = nodelist.Count;
-            nodelist.Add(center);
-            m_TopNodeIndex = nodelist.Count;
-            nodelist.Add(top);
-            m_LeftNodeIndex = nodelist.Count;
-            nodelist.Add(left);
-            m_RightNodeIndex = nodelist.Count;
-            nodelist.Add(right);
-
-            center.Subdivide(depth - 1, nodelist);
-            top.Subdivide(depth - 1, nodelist);
-            left.Subdivide(depth - 1, nodelist);
-            right.Subdivide(depth - 1, nodelist);
+            if (m_CenterNode != null)
+                m_CenterNode.Build(nodelist);
+            if (m_TopNode != null)
+                m_TopNode.Build(nodelist);
+            if (m_LeftNode != null)
+                m_LeftNode.Build(nodelist);
+            if (m_RightNode != null)
+                m_RightNode.Build(nodelist);
         }
 
-        public void Interesect(IPaintingTool tool, bool erase, Vector3 v0, Vector3 v1, Vector3 v2, List<NavMeshTriangleNode> nodelist)
+        public void Save(List<NavMeshTriangleNode> nodelist)
+        {
+            if (m_CenterNode != null)
+            {
+                m_CenterNodeIndex = nodelist.Count;
+                nodelist.Add(m_CenterNode);
+                m_CenterNode.Save(nodelist);
+            }
+            else
+            {
+                m_CenterNodeIndex = -1;
+            }
+
+            if (m_TopNode != null)
+            {
+                m_TopNodeIndex = nodelist.Count;
+                nodelist.Add(m_TopNode);
+                m_TopNode.Save(nodelist);
+            }
+            else
+            {
+                m_TopNodeIndex = -1;
+            }
+
+            if (m_LeftNode != null)
+            {
+                m_LeftNodeIndex = nodelist.Count;
+                nodelist.Add(m_LeftNode);
+                m_LeftNode.Save(nodelist);
+            }
+            else
+            {
+                m_LeftNodeIndex = -1;
+            }
+
+            if (m_RightNode != null)
+            {
+                m_RightNodeIndex = nodelist.Count;
+                nodelist.Add(m_RightNode);
+                m_RightNode.Save(nodelist);
+            }
+            else
+            {
+                m_RightNodeIndex = -1;
+            }
+        }
+
+
+
+        public void Interesect(IPaintingTool tool, bool erase, Vector3 v0, Vector3 v1, Vector3 v2, int depth, int maxDepth)
         {
             Vector3 vertex0 = (1 - weight0.x - weight0.y) * v0 + weight0.x * v1 + weight0.y * v2;
             Vector3 vertex1 = (1 - weight1.x - weight1.y) * v0 + weight1.x * v1 + weight1.y * v2;
@@ -90,61 +137,51 @@ namespace ASL.NavMesh
                 bool cotinuePaint = isBePainted != !erase || isMix;
                 if (!cotinuePaint)
                     return;
+                
+                if (depth <= maxDepth)
+                {
+                    Vector2 halfw01 = weight0 + (weight1 - weight0) * 0.5f;
+                    Vector2 halfw02 = weight0 + (weight2 - weight0) * 0.5f;
+                    Vector2 halfw12 = weight1 + (weight2 - weight1) * 0.5f;
+                    if (m_CenterNode == null)
+                        m_CenterNode = new NavMeshTriangleNode(halfw01, halfw12, halfw02);
+                    if (m_TopNode == null)
+                        m_TopNode = new NavMeshTriangleNode(halfw01, weight1, halfw12);
+                    if (m_LeftNode == null)
+                        m_LeftNode = new NavMeshTriangleNode(weight0, halfw01, halfw02);
+                    if (m_RightNode == null)
+                        m_RightNode = new NavMeshTriangleNode(halfw02, halfw12, weight2);
+                }
 
-                NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodelist.Count
-                        ? nodelist[m_CenterNodeIndex]
-                        : null;
-                NavMeshTriangleNode top = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodelist.Count
-                    ? nodelist[m_TopNodeIndex]
-                    : null;
-                NavMeshTriangleNode left = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodelist.Count
-                    ? nodelist[m_LeftNodeIndex]
-                    : null;
-                NavMeshTriangleNode right = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodelist.Count
-                    ? nodelist[m_RightNodeIndex]
-                    : null;
+                if (m_CenterNode != null)
+                    m_CenterNode.Interesect(tool, erase, v0, v1, v2, depth + 1, maxDepth);
 
-                if (center != null)
-                    center.Interesect(tool, erase, v0, v1, v2, nodelist);
+                if (m_TopNode != null)
+                    m_TopNode.Interesect(tool, erase, v0, v1, v2, depth + 1, maxDepth);
 
-                if (top != null)
-                    top.Interesect(tool, erase, v0, v1, v2, nodelist);
+                if (m_LeftNode != null)
+                    m_LeftNode.Interesect(tool, erase, v0, v1, v2, depth + 1, maxDepth);
 
-                if (left != null)
-                    left.Interesect(tool, erase, v0, v1, v2, nodelist);
+                if (m_RightNode != null)
+                    m_RightNode.Interesect(tool, erase, v0, v1, v2, depth + 1, maxDepth);
 
-                if (right != null)
-                    right.Interesect(tool, erase, v0, v1, v2, nodelist);
-
-                ResetPaintMark(!erase, center, top, left, right);
+                ResetPaintMark(!erase, m_CenterNode, m_TopNode, m_LeftNode, m_RightNode);
             }
 
         }
 
-        public void DrawTriangleGizmos(Vector3 v0, Vector3 v1, Vector3 v2, List<NavMeshTriangleNode> nodeList)
+        public void DrawTriangleGizmos(Vector3 v0, Vector3 v1, Vector3 v2)
         {
             if (isMix)
             {
-                NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodeList.Count
-                    ? nodeList[m_CenterNodeIndex]
-                    : null;
-                NavMeshTriangleNode top = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodeList.Count
-                    ? nodeList[m_TopNodeIndex]
-                    : null;
-                NavMeshTriangleNode left = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodeList.Count
-                    ? nodeList[m_LeftNodeIndex]
-                    : null;
-                NavMeshTriangleNode right = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodeList.Count
-                    ? nodeList[m_RightNodeIndex]
-                    : null;
-                if (center != null)
-                    center.DrawTriangleGizmos(v0, v1, v2, nodeList);
-                if (top != null)
-                    top.DrawTriangleGizmos(v0, v1, v2, nodeList);
-                if (left != null)
-                    left.DrawTriangleGizmos(v0, v1, v2, nodeList);
-                if (right != null)
-                    right.DrawTriangleGizmos(v0, v1, v2, nodeList);
+                if (m_CenterNode != null)
+                    m_CenterNode.DrawTriangleGizmos(v0, v1, v2);
+                if (m_TopNode != null)
+                    m_TopNode.DrawTriangleGizmos(v0, v1, v2);
+                if (m_LeftNode != null)
+                    m_LeftNode.DrawTriangleGizmos(v0, v1, v2);
+                if (m_RightNode != null)
+                    m_RightNode.DrawTriangleGizmos(v0, v1, v2);
             }
             else
             {
@@ -161,7 +198,7 @@ namespace ASL.NavMesh
             }
         }
 
-        public void GenerateMesh(Vector3 v0, Vector3 v1, Vector3 v2, List<NavMeshTriangleNode> nodeList, List<Vector3> vlist, List<int> ilist)
+        public void GenerateMesh(Vector3 v0, Vector3 v1, Vector3 v2, List<Vector3> vlist, List<int> ilist)
         {
             if (!isMix)
             {
@@ -181,122 +218,71 @@ namespace ASL.NavMesh
             }
             else
             {
-                NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodeList.Count
-                    ? nodeList[m_CenterNodeIndex]
-                    : null;
-                NavMeshTriangleNode top = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodeList.Count
-                    ? nodeList[m_TopNodeIndex]
-                    : null;
-                NavMeshTriangleNode left = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodeList.Count
-                    ? nodeList[m_LeftNodeIndex]
-                    : null;
-                NavMeshTriangleNode right = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodeList.Count
-                    ? nodeList[m_RightNodeIndex]
-                    : null;
-                if (center != null)
-                    center.GenerateMesh(v0, v1, v2, nodeList, vlist, ilist);
-                if (top != null)
-                    top.GenerateMesh(v0, v1, v2, nodeList, vlist, ilist);
-                if (left != null)
-                    left.GenerateMesh(v0, v1, v2, nodeList, vlist, ilist);
-                if (right != null)
-                    right.GenerateMesh(v0, v1, v2, nodeList, vlist, ilist);
+                if (m_CenterNode != null)
+                    m_CenterNode.GenerateMesh(v0, v1, v2, vlist, ilist);
+                if (m_TopNode != null)
+                    m_TopNode.GenerateMesh(v0, v1, v2, vlist, ilist);
+                if (m_LeftNode != null)
+                    m_LeftNode.GenerateMesh(v0, v1, v2, vlist, ilist);
+                if (m_RightNode != null)
+                    m_RightNode.GenerateMesh(v0, v1, v2, vlist, ilist);
             }
         }
 
-        public void GenerateMesh(Vector2 u0, Vector2 u1, Vector2 u2, List<NavMeshTriangleNode> nodeList, List<Vector3> vlist, List<int> ilist, Terrain terrain)
+
+
+        public void SamplingFromTexture(Vector2 u0, Vector2 u1, Vector2 u2, Texture2D texture, TextureBlendMode blendMode, int depth, int maxDepth)
         {
-            if (!isMix)
-            {
-                if (isBePainted)
-                {
-
-                    Vector2 uv0 = (1 - weight0.x - weight0.y) * u0 + weight0.x * u1 + weight0.y * u2;
-                    Vector2 uv1 = (1 - weight1.x - weight1.y) * u0 + weight1.x * u1 + weight1.y * u2;
-                    Vector2 uv2 = (1 - weight2.x - weight2.y) * u0 + weight2.x * u1 + weight2.y * u2;
-
-                    Vector3 vertex0 = new Vector3(uv0.x*terrain.terrainData.size.x, 0, uv0.y*terrain.terrainData.size.z);
-                    Vector3 vertex1 = new Vector3(uv1.x * terrain.terrainData.size.x, 0, uv1.y * terrain.terrainData.size.z);
-                    Vector3 vertex2 = new Vector3(uv2.x * terrain.terrainData.size.x, 0, uv2.y * terrain.terrainData.size.z);
-
-                    vertex0.y = terrain.terrainData.GetInterpolatedHeight(uv0.x, uv0.y);
-                    vertex1.y = terrain.terrainData.GetInterpolatedHeight(uv1.x, uv1.y);
-                    vertex2.y = terrain.terrainData.GetInterpolatedHeight(uv2.x, uv2.y);
-
-                    vertex0 = vertex0 + terrain.transform.position;
-                    vertex1 = vertex1 + terrain.transform.position;
-                    vertex2 = vertex2 + terrain.transform.position;
-
-                    ilist.Add(vlist.Count);
-                    vlist.Add(vertex0);
-                    ilist.Add(vlist.Count);
-                    vlist.Add(vertex1);
-                    ilist.Add(vlist.Count);
-                    vlist.Add(vertex2);
-                }
-            }
-            else
-            {
-                NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodeList.Count
-                    ? nodeList[m_CenterNodeIndex]
-                    : null;
-                NavMeshTriangleNode top = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodeList.Count
-                    ? nodeList[m_TopNodeIndex]
-                    : null;
-                NavMeshTriangleNode left = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodeList.Count
-                    ? nodeList[m_LeftNodeIndex]
-                    : null;
-                NavMeshTriangleNode right = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodeList.Count
-                    ? nodeList[m_RightNodeIndex]
-                    : null;
-                if (center != null)
-                    center.GenerateMesh(u0, u1, u2, nodeList, vlist, ilist, terrain);
-                if (top != null)
-                    top.GenerateMesh(u0, u1, u2, nodeList, vlist, ilist, terrain);
-                if (left != null)
-                    left.GenerateMesh(u0, u1, u2, nodeList, vlist, ilist, terrain);
-                if (right != null)
-                    right.GenerateMesh(u0, u1, u2, nodeList, vlist, ilist, terrain);
-            }
-        }
-
-        public void SamplingFromTexture(Vector2 u0, Vector2 u1, Vector2 u2, List<NavMeshTriangleNode> nodeList, Texture2D texture, TextureBlendMode blendMode)
-        {
-            NavMeshTriangleNode center = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodeList.Count
-                        ? nodeList[m_CenterNodeIndex]
-                        : null;
-            NavMeshTriangleNode top = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodeList.Count
-                ? nodeList[m_TopNodeIndex]
-                : null;
-            NavMeshTriangleNode left = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodeList.Count
-                ? nodeList[m_LeftNodeIndex]
-                : null;
-            NavMeshTriangleNode right = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodeList.Count
-                ? nodeList[m_RightNodeIndex]
-                : null;
-
-            if (center != null)
-                center.SamplingFromTexture(u0, u1, u2, nodeList, texture, blendMode);
-
-            if (top != null)
-                top.SamplingFromTexture(u0, u1, u2, nodeList, texture, blendMode);
-
-            if (left != null)
-                left.SamplingFromTexture(u0, u1, u2, nodeList, texture, blendMode);
-
-            if (right != null)
-                right.SamplingFromTexture(u0, u1, u2, nodeList, texture, blendMode);
-
+           
+            bool continueSample = false;
             bool isInMask = SamplingTexture(u0, u1, u2, texture);
             if (blendMode == TextureBlendMode.Add)
             {
                 if (isInMask)
+                {
                     isBePainted = true;
+                    continueSample = true;
+                }
             }
             else
+            {
+                if (isBePainted != isInMask)
+                    continueSample = true;
                 isBePainted = isInMask;
+            }
+            if (!continueSample)
+                return;
 
-            ResetPaintMark(isBePainted, center, top, left, right);
+            if (depth <= maxDepth)
+            {
+                Vector2 halfw01 = weight0 + (weight1 - weight0) * 0.5f;
+                Vector2 halfw02 = weight0 + (weight2 - weight0) * 0.5f;
+                Vector2 halfw12 = weight1 + (weight2 - weight1) * 0.5f;
+                if (m_CenterNode == null)
+                    m_CenterNode = new NavMeshTriangleNode(halfw01, halfw12, halfw02);
+                if (m_TopNode == null)
+                    m_TopNode = new NavMeshTriangleNode(halfw01, weight1, halfw12);
+                if (m_LeftNode == null)
+                    m_LeftNode = new NavMeshTriangleNode(weight0, halfw01, halfw02);
+                if (m_RightNode == null)
+                    m_RightNode = new NavMeshTriangleNode(halfw02, halfw12, weight2);
+            }
+
+            if (m_CenterNode != null)
+                m_CenterNode.SamplingFromTexture(u0, u1, u2, texture, blendMode, depth + 1, maxDepth);
+
+            if (m_TopNode != null)
+                m_TopNode.SamplingFromTexture(u0, u1, u2, texture, blendMode, depth + 1, maxDepth);
+
+            if (m_LeftNode != null)
+                m_LeftNode.SamplingFromTexture(u0, u1, u2, texture, blendMode, depth + 1, maxDepth);
+
+            if (m_RightNode != null)
+                m_RightNode.SamplingFromTexture(u0, u1, u2, texture, blendMode, depth + 1, maxDepth);
+
+            
+
+            ResetPaintMark(isBePainted, m_CenterNode, m_TopNode, m_LeftNode, m_RightNode);
         }
 
         private void ResetPaintMark(bool paint, NavMeshTriangleNode center, NavMeshTriangleNode top, NavMeshTriangleNode left, NavMeshTriangleNode right)
