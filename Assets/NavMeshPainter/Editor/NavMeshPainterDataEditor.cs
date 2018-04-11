@@ -17,6 +17,7 @@ namespace ASL.NavMesh.Editor
             public GUIContent bounds = new GUIContent("Bounds");
             public GUIContent count = new GUIContent("Triangle Count");
             public GUIContent info = new GUIContent("Information");
+            public GUIContent check = new GUIContent("Check Max Triangle Node Depth");
         }
 
         private static Styles styles
@@ -44,10 +45,20 @@ namespace ASL.NavMesh.Editor
 
             EditorGUILayout.FloatField(styles.count, m_Target.ocTree.count);
 
+            if (GUILayout.Button(styles.check))
+            {
+                CheckMaxTriangleNodeCount();
+            }
+
             if (GUILayout.Button(styles.refresh))
             {
                 NavMeshPainterCreator.CreateWizard(null, m_Target);
             }
+        }
+
+        private void CheckMaxTriangleNodeCount()
+        {
+            m_Target.CheckMaxTriangleNodeCount();
         }
     }
 }

@@ -147,6 +147,12 @@ namespace ASL.NavMesh
                 ocTree.SamplingFromTexture(texture, blendMode);
         }
 
+        public void CheckMaxTriangleNodeCount()
+        {
+            if (ocTree != null)
+                ocTree.CheckMaxTriangleNodeCount();
+        }
+
         private void FindTriangle(Transform transform, List<NavMeshTriangle> triangles, float angle, ref Vector3 max,
             ref Vector3 min, ref float maxArea)
         {
@@ -211,6 +217,7 @@ namespace ASL.NavMesh
             if (ocTree != null)
                 ocTree.DrawGizmos();
         }
+
     }
 
 }

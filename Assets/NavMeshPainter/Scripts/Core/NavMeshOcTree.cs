@@ -116,6 +116,14 @@ namespace ASL.NavMesh
                 m_NodeLists[0].SamplingFromTexture(m_NodeLists, texture, blendMode);
         }
 
+        public void CheckMaxTriangleNodeCount()
+        {
+            int maxDepth = 0;
+            if (m_NodeLists != null && m_NodeLists.Count > 0)
+                m_NodeLists[0].CheckMaxTriangleNodeCount(m_NodeLists, ref maxDepth);
+            Debug.Log("Max Triangle Node Count:" + maxDepth);
+        }
+
         /// <summary>
         /// 相交测试
         /// </summary>

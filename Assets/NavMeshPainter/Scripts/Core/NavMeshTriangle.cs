@@ -81,6 +81,11 @@ namespace ASL.NavMesh
             this.uv2 = uv2;
         }
 
+        public int CheckMaxTriangleNodeCount()
+        {
+            return m_NodeLists.Count;
+        }
+
         public void Build()
         {
             if (m_NodeLists.Count >= 1)

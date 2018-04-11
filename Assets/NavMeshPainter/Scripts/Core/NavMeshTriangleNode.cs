@@ -44,8 +44,6 @@ namespace ASL.NavMesh
         private NavMeshTriangleNode m_LeftNode;
         private NavMeshTriangleNode m_RightNode;
 
-        private int m_CurrentDepth;
-
         public NavMeshTriangleNode(Vector2 weight0, Vector2 weight1, Vector2 weight2)
         {
             this.weight0 = weight0;
@@ -55,27 +53,30 @@ namespace ASL.NavMesh
 
         public void Build(List<NavMeshTriangleNode> nodelist)
         {
-            m_CenterNode = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodelist.Count
-                        ? nodelist[m_CenterNodeIndex]
-                        : null;
-            m_TopNode = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodelist.Count
-                ? nodelist[m_TopNodeIndex]
-                : null;
-            m_LeftNode = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodelist.Count
-                ? nodelist[m_LeftNodeIndex]
-                : null;
-            m_RightNode = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodelist.Count
-                ? nodelist[m_RightNodeIndex]
-                : null;
+            if (isMix)
+            {
+                m_CenterNode = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodelist.Count
+                    ? nodelist[m_CenterNodeIndex]
+                    : null;
+                m_TopNode = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodelist.Count
+                    ? nodelist[m_TopNodeIndex]
+                    : null;
+                m_LeftNode = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodelist.Count
+                    ? nodelist[m_LeftNodeIndex]
+                    : null;
+                m_RightNode = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodelist.Count
+                    ? nodelist[m_RightNodeIndex]
+                    : null;
 
-            if (m_CenterNode != null)
-                m_CenterNode.Build(nodelist);
-            if (m_TopNode != null)
-                m_TopNode.Build(nodelist);
-            if (m_LeftNode != null)
-                m_LeftNode.Build(nodelist);
-            if (m_RightNode != null)
-                m_RightNode.Build(nodelist);
+                if (m_CenterNode != null)
+                    m_CenterNode.Build(nodelist);
+                if (m_TopNode != null)
+                    m_TopNode.Build(nodelist);
+                if (m_LeftNode != null)
+                    m_LeftNode.Build(nodelist);
+                if (m_RightNode != null)
+                    m_RightNode.Build(nodelist);
+            }
         }
 
         public void Save(List<NavMeshTriangleNode> nodelist)
@@ -90,7 +91,6 @@ namespace ASL.NavMesh
             {
                 m_CenterNodeIndex = -1;
             }
-
             if (m_TopNode != null)
             {
                 m_TopNodeIndex = nodelist.Count;
@@ -101,7 +101,6 @@ namespace ASL.NavMesh
             {
                 m_TopNodeIndex = -1;
             }
-
             if (m_LeftNode != null)
             {
                 m_LeftNodeIndex = nodelist.Count;
@@ -112,7 +111,6 @@ namespace ASL.NavMesh
             {
                 m_LeftNodeIndex = -1;
             }
-
             if (m_RightNode != null)
             {
                 m_RightNodeIndex = nodelist.Count;
@@ -123,6 +121,86 @@ namespace ASL.NavMesh
             {
                 m_RightNodeIndex = -1;
             }
+
+
+
+//            if (isMix)
+//            {
+//                if (m_CenterNode != null)
+//                {
+//                    m_CenterNode.Save(nodelist);
+//                }
+//
+//                if (m_TopNode != null)
+//                {
+//                    m_TopNode.Save(nodelist);
+//                }
+//
+//                if (m_LeftNode != null)
+//                {
+//                    m_LeftNode.Save(nodelist);
+//                }
+//
+//                if (m_RightNode != null)
+//                {
+//                    m_RightNode.Save(nodelist);
+//                }
+//                ResetPaintMark(isBePainted, m_CenterNode, m_TopNode, m_LeftNode, m_RightNode);
+//                if (!isMix)
+//                {
+//                    m_CenterNodeIndex = -1;
+//                    m_TopNodeIndex = -1;
+//                    m_RightNodeIndex = -1;
+//                    m_LeftNodeIndex = -1;
+//                }
+//                else
+//                {
+//                    if (m_CenterNode != null)
+//                    {
+//                        m_CenterNodeIndex = nodelist.Count;
+//                        nodelist.Add(m_CenterNode);
+//                    }
+//                    else
+//                    {
+//                        m_CenterNodeIndex = -1;
+//                    }
+//                    if (m_TopNode != null)
+//                    {
+//                        m_TopNodeIndex = nodelist.Count;
+//                        nodelist.Add(m_TopNode);
+//                    }
+//                    else
+//                    {
+//                        m_TopNodeIndex = -1;
+//                    }
+//                    if (m_LeftNode != null)
+//                    {
+//                        m_LeftNodeIndex = nodelist.Count;
+//                        nodelist.Add(m_LeftNode);
+//                    }
+//                    else
+//                    {
+//                        m_LeftNodeIndex = -1;
+//                    }
+//                    if (m_RightNode != null)
+//                    {
+//                        m_RightNodeIndex = nodelist.Count;
+//                        nodelist.Add(m_RightNode);
+//                    }
+//                    else
+//                    {
+//                        m_RightNodeIndex = -1;
+//                    }
+//                }
+//            }
+//            else
+//            {
+//                m_CenterNodeIndex = -1;
+//                m_TopNodeIndex = -1;
+//                m_RightNodeIndex = -1;
+//                m_LeftNodeIndex = -1;
+//                isMix = false;
+//            }
         }
 
 
