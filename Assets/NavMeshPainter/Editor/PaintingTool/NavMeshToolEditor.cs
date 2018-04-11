@@ -24,7 +24,7 @@ namespace ASL.NavMesh.Editor
         public void DrawSceneGUI(NavMeshPainter targetPainter)
         {
             RaycastHit hit;
-            if (NavMeshEditorUtils.RayCastInSceneView(targetPainter.GetRenderMesh(), out hit))
+            if (NavMeshEditorUtils.RayCastInSceneView(targetPainter.GetRenderMeshes(), out hit))
             {
                 OnRaycast(targetPainter, hit);
             }

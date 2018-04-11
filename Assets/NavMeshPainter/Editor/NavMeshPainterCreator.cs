@@ -88,7 +88,12 @@ namespace ASL.NavMesh.Editor
                     m_Data.Create(Selection.gameObjects, m_ContainChilds, m_Angle*0.5f, m_MaxDepth, m_ForceSetDepth);
 
                     AssetDatabase.CreateAsset(m_Data, savePath);
-                    AssetDatabase.AddObjectToAsset(m_Data.renderMesh, m_Data);
+                    if (m_Data.renderMeshs != null && m_Data.renderMeshs.Length > 0)
+                    {
+                        for(int i=0;i<m_Data.renderMeshs.Length;i++)
+                            AssetDatabase.AddObjectToAsset(m_Data.renderMeshs[i], m_Data);
+                    }
+                    
                 }
 
             }

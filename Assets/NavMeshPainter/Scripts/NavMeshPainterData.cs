@@ -29,12 +29,34 @@ namespace ASL.NavMesh
         /// <summary>
         /// 用于渲染的mesh
         /// </summary>
-        public Mesh renderMesh;
+        public Mesh[] renderMeshs;
 
         /// <summary>
         /// 八叉树
         /// </summary>
         public NavMeshOcTree ocTree;
+
+        private class RenderTriangle
+        {
+            public int vertexCount { get { return m_VertexCount; } }
+
+            public List<Vector3> vertexList { get { return m_Vertexlist; } }
+            public List<Vector2> uvList { get { return m_UVlist; } }
+            public List<int> indexList { get { return m_Indexlist; } }
+
+            private int m_VertexCount = 0;
+            private List<Vector3> m_Vertexlist = new List<Vector3>();
+            private List<Vector2> m_UVlist = new List<Vector2>();
+            private List<int> m_Indexlist = new List<int>();
+
+            public void AddVertex(Vector3 vertex, Vector2 uv)
+            {
+                m_Indexlist.Add(m_Vertexlist.Count);
+                m_Vertexlist.Add(vertex);
+                m_UVlist.Add(uv);
+                m_VertexCount += 1;
+            }
+        }
 
         /// <summary>
         /// 创建Data
@@ -73,31 +95,55 @@ namespace ASL.NavMesh
             Vector3 center = min + size*0.5f;
             ocTree = new NavMeshOcTree(center, size*1.1f, 7);
 
-            List<Vector3> vlist = new List<Vector3>();
-            List<Vector2> ulist = new List<Vector2>();
-            List<int> ilist = new List<int>();
+            //List<Vector3> vlist = new List<Vector3>();
+            //List<Vector2> ulist = new List<Vector2>();
+            //List<int> ilist = new List<int>();
+            List<RenderTriangle> triangleList = new List<RenderTriangle>();
+            RenderTriangle triangle = new RenderTriangle();
+            triangleList.Add(triangle);
 
             for (int i = 0; i < triangles.Count; i++)
             {
                 triangles[i].SetMaxDepth(maxDepth, maxArea, forceSetDepth);
 
                 ocTree.Add(triangles[i]);
-                ilist.Add(vlist.Count);
-                vlist.Add(triangles[i].vertex0);
-                ulist.Add(triangles[i].uv0);
-                ilist.Add(vlist.Count);
-                vlist.Add(triangles[i].vertex1);
-                ulist.Add(triangles[i].uv1);
-                ilist.Add(vlist.Count);
-                vlist.Add(triangles[i].vertex2);
-                ulist.Add(triangles[i].uv2);
+
+                if (triangle.vertexCount > 64990)
+                {
+                    triangle = new RenderTriangle();
+                    triangleList.Add(triangle);
+                }
+
+                triangle.AddVertex(triangles[i].vertex0, triangles[i].uv0);
+                triangle.AddVertex(triangles[i].vertex1, triangles[i].uv1);
+                triangle.AddVertex(triangles[i].vertex2, triangles[i].uv2);
+
+                //ilist.Add(vlist.Count);
+                //vlist.Add(triangles[i].vertex0);
+                //ulist.Add(triangles[i].uv0);
+                //ilist.Add(vlist.Count);
+                //vlist.Add(triangles[i].vertex1);
+                //ulist.Add(triangles[i].uv1);
+                //ilist.Add(vlist.Count);
+                //vlist.Add(triangles[i].vertex2);
+                //ulist.Add(triangles[i].uv2);
             }
 
-            renderMesh = new Mesh();
-            renderMesh.SetVertices(vlist);
-            renderMesh.SetUVs(0, ulist);
-            renderMesh.SetTriangles(ilist, 0);
-            renderMesh.RecalculateNormals();
+            //renderMesh = new Mesh();
+            //renderMesh.SetVertices(vlist);
+            //renderMesh.SetUVs(0, ulist);
+            //renderMesh.SetTriangles(ilist, 0);
+            //renderMesh.RecalculateNormals();
+
+            renderMeshs = new Mesh[triangleList.Count];
+            for (int i = 0; i < triangleList.Count; i++)
+            {
+                renderMeshs[i] = new Mesh();
+                renderMeshs[i].SetVertices(triangleList[i].vertexList);
+                renderMeshs[i].SetUVs(0, triangleList[i].uvList);
+                renderMeshs[i].SetTriangles(triangleList[i].indexList, 0);
+                renderMeshs[i].RecalculateNormals();
+            }
         }
 
         public void Init()
@@ -181,9 +227,9 @@ namespace ASL.NavMesh
                 Vector3 v1 = transform.localToWorldMatrix.MultiplyPoint(vlist[ilist[i + 1]]);
                 Vector3 v2 = transform.localToWorldMatrix.MultiplyPoint(vlist[ilist[i + 2]]);
 
-                Vector2 u0 = ulist[ilist[i]];
-                Vector2 u1 = ulist[ilist[i + 1]];
-                Vector2 u2 = ulist[ilist[i + 2]];
+                Vector2 u0 = ilist[i] < ulist.Length ? ulist[ilist[i]] : Vector2.zero;
+                Vector2 u1 = ilist[i + 1] < ulist.Length ? ulist[ilist[i + 1]] : Vector2.zero;
+                Vector2 u2 = ilist[i + 2] < ulist.Length ? ulist[ilist[i + 2]] : Vector2.zero;
 
                 max = Vector3.Max(max, v0);
                 max = Vector3.Max(max, v1);

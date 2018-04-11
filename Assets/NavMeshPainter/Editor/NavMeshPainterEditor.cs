@@ -117,7 +117,7 @@ public class NavMeshPainterEditor : Editor
     void OnSceneGUI()
     {
         if(m_ShowCheckerBoard)
-            NavMeshEditorUtils.DrawCheckerBoard(m_Target.GetRenderMesh(), Matrix4x4.identity);
+            NavMeshEditorUtils.DrawCheckerBoard(m_Target.GetRenderMeshes(), Matrix4x4.identity);
 
         switch (m_ToolType)
         {
@@ -306,7 +306,7 @@ public class NavMeshPainterEditor : Editor
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
 
 
-        if (m_Target.data && m_Target.data.renderMesh)
+        if (m_Target.data && m_Target.data.renderMeshs != null && m_Target.data.renderMeshs.Length > 0)
         {
             var tooleditor = GetPaintingToolEditor(tool);
             tooleditor.DrawSceneGUI(m_Target);
@@ -315,7 +315,7 @@ public class NavMeshPainterEditor : Editor
 
     private void DrawMappingSceneGUI()
     {
-        NavMeshEditorUtils.DrawMask(m_Target.GetRenderMesh(), Matrix4x4.identity);
+        NavMeshEditorUtils.DrawMask(m_Target.GetRenderMeshes(), Matrix4x4.identity);
     }
 
     private void ApplyPaint(IPaintingTool tool)

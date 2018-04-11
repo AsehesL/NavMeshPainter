@@ -39,6 +39,22 @@ namespace ASL.NavMesh.Editor
 
         private static Material m_GLMaterial;
 
+
+        public static bool RayCastInSceneView(Mesh[] meshes, out RaycastHit hit)
+        {
+            if (meshes != null && meshes.Length > 0)
+            {
+                for (int i = 0; i < meshes.Length; i++)
+                {
+                    if (RayCastInSceneView(meshes[i], out hit))
+                    {
+                        return true;
+                    }
+                }
+            }
+            hit = default(RaycastHit);
+            return false;
+        }
         public static bool RayCastInSceneView(Mesh mesh, out RaycastHit hit)
         {
             hit = default(RaycastHit);
@@ -72,12 +88,30 @@ namespace ASL.NavMesh.Editor
             GLMaterial.SetTexture("_Mask", texture);
         }
 
+        public static void DrawCheckerBoard(Mesh[] meshes, Matrix4x4 matrix)
+        {
+            if (meshes != null && meshes.Length > 0)
+            {
+                for (int i = 0; i < meshes.Length; i++)
+                    DrawCheckerBoard(meshes[i], matrix);
+            }
+        }
+
         public static void DrawCheckerBoard(Mesh mesh, Matrix4x4 matrix)
         {
             if (mesh && GLMaterial)
             {
                 GLMaterial.SetPass(0);
                 Graphics.DrawMeshNow(mesh, matrix);
+            }
+        }
+
+        public static void DrawMask(Mesh[] meshes, Matrix4x4 matrix)
+        {
+            if (meshes != null && meshes.Length > 0)
+            {
+                for (int i = 0; i < meshes.Length; i++)
+                    DrawMask(meshes[i], matrix);
             }
         }
 
@@ -105,6 +139,16 @@ namespace ASL.NavMesh.Editor
         public static void DrawBounds(Bounds bounds, Color color)
         {
             DrawWireCube(bounds.center, bounds.size, color);
+        }
+
+        public static void DrawBrush(Mesh[] meshes, Matrix4x4 matrix, Vector3 position, float xsize, float zsize, float height, NavMeshBrushTool.NavMeshBrushType brushType)
+        {
+            if (meshes != null && meshes.Length > 0)
+            {
+                for (int i = 0; i < meshes.Length; i++)
+                    DrawBrush(meshes[i], matrix, position, xsize, zsize, height, brushType);
+            }
+
         }
 
         public static void DrawBrush(Mesh mesh, Matrix4x4 matrix, Vector3 position, float xsize, float zsize, float height, NavMeshBrushTool.NavMeshBrushType brushType)

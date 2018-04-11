@@ -63,10 +63,10 @@ public class NavMeshPainter : MonoBehaviour
         return 0;
     }
 
-    public Mesh GetRenderMesh()
+    public Mesh[] GetRenderMeshes()
     {
         if (data != null)
-            return data.renderMesh;
+            return data.renderMeshs;
         return null;
     }
 
