@@ -4,20 +4,7 @@ using UnityEngine;
 
 namespace ASL.NavMesh
 {
-    /// <summary>
-    /// 绘制工具
-    /// </summary>
-    public enum PaintingToolType
-    {
-        /// <summary>
-        /// 笔刷
-        /// </summary>
-        Brush,
-        /// <summary>
-        /// 画线
-        /// </summary>
-        Line,
-    }
+    
 
     /// <summary>
     /// 蒙版贴图混合方式

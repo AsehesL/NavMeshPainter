@@ -6,12 +6,81 @@ using ASL.NavMesh.Editor;
 using UnityEditor.AI;
 
 [CustomEditor(typeof(NavMeshPainter))]
-public class NavMeshPainterEditor : NavMeshPainterEditorBase
+public class NavMeshPainterEditor : Editor
 {
+    private enum ToolType
+    {
+        None = -1,
+        Paint,
+        Erase,
+        Mapping,
+        Bake,
+    }
+
+    public class Styles
+    {
+        public GUIStyle buttonLeft = "ButtonLeft";
+        public GUIStyle buttonMid = "ButtonMid";
+        public GUIStyle buttonRight = "ButtonRight";
+        public GUIStyle command = "Command";
+        public GUIStyle box = "box";
+        public GUIStyle boldLabel = "BoldLabel";
+
+        public GUIContent[] toolIcons = new GUIContent[]
+        {
+            EditorGUIUtility.IconContent("NavMeshPainter/add.png", "|Paint the NavMesh"),
+            EditorGUIUtility.IconContent("NavMeshPainter/reduce.png", "|Erase the NavMesh"),
+            EditorGUIUtility.IconContent("NavMeshPainter/texture.png", "|Sampling from texture"),
+            EditorGUIUtility.IconContent("NavMeshPainter/nm.png", "|Bake Setting")
+        };
+
+        public GUIContent brushIcon = EditorGUIUtility.IconContent("NavMeshPainter/brush.png");
+        public GUIContent eraserIcon = EditorGUIUtility.IconContent("NavMeshPainter/eraser.png");
+        public GUIContent lineIcon = EditorGUIUtility.IconContent("NavMeshPainter/line.png");
+        public GUIContent boxIcon = EditorGUIUtility.IconContent("NavMeshPainter/box.png");
+        public GUIContent cylinderIcon = EditorGUIUtility.IconContent("NavMeshPainter/cylinder.png");
+        public GUIContent sphereIcon = EditorGUIUtility.IconContent("NavMeshPainter/sphere.png");
+        public GUIContent checkerboardIcon = EditorGUIUtility.IconContent("NavMeshPainter/checkerboard.png");
+
+        public GUIContent paintSetting = new GUIContent("Paint Setting");
+        public GUIContent paintTool = new GUIContent("Paint Tool");
+        public GUIContent bake = new GUIContent("Bake");
+        public GUIContent mappingSetting = new GUIContent("Mapping Setting");
+        public GUIContent maskTexture = new GUIContent("Mask Texture");
+        public GUIContent mask = new GUIContent("Mask");
+        public GUIContent applyMask = new GUIContent("ApplyMask");
+        public GUIContent setting = new GUIContent("Settings");
+        public GUIContent xSize = new GUIContent("XSize");
+        public GUIContent zSize = new GUIContent("ZSize");
+        public GUIContent maxHeight = new GUIContent("MaxHeight");
+        public GUIContent radius = new GUIContent("Radius");
+        public GUIContent brushType = new GUIContent("BrushType");
+        public GUIContent width = new GUIContent("Width");
+        public GUIContent painterData = new GUIContent("PainterData");
+        public GUIContent create = new GUIContent("Create New Data");
+        public GUIContent generateMesh = new GUIContent("Refresh Preview Mesh");
+        public GUIContent wireColor = new GUIContent("WireColor");
+        public GUIContent previewMeshColor = new GUIContent("PreviewMesh Color");
+        public GUIContent blendMode = new GUIContent("BlendMode");
+    }
+
+    public static Styles styles
+    {
+        get
+        {
+            if (s_Styles == null)
+                s_Styles = new Styles();
+            return s_Styles;
+        }
+    }
+
+    private static Styles s_Styles;
+
+    private ToolType m_ToolType = ToolType.None;
+
+    private bool m_ShowCheckerBoard = true;
 
     private NavMeshPainter m_Target;
-    
-    private Dictionary<System.Type, NavMeshToolEditor> m_ToolEditors;
 
     private Texture2D m_RoadMask;
 
@@ -21,6 +90,8 @@ public class NavMeshPainterEditor : NavMeshPainterEditorBase
     private Material m_PreviewMaterial;
 
     private TextureBlendMode m_ApplyTextureMode;
+
+    private Dictionary<System.Type, NavMeshToolEditor> m_ToolEditors;
 
     [MenuItem("GameObject/NavMeshPainter/Create NavMeshPainter")]
     static void Create()
@@ -38,10 +109,10 @@ public class NavMeshPainterEditor : NavMeshPainterEditorBase
 
     void OnSceneGUI()
     {
-        if(showCheckerBoard)
+        if(m_ShowCheckerBoard)
             NavMeshEditorUtils.DrawCheckerBoard(m_Target.GetRenderMesh(), Matrix4x4.identity);
 
-        switch (toolType)
+        switch (m_ToolType)
         {
             case ToolType.Erase:
             case ToolType.Paint:
@@ -62,7 +133,7 @@ public class NavMeshPainterEditor : NavMeshPainterEditorBase
             return;
         }
         DrawToolsGUI();
-        switch (toolType)
+        switch (m_ToolType)
         {
             case ToolType.None:
 
@@ -80,7 +151,6 @@ public class NavMeshPainterEditor : NavMeshPainterEditorBase
                 DrawBakeSettingGUI();
                 break;
         }
-
         EditorGUILayout.Space();
     }
 
@@ -100,6 +170,31 @@ public class NavMeshPainterEditor : NavMeshPainterEditorBase
         EditorGUILayout.HelpBox("No PainterData has been setted!", MessageType.Error);
     }
 
+    private void DrawToolsGUI()
+    {
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+
+        EditorGUI.BeginChangeCheck();
+        m_ShowCheckerBoard = GUILayout.Toggle(m_ShowCheckerBoard, styles.checkerboardIcon, styles.command);
+        if (EditorGUI.EndChangeCheck())
+        {
+            ResetCheckerBoard();
+        }
+
+        EditorGUILayout.Space();
+
+        int selectedTool = (int)this.m_ToolType;
+        int num = GUILayout.Toolbar(selectedTool, styles.toolIcons, styles.command, new GUILayoutOption[0]);
+        if (num != selectedTool)
+        {
+            this.m_ToolType = (ToolType)num;
+        }
+        GUILayout.FlexibleSpace();
+
+        GUILayout.EndHorizontal();
+    }
+
     private void DrawPaintSettingGUI(bool erase = false)
     {
         GUILayout.Label(styles.paintSetting, styles.boldLabel);
@@ -109,14 +204,14 @@ public class NavMeshPainterEditor : NavMeshPainterEditorBase
         GUILayout.BeginHorizontal();
 
         var brushIcon = erase ? styles.eraserIcon : styles.brushIcon;
-        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintingToolType.Brush, brushIcon,
+        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == NavMeshPainter.PaintingToolType.Brush, brushIcon,
             styles.buttonLeft, GUILayout.Width(35))
-            ? PaintingToolType.Brush
+            ? NavMeshPainter.PaintingToolType.Brush
             : m_Target.paintTool;
 
-        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == PaintingToolType.Line, styles.lineIcon,
+        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == NavMeshPainter.PaintingToolType.Line, styles.lineIcon,
            styles.buttonMid, GUILayout.Width(35))
-           ? PaintingToolType.Line
+           ? NavMeshPainter.PaintingToolType.Line
            : m_Target.paintTool;
 
         GUILayout.EndHorizontal();
@@ -214,54 +309,17 @@ public class NavMeshPainterEditor : NavMeshPainterEditorBase
     {
         if (tool != null)
         {
-            if (toolType == ToolType.Paint)
+            if (m_ToolType == ToolType.Paint)
                 m_Target.Draw(tool);
-            else if (toolType == ToolType.Erase)
+            else if (m_ToolType == ToolType.Erase)
                 m_Target.Erase(tool);
         }
     }
 
-    protected override void ResetCheckerBoard()
+    private void ResetCheckerBoard()
     {
-        base.ResetCheckerBoard();
         float minSize = m_Target.GetMinSize();
         NavMeshEditorUtils.SetCheckerBoardCellSize(minSize);
-    }
-
-    private NavMeshToolEditor GetPaintingToolEditor(IPaintingTool tool)
-    {
-        System.Type tooltype = tool.GetType();
-        NavMeshToolEditor editor = null;
-        if (m_ToolEditors == null)
-        {
-            m_ToolEditors = new Dictionary<System.Type, NavMeshToolEditor>();
-            System.Reflection.Assembly assembly = this.GetType().Assembly;
-            var types = assembly.GetTypes();
-            foreach (var type in types)
-            {
-                if (type.IsSubclassOf(typeof (NavMeshToolEditor)))
-                {
-                    var attributes = type.GetCustomAttributes(typeof (CustomNavMeshToolEditorAttribute), false);
-                    foreach (var att in attributes)
-                    {
-                        CustomNavMeshToolEditorAttribute a = att as CustomNavMeshToolEditorAttribute;
-                        if (a == null)
-                            continue;
-                        if (!m_ToolEditors.ContainsKey(a.navMeshToolType))
-                        {
-                            m_ToolEditors[a.navMeshToolType] = (NavMeshToolEditor)System.Activator.CreateInstance(type);
-                            m_ToolEditors[a.navMeshToolType].SetApplyAction(new System.Action<IPaintingTool>(ApplyPaint));
-                        }
-                    }
-                }
-            }
-        }
-        if (m_ToolEditors.ContainsKey(tooltype))
-        {
-            editor = m_ToolEditors[tooltype];
-            editor.SetTool(tool);
-        }
-        return editor;
     }
 
     private void Bake()
@@ -338,5 +396,41 @@ public class NavMeshPainterEditor : NavMeshPainterEditorBase
             return true;
         }
         return false;
+    }
+
+    private NavMeshToolEditor GetPaintingToolEditor(IPaintingTool tool)
+    {
+        System.Type tooltype = tool.GetType();
+        NavMeshToolEditor editor = null;
+        if (m_ToolEditors == null)
+        {
+            m_ToolEditors = new Dictionary<System.Type, NavMeshToolEditor>();
+            System.Reflection.Assembly assembly = this.GetType().Assembly;
+            var types = assembly.GetTypes();
+            foreach (var type in types)
+            {
+                if (type.IsSubclassOf(typeof(NavMeshToolEditor)))
+                {
+                    var attributes = type.GetCustomAttributes(typeof(CustomNavMeshToolEditorAttribute), false);
+                    foreach (var att in attributes)
+                    {
+                        CustomNavMeshToolEditorAttribute a = att as CustomNavMeshToolEditorAttribute;
+                        if (a == null)
+                            continue;
+                        if (!m_ToolEditors.ContainsKey(a.navMeshToolType))
+                        {
+                            m_ToolEditors[a.navMeshToolType] = (NavMeshToolEditor)System.Activator.CreateInstance(type);
+                            m_ToolEditors[a.navMeshToolType].SetApplyAction(new System.Action<IPaintingTool>(ApplyPaint));
+                        }
+                    }
+                }
+            }
+        }
+        if (m_ToolEditors.ContainsKey(tooltype))
+        {
+            editor = m_ToolEditors[tooltype];
+            editor.SetTool(tool);
+        }
+        return editor;
     }
 }
