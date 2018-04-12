@@ -21,16 +21,23 @@ public class NavMeshPainter : MonoBehaviour
         /// 画线
         /// </summary>
         Line,
+
+        Box,
+
+        Cylinder,
     }
 
     public PaintingToolType paintTool;
 
-    public Color navMeshWireColor = Color.green;
+    public Color navMeshWireColor = new Color(0, 1, 0, 0.5f);
+    public Color previewColor = new Color(1, 0, 0, 0.5f);
 
     public NavMeshPainterData data;
 
     public NavMeshBrushTool brush;
     public NavMeshLineTool lineTool;
+    public NavMeshBoxTool boxTool;
+    public NavMeshCylinderTool cylinderTool;
 
     public IPaintingTool GetPaintingTool()
     {
@@ -40,6 +47,10 @@ public class NavMeshPainter : MonoBehaviour
                 return brush;
             case PaintingToolType.Line:
                 return lineTool;
+            case PaintingToolType.Box:
+                return boxTool;
+            case PaintingToolType.Cylinder:
+                return cylinderTool;
         }
         return null;
     }
@@ -82,10 +93,10 @@ public class NavMeshPainter : MonoBehaviour
             data.Erase(tool);
     }
 
-    public Mesh[] GenerateMeshes(Color color)
+    public Mesh[] GenerateMeshes()
     {
         if (data != null)
-            return data.GenerateMeshes(color);
+            return data.GenerateMeshes(previewColor);
         return null;
     }
 

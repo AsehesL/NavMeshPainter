@@ -24,7 +24,7 @@ namespace ASL.NavMesh.Editor
                 return;
 
             t.width = Mathf.Max(0.001f, EditorGUILayout.FloatField(NavMeshPainterEditor.styles.width, t.width));
-            t.height = Mathf.Max(0,
+            t.height = Mathf.Max(0.01f,
                         EditorGUILayout.FloatField(NavMeshPainterEditor.styles.maxHeight, t.height));
         }
 

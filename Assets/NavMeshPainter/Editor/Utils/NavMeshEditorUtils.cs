@@ -136,10 +136,24 @@ namespace ASL.NavMesh.Editor
             DrawWireCubeInternal(center, size, color, true);
         }
 
+        public static void DrawWireCylinder(Bounds bounds, Color color)
+        {
+            DrawWireCylinderInternal(bounds.center, bounds.size, color, false);
+            DrawWireCylinderInternal(bounds.center, bounds.size, color, true);
+        }
+
+        public static void DrawWireCylinder(Vector3 center, Vector3 size, Color color)
+        {
+            DrawWireCylinderInternal(center, size, color, false);
+            DrawWireCylinderInternal(center, size, color, true);
+        }
+
         public static void DrawBounds(Bounds bounds, Color color)
         {
             DrawWireCube(bounds.center, bounds.size, color);
         }
+
+        
 
         public static void DrawBrush(Mesh[] meshes, Matrix4x4 matrix, Vector3 position, float xsize, float zsize, float height, NavMeshBrushTool.NavMeshBrushType brushType)
         {
@@ -235,6 +249,44 @@ namespace ASL.NavMesh.Editor
 
             GL.Vertex(p3);
             GL.Vertex(p7);
+            GL.End();
+            GL.PopMatrix();
+        }
+
+        private static void DrawWireCylinderInternal(Vector3 center, Vector3 size, Color color, bool seeThrough)
+        {
+            float dtAngle = 360f/12;
+            GL.PushMatrix();
+            GLMaterial.SetPass(!seeThrough ? 1 : 2);
+            GL.MultMatrix(Handles.matrix);
+            GL.Begin(GL.LINES);
+            GL.Color(color);
+            for (int i = 0; i < 12; i++)
+            {
+                float x0 = Mathf.Cos(i * dtAngle * Mathf.Deg2Rad) * size.x * 0.5f;
+                float y0 = Mathf.Sin(i * dtAngle * Mathf.Deg2Rad) * size.x * 0.5f;
+                float x1 = Mathf.Cos((i + 1) * dtAngle * Mathf.Deg2Rad) * size.x * 0.5f;
+                float y1 = Mathf.Sin((i + 1) * dtAngle * Mathf.Deg2Rad) * size.x * 0.5f;
+
+                Vector3 p0t = center + new Vector3(x0, size.y*0.5f, y0);
+                Vector3 p0b = center + new Vector3(x0, -size.y * 0.5f, y0);
+
+                Vector3 p1t = center + new Vector3(x1, size.y * 0.5f, y1);
+                Vector3 p1b = center + new Vector3(x1, -size.y * 0.5f, y1);
+
+                GL.Vertex(p0t);
+                GL.Vertex(p0b);
+
+                GL.Vertex(p1t);
+                GL.Vertex(p1b);
+
+                GL.Vertex(p0t);
+                GL.Vertex(p1t);
+
+                GL.Vertex(p0b);
+                GL.Vertex(p1b);
+
+            }
             GL.End();
             GL.PopMatrix();
         }

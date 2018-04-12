@@ -62,6 +62,8 @@ public class NavMeshPainterEditor : Editor
         public GUIContent wireColor = new GUIContent("WireColor");
         public GUIContent previewMeshColor = new GUIContent("PreviewMesh Color");
         public GUIContent blendMode = new GUIContent("BlendMode");
+        public GUIContent topHeight = new GUIContent("Top Height");
+        public GUIContent bottomHeight = new GUIContent("Bottom Height");
     }
 
     public static Styles styles
@@ -84,7 +86,7 @@ public class NavMeshPainterEditor : Editor
 
     private Texture2D m_RoadMask;
 
-    private Color m_PreviewMeshColor = Color.red;
+    //private Color m_PreviewMeshColor = Color.red;
     //private GameObject m_PreviewMeshObj;
 
     private Material m_PreviewMaterial;
@@ -232,6 +234,16 @@ public class NavMeshPainterEditor : Editor
            ? NavMeshPainter.PaintingToolType.Line
            : m_Target.paintTool;
 
+        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == NavMeshPainter.PaintingToolType.Box, styles.boxIcon,
+            styles.buttonMid, GUILayout.Width(35))
+            ? NavMeshPainter.PaintingToolType.Box
+            : m_Target.paintTool;
+
+        m_Target.paintTool = GUILayout.Toggle(m_Target.paintTool == NavMeshPainter.PaintingToolType.Cylinder, styles.cylinderIcon,
+           styles.buttonRight, GUILayout.Width(35))
+           ? NavMeshPainter.PaintingToolType.Cylinder
+           : m_Target.paintTool;
+
         GUILayout.EndHorizontal();
 
         var tooleditor = GetPaintingToolEditor(m_Target.GetPaintingTool());
@@ -289,7 +301,7 @@ public class NavMeshPainterEditor : Editor
             }
 
         m_Target.navMeshWireColor = EditorGUILayout.ColorField(styles.wireColor, m_Target.navMeshWireColor);
-        m_PreviewMeshColor = EditorGUILayout.ColorField(styles.previewMeshColor, m_PreviewMeshColor);
+        m_Target.previewColor = EditorGUILayout.ColorField(styles.previewMeshColor, m_Target.previewColor);
 
         if (GUILayout.Button(styles.generateMesh))
         {
@@ -381,7 +393,7 @@ public class NavMeshPainterEditor : Editor
 
     private bool RefreshPreviewMesh()
     {
-        Mesh[] meshes = m_Target.GenerateMeshes(m_PreviewMeshColor);
+        Mesh[] meshes = m_Target.GenerateMeshes();
         if (meshes != null && meshes.Length > 0)
         {
 //            if (m_PreviewMeshObj == null)
