@@ -416,7 +416,7 @@ public class NavMeshPainterEditor : Editor
             for (int i = 0; i < meshes.Length; i++)
             {
                 m_Previews[i] = new GameObject("[MeshPreview_" + i + "]").transform;
-                m_Previews[i].gameObject.hideFlags = HideFlags.DontSave;
+                //m_Previews[i].gameObject.hideFlags = HideFlags.DontSave;
                 m_Previews[i].gameObject.isStatic = true;
                 m_Previews[i].gameObject.layer = m_Target.gameObject.layer;
                 m_Previews[i].transform.SetParent(m_Target.transform);
@@ -426,7 +426,7 @@ public class NavMeshPainterEditor : Editor
                 if (mf == null)
                 {
                     mf = m_Previews[i].gameObject.AddComponent<MeshFilter>();
-                    mf.hideFlags = HideFlags.HideAndDontSave;
+                    //mf.hideFlags = HideFlags.HideAndDontSave;
                 }
                 mf.sharedMesh = meshes[i];
 
@@ -434,7 +434,7 @@ public class NavMeshPainterEditor : Editor
                 if (mr == null)
                 {
                     mr = m_Previews[i].gameObject.AddComponent<MeshRenderer>();
-                    mr.hideFlags = HideFlags.HideAndDontSave;
+                    //mr.hideFlags = HideFlags.HideAndDontSave;
                 }
                 if (m_PreviewMaterial == null)
                 {
