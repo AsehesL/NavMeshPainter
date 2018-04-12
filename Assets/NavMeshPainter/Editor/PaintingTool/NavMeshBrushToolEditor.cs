@@ -24,13 +24,13 @@ namespace ASL.NavMesh.Editor
                     EditorGUILayout.FloatField(NavMeshPainterEditor.styles.xSize, t.length));
                 t.width = Mathf.Max(0.001f,
                     EditorGUILayout.FloatField(NavMeshPainterEditor.styles.zSize, t.width));
-                t.height = Mathf.Max(0,
+                t.height = Mathf.Max(0.001f,
                     EditorGUILayout.FloatField(NavMeshPainterEditor.styles.maxHeight, t.height));
             }else if (t.brushType == NavMeshBrushTool.NavMeshBrushType.Cylinder)
             {
                 t.length = Mathf.Max(0.001f,
                     EditorGUILayout.FloatField(NavMeshPainterEditor.styles.radius, t.length));
-                t.height = Mathf.Max(0,
+                t.height = Mathf.Max(0.001f,
                     EditorGUILayout.FloatField(NavMeshPainterEditor.styles.maxHeight, t.height));
             }
             else if (t.brushType == NavMeshBrushTool.NavMeshBrushType.Sphere)

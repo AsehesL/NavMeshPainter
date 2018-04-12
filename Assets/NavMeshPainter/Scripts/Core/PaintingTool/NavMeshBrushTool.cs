@@ -31,7 +31,7 @@ namespace ASL.NavMesh
         public float length;
         public float width;
         public Vector3 position;
-        public float height;
+        public float height = 0.001f;
         public NavMeshBrushType brushType;
 
         public Bounds bounds

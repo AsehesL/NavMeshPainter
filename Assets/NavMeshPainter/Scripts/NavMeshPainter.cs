@@ -82,10 +82,10 @@ public class NavMeshPainter : MonoBehaviour
             data.Erase(tool);
     }
 
-    public Mesh GenerateMesh(Color color)
+    public Mesh[] GenerateMeshes(Color color)
     {
         if (data != null)
-            return data.GenerateMesh(color);
+            return data.GenerateMeshes(color);
         return null;
     }
 

@@ -44,16 +44,17 @@ namespace ASL.NavMesh
         private NavMeshTriangleNode m_LeftNode;
         private NavMeshTriangleNode m_RightNode;
 
-        public NavMeshTriangleNode(Vector2 weight0, Vector2 weight1, Vector2 weight2)
+        public NavMeshTriangleNode(Vector2 weight0, Vector2 weight1, Vector2 weight2, bool isBePainted = false)
         {
             this.weight0 = weight0;
             this.weight1 = weight1;
             this.weight2 = weight2;
+            this.isBePainted = isBePainted;
         }
 
-        public void Build(List<NavMeshTriangleNode> nodelist)
+        public void Init(List<NavMeshTriangleNode> nodelist)
         {
-            if (isMix)
+            //Linear to Linked
             {
                 m_CenterNode = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodelist.Count
                     ? nodelist[m_CenterNodeIndex]
@@ -69,18 +70,19 @@ namespace ASL.NavMesh
                     : null;
 
                 if (m_CenterNode != null)
-                    m_CenterNode.Build(nodelist);
+                    m_CenterNode.Init(nodelist);
                 if (m_TopNode != null)
-                    m_TopNode.Build(nodelist);
+                    m_TopNode.Init(nodelist);
                 if (m_LeftNode != null)
-                    m_LeftNode.Build(nodelist);
+                    m_LeftNode.Init(nodelist);
                 if (m_RightNode != null)
-                    m_RightNode.Build(nodelist);
+                    m_RightNode.Init(nodelist);
             }
         }
 
         public void Save(List<NavMeshTriangleNode> nodelist)
         {
+            //Linked to Linear
             if (m_CenterNode != null)
             {
                 m_CenterNodeIndex = nodelist.Count;
@@ -122,85 +124,6 @@ namespace ASL.NavMesh
                 m_RightNodeIndex = -1;
             }
 
-
-
-//            if (isMix)
-//            {
-//                if (m_CenterNode != null)
-//                {
-//                    m_CenterNode.Save(nodelist);
-//                }
-//
-//                if (m_TopNode != null)
-//                {
-//                    m_TopNode.Save(nodelist);
-//                }
-//
-//                if (m_LeftNode != null)
-//                {
-//                    m_LeftNode.Save(nodelist);
-//                }
-//
-//                if (m_RightNode != null)
-//                {
-//                    m_RightNode.Save(nodelist);
-//                }
-//                ResetPaintMark(isBePainted, m_CenterNode, m_TopNode, m_LeftNode, m_RightNode);
-//                if (!isMix)
-//                {
-//                    m_CenterNodeIndex = -1;
-//                    m_TopNodeIndex = -1;
-//                    m_RightNodeIndex = -1;
-//                    m_LeftNodeIndex = -1;
-//                }
-//                else
-//                {
-//                    if (m_CenterNode != null)
-//                    {
-//                        m_CenterNodeIndex = nodelist.Count;
-//                        nodelist.Add(m_CenterNode);
-//                    }
-//                    else
-//                    {
-//                        m_CenterNodeIndex = -1;
-//                    }
-//                    if (m_TopNode != null)
-//                    {
-//                        m_TopNodeIndex = nodelist.Count;
-//                        nodelist.Add(m_TopNode);
-//                    }
-//                    else
-//                    {
-//                        m_TopNodeIndex = -1;
-//                    }
-//                    if (m_LeftNode != null)
-//                    {
-//                        m_LeftNodeIndex = nodelist.Count;
-//                        nodelist.Add(m_LeftNode);
-//                    }
-//                    else
-//                    {
-//                        m_LeftNodeIndex = -1;
-//                    }
-//                    if (m_RightNode != null)
-//                    {
-//                        m_RightNodeIndex = nodelist.Count;
-//                        nodelist.Add(m_RightNode);
-//                    }
-//                    else
-//                    {
-//                        m_RightNodeIndex = -1;
-//                    }
-//                }
-//            }
-//            else
-//            {
-//                m_CenterNodeIndex = -1;
-//                m_TopNodeIndex = -1;
-//                m_RightNodeIndex = -1;
-//                m_LeftNodeIndex = -1;
-//                isMix = false;
-//            }
         }
 
 
@@ -212,7 +135,7 @@ namespace ASL.NavMesh
             Vector3 vertex2 = (1 - weight2.x - weight2.y) * v0 + weight2.x * v1 + weight2.y * v2;
             if (tool.IntersectsTriangle(vertex0, vertex1, vertex2))
             {
-                bool cotinuePaint = isBePainted != !erase || isMix;
+                bool cotinuePaint = isBePainted == erase || isMix;
                 if (!cotinuePaint)
                     return;
                 
@@ -222,13 +145,13 @@ namespace ASL.NavMesh
                     Vector2 halfw02 = weight0 + (weight2 - weight0) * 0.5f;
                     Vector2 halfw12 = weight1 + (weight2 - weight1) * 0.5f;
                     if (m_CenterNode == null)
-                        m_CenterNode = new NavMeshTriangleNode(halfw01, halfw12, halfw02);
+                        m_CenterNode = new NavMeshTriangleNode(halfw01, halfw12, halfw02, isBePainted);
                     if (m_TopNode == null)
-                        m_TopNode = new NavMeshTriangleNode(halfw01, weight1, halfw12);
+                        m_TopNode = new NavMeshTriangleNode(halfw01, weight1, halfw12, isBePainted);
                     if (m_LeftNode == null)
-                        m_LeftNode = new NavMeshTriangleNode(weight0, halfw01, halfw02);
+                        m_LeftNode = new NavMeshTriangleNode(weight0, halfw01, halfw02, isBePainted);
                     if (m_RightNode == null)
-                        m_RightNode = new NavMeshTriangleNode(halfw02, halfw12, weight2);
+                        m_RightNode = new NavMeshTriangleNode(halfw02, halfw12, weight2, isBePainted);
                 }
 
                 if (m_CenterNode != null)
@@ -243,7 +166,7 @@ namespace ASL.NavMesh
                 if (m_RightNode != null)
                     m_RightNode.Interesect(tool, erase, v0, v1, v2, depth + 1, maxDepth);
 
-                ResetPaintMark(!erase, m_CenterNode, m_TopNode, m_LeftNode, m_RightNode);
+                ResetPaintMark(!erase);
             }
 
         }
@@ -276,7 +199,7 @@ namespace ASL.NavMesh
             }
         }
 
-        public void GenerateMesh(Vector3 v0, Vector3 v1, Vector3 v2, List<Vector3> vlist, List<int> ilist)
+        internal void GenerateMesh(Vector3 v0, Vector3 v1, Vector3 v2, Vector2 u0, Vector2 u1, Vector2 u2, List<NavMeshRenderTriangle> triangles)
         {
             if (!isMix)
             {
@@ -286,24 +209,48 @@ namespace ASL.NavMesh
                     Vector3 vertex1 = (1 - weight1.x - weight1.y) * v0 + weight1.x * v1 + weight1.y * v2;
                     Vector3 vertex2 = (1 - weight2.x - weight2.y) * v0 + weight2.x * v1 + weight2.y * v2;
 
-                    ilist.Add(vlist.Count);
-                    vlist.Add(vertex0);
-                    ilist.Add(vlist.Count);
-                    vlist.Add(vertex1);
-                    ilist.Add(vlist.Count);
-                    vlist.Add(vertex2);
+                    Vector2 uv0 = (1 - weight0.x - weight0.y) * u0 + weight0.x * u1 + weight0.y * u2;
+                    Vector2 uv1 = (1 - weight1.x - weight1.y) * u0 + weight1.x * u1 + weight1.y * u2;
+                    Vector2 uv2 = (1 - weight2.x - weight2.y) * u0 + weight2.x * u1 + weight2.y * u2;
+
+                    NavMeshRenderTriangle triangle = null;
+                    if (triangles.Count <= 0)
+                    {
+                        triangle = new NavMeshRenderTriangle();
+                        triangles.Add(triangle);
+                    }
+                    else
+                    {
+                        triangle = triangles[triangles.Count - 1];
+                    }
+                    if (triangles.Count >= 64990)
+                    {
+                        triangle = new NavMeshRenderTriangle();
+                        triangles.Add(triangle);
+                    }
+
+                    triangle.AddVertex(vertex0, uv0);
+                    triangle.AddVertex(vertex1, uv1);
+                    triangle.AddVertex(vertex2, uv2);
+
+//                    ilist.Add(vlist.Count);
+//                    vlist.Add(vertex0);
+//                    ilist.Add(vlist.Count);
+//                    vlist.Add(vertex1);
+//                    ilist.Add(vlist.Count);
+//                    vlist.Add(vertex2);
                 }
             }
             else
             {
                 if (m_CenterNode != null)
-                    m_CenterNode.GenerateMesh(v0, v1, v2, vlist, ilist);
+                    m_CenterNode.GenerateMesh(v0, v1, v2, u0, u1, u2, triangles);
                 if (m_TopNode != null)
-                    m_TopNode.GenerateMesh(v0, v1, v2, vlist, ilist);
+                    m_TopNode.GenerateMesh(v0, v1, v2, u0, u1, u2, triangles);
                 if (m_LeftNode != null)
-                    m_LeftNode.GenerateMesh(v0, v1, v2, vlist, ilist);
+                    m_LeftNode.GenerateMesh(v0, v1, v2, u0, u1, u2, triangles);
                 if (m_RightNode != null)
-                    m_RightNode.GenerateMesh(v0, v1, v2, vlist, ilist);
+                    m_RightNode.GenerateMesh(v0, v1, v2, u0, u1, u2, triangles);
             }
         }
 
@@ -314,6 +261,7 @@ namespace ASL.NavMesh
            
             bool continueSample = false;
             bool isInMask = SamplingTexture(u0, u1, u2, texture);
+            bool painted = isBePainted;
             if (blendMode == TextureBlendMode.Add)
             {
                 if (isInMask)
@@ -337,13 +285,13 @@ namespace ASL.NavMesh
                 Vector2 halfw02 = weight0 + (weight2 - weight0) * 0.5f;
                 Vector2 halfw12 = weight1 + (weight2 - weight1) * 0.5f;
                 if (m_CenterNode == null)
-                    m_CenterNode = new NavMeshTriangleNode(halfw01, halfw12, halfw02);
+                    m_CenterNode = new NavMeshTriangleNode(halfw01, halfw12, halfw02, painted);
                 if (m_TopNode == null)
-                    m_TopNode = new NavMeshTriangleNode(halfw01, weight1, halfw12);
+                    m_TopNode = new NavMeshTriangleNode(halfw01, weight1, halfw12, painted);
                 if (m_LeftNode == null)
-                    m_LeftNode = new NavMeshTriangleNode(weight0, halfw01, halfw02);
+                    m_LeftNode = new NavMeshTriangleNode(weight0, halfw01, halfw02, painted);
                 if (m_RightNode == null)
-                    m_RightNode = new NavMeshTriangleNode(halfw02, halfw12, weight2);
+                    m_RightNode = new NavMeshTriangleNode(halfw02, halfw12, weight2, painted);
             }
 
             if (m_CenterNode != null)
@@ -357,36 +305,40 @@ namespace ASL.NavMesh
 
             if (m_RightNode != null)
                 m_RightNode.SamplingFromTexture(u0, u1, u2, texture, blendMode, depth + 1, maxDepth);
-
             
 
-            ResetPaintMark(isBePainted, m_CenterNode, m_TopNode, m_LeftNode, m_RightNode);
+            ResetPaintMark(isBePainted);
         }
 
-        private void ResetPaintMark(bool paint, NavMeshTriangleNode center, NavMeshTriangleNode top, NavMeshTriangleNode left, NavMeshTriangleNode right)
+        private void ResetPaintMark(bool paint)
         {
             isBePainted = paint;
-            if (center != null && (center.isBePainted != paint || center.isMix))
+            if (m_CenterNode != null && (m_CenterNode.isBePainted != paint || m_CenterNode.isMix))
             {
                 isMix = true;
                 return;
             }
-            if (top != null && (top.isBePainted != paint || top.isMix))
+            if (m_TopNode != null && (m_TopNode.isBePainted != paint || m_TopNode.isMix))
             {
                 isMix = true;
                 return;
             }
-            if (left != null && (left.isBePainted != paint || left.isMix))
+            if (m_LeftNode != null && (m_LeftNode.isBePainted != paint || m_LeftNode.isMix))
             {
                 isMix = true;
                 return;
             }
-            if (right != null && (right.isBePainted != paint || right.isMix))
+            if (m_RightNode != null && (m_RightNode.isBePainted != paint || m_RightNode.isMix))
             {
                 isMix = true;
                 return;
             }
             isMix = false;
+
+            m_CenterNode = null;
+            m_TopNode = null;
+            m_LeftNode = null;
+            m_RightNode = null;
         }
 
         private bool SamplingTexture(Vector2 u0, Vector2 u1, Vector2 u2, Texture2D texture)

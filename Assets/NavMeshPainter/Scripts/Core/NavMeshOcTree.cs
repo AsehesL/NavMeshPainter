@@ -88,21 +88,40 @@ namespace ASL.NavMesh
         /// </summary>
         /// <param name="color">mesh顶点色</param>
         /// <returns></returns>
-        public Mesh GenerateMesh(Color color)
+        public Mesh[] GenerateMeshes(Color color)
         {
-            List<Vector3> vlist = new List<Vector3>();
-            List<int> ilist = new List<int>();
+            List<NavMeshRenderTriangle> triangles = new List<NavMeshRenderTriangle>();
+
+            //List<Vector3> vlist = new List<Vector3>();
+            //List<int> ilist = new List<int>();
             if (m_NodeLists != null && m_NodeLists.Count > 0)
-                m_NodeLists[0].GenerateMesh(m_NodeLists, vlist, ilist);
-            Mesh mesh = new Mesh();
-            List<Color> clist = new List<Color>();
-            for (int i = 0; i < vlist.Count; i++)
-                clist.Add(color);
-            mesh.SetVertices(vlist);
-            mesh.SetColors(clist);
-            mesh.SetTriangles(ilist, 0);
-            mesh.hideFlags = HideFlags.HideAndDontSave;
-            return mesh;
+                m_NodeLists[0].GenerateMesh(m_NodeLists, triangles);
+
+            Mesh[] meshes = new Mesh[triangles.Count];
+
+            for (int i = 0; i < triangles.Count; i++)
+            {
+                meshes[i] = new Mesh();
+                List<Color> clist = new List<Color>();
+                for (int j = 0; j < triangles[i].vertexList.Count; j++)
+                    clist.Add(color);
+                meshes[i].SetVertices(triangles[i].vertexList);
+                meshes[i].SetColors(clist);
+                meshes[i].SetUVs(0, triangles[i].uvList);
+                meshes[i].SetTriangles(triangles[i].indexList, 0);
+                meshes[i].RecalculateNormals();
+                meshes[i].hideFlags = HideFlags.HideAndDontSave;
+            }
+
+            //Mesh mesh = new Mesh();
+            //List<Color> clist = new List<Color>();
+            //for (int i = 0; i < vlist.Count; i++)
+            //    clist.Add(color);
+            //mesh.SetVertices(vlist);
+            //mesh.SetColors(clist);
+            //mesh.SetTriangles(ilist, 0);
+            //mesh.hideFlags = HideFlags.HideAndDontSave;
+            return meshes;
         }
 
         /// <summary>

@@ -21,6 +21,44 @@ namespace ASL.NavMesh
         Replace,
     }
 
+    internal class NavMeshRenderTriangle
+    {
+        public int vertexCount { get { return m_VertexCount; } }
+
+        public List<Vector3> vertexList { get { return m_Vertexlist; } }
+        public List<Vector2> uvList { get { return m_UVlist; } }
+        public List<int> indexList { get { return m_Indexlist; } }
+
+        private int m_VertexCount = 0;
+        private List<Vector3> m_Vertexlist;
+        private List<Vector2> m_UVlist;
+        private List<int> m_Indexlist;
+
+        public NavMeshRenderTriangle(bool noUv = false)
+        {
+            m_Vertexlist = new List<Vector3>();
+            m_Indexlist = new List<int>();
+            if (!noUv)
+                m_UVlist = new List<Vector2>();
+        }
+
+        public void AddVertex(Vector3 vertex, Vector2 uv)
+        {
+            m_Indexlist.Add(m_Vertexlist.Count);
+            m_Vertexlist.Add(vertex);
+            if (m_UVlist != null)
+                m_UVlist.Add(uv);
+            m_VertexCount += 1;
+        }
+
+        public void AddVertex(Vector3 vertex)
+        {
+            m_Indexlist.Add(m_Vertexlist.Count);
+            m_Vertexlist.Add(vertex);
+            m_VertexCount += 1;
+        }
+    }
+
     /// <summary>
     /// 导航网格绘制数据
     /// </summary>
@@ -35,28 +73,6 @@ namespace ASL.NavMesh
         /// 八叉树
         /// </summary>
         public NavMeshOcTree ocTree;
-
-        private class RenderTriangle
-        {
-            public int vertexCount { get { return m_VertexCount; } }
-
-            public List<Vector3> vertexList { get { return m_Vertexlist; } }
-            public List<Vector2> uvList { get { return m_UVlist; } }
-            public List<int> indexList { get { return m_Indexlist; } }
-
-            private int m_VertexCount = 0;
-            private List<Vector3> m_Vertexlist = new List<Vector3>();
-            private List<Vector2> m_UVlist = new List<Vector2>();
-            private List<int> m_Indexlist = new List<int>();
-
-            public void AddVertex(Vector3 vertex, Vector2 uv)
-            {
-                m_Indexlist.Add(m_Vertexlist.Count);
-                m_Vertexlist.Add(vertex);
-                m_UVlist.Add(uv);
-                m_VertexCount += 1;
-            }
-        }
 
         /// <summary>
         /// 创建Data
@@ -98,8 +114,8 @@ namespace ASL.NavMesh
             //List<Vector3> vlist = new List<Vector3>();
             //List<Vector2> ulist = new List<Vector2>();
             //List<int> ilist = new List<int>();
-            List<RenderTriangle> triangleList = new List<RenderTriangle>();
-            RenderTriangle triangle = new RenderTriangle();
+            List<NavMeshRenderTriangle> triangleList = new List<NavMeshRenderTriangle>();
+            NavMeshRenderTriangle triangle = new NavMeshRenderTriangle();
             triangleList.Add(triangle);
 
             for (int i = 0; i < triangles.Count; i++)
@@ -110,7 +126,7 @@ namespace ASL.NavMesh
 
                 if (triangle.vertexCount > 64990)
                 {
-                    triangle = new RenderTriangle();
+                    triangle = new NavMeshRenderTriangle();
                     triangleList.Add(triangle);
                 }
 
@@ -180,10 +196,10 @@ namespace ASL.NavMesh
             return Mathf.Min(x, z);
         }
 
-        public Mesh GenerateMesh(Color color)
+        public Mesh[] GenerateMeshes(Color color)
         {
             if (ocTree != null)
-                return ocTree.GenerateMesh(color);
+                return ocTree.GenerateMeshes(color);
             return null;
         }
 

@@ -86,10 +86,10 @@ namespace ASL.NavMesh
             return m_NodeLists.Count;
         }
 
-        public void Build()
+        public void Init()
         {
             if (m_NodeLists.Count >= 1)
-                m_NodeLists[0].Build(m_NodeLists);
+                m_NodeLists[0].Init(m_NodeLists);
             m_Root = m_NodeLists[0];
             m_NodeLists = null;
         }
@@ -147,10 +147,10 @@ namespace ASL.NavMesh
         }
 
 
-        public void GenerateMesh(List<Vector3> vlist, List<int> ilist)
+        internal void GenerateMesh(List<NavMeshRenderTriangle> triangles)
         {
             if (m_Root != null)
-                m_Root.GenerateMesh(vertex0, vertex1, vertex2, vlist, ilist);
+                m_Root.GenerateMesh(vertex0, vertex1, vertex2, uv0, uv1, uv2, triangles);
         }
 
         public void SamplingFromTexture(Texture2D texture, TextureBlendMode blendMode)

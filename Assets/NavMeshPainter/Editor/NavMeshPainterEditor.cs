@@ -93,15 +93,23 @@ public class NavMeshPainterEditor : Editor
 
     private Dictionary<System.Type, NavMeshToolEditor> m_ToolEditors;
 
+    private Transform[] m_Previews;
+
     [MenuItem("GameObject/NavMeshPainter/Create NavMeshPainter")]
     static void Create()
     {
-        NavMeshPainter painter = new GameObject("NavMesh Painter").AddComponent<NavMeshPainter>();
+        new GameObject("NavMesh Painter").AddComponent<NavMeshPainter>();
     }
 
     void OnEnable()
     {
         m_Target = (NavMeshPainter) target;
+
+        m_Previews = new Transform[m_Target.transform.childCount];
+        for (int i = 0; i < m_Target.transform.childCount; i++)
+        {
+            m_Previews[i] = m_Target.transform.GetChild(i);
+        }
 
         BuildData();
 
@@ -373,8 +381,8 @@ public class NavMeshPainterEditor : Editor
 
     private bool RefreshPreviewMesh()
     {
-        Mesh mesh = m_Target.GenerateMesh(m_PreviewMeshColor);
-        if (mesh)
+        Mesh[] meshes = m_Target.GenerateMeshes(m_PreviewMeshColor);
+        if (meshes != null && meshes.Length > 0)
         {
 //            if (m_PreviewMeshObj == null)
 //            {
@@ -383,32 +391,74 @@ public class NavMeshPainterEditor : Editor
 //                m_PreviewMeshObj.hideFlags = HideFlags.HideAndDontSave;
 //                m_PreviewMeshObj.isStatic = true;
 //            }
-            m_Target.transform.position = Vector3.zero;
-            m_Target.transform.eulerAngles = Vector3.zero;
-            MeshFilter mf = m_Target.GetComponent<MeshFilter>();
-            if (mf == null)
-            {
-                mf = m_Target.gameObject.AddComponent<MeshFilter>();
-                mf.hideFlags = HideFlags.HideAndDontSave;
-            }
-            mf.sharedMesh = mesh;
 
-            MeshRenderer mr = m_Target.GetComponent<MeshRenderer>();
-            if (mr == null)
+            if (m_Previews != null && m_Previews.Length > 0)
             {
-                mr = m_Target.gameObject.AddComponent<MeshRenderer>();
-                mr.hideFlags = HideFlags.HideAndDontSave;
+                for (int i = 0; i < m_Previews.Length; i++)
+                {
+                    Object.DestroyImmediate(m_Previews[i].gameObject);
+                }
             }
-            if (m_PreviewMaterial == null)
+
+            m_Previews = new Transform[meshes.Length];
+            for (int i = 0; i < meshes.Length; i++)
             {
-                m_PreviewMaterial =
-                    new Material((Shader) EditorGUIUtility.Load("NavMeshPainter/Shader/NavMeshRender.shader"));
-                m_PreviewMaterial.hideFlags = HideFlags.HideAndDontSave;
+                m_Previews[i] = new GameObject("[MeshPreview_" + i + "]").transform;
+                m_Previews[i].gameObject.hideFlags = HideFlags.DontSave;
+                m_Previews[i].gameObject.isStatic = true;
+                m_Previews[i].gameObject.layer = m_Target.gameObject.layer;
+                m_Previews[i].transform.SetParent(m_Target.transform);
+                m_Previews[i].position = Vector3.zero;
+                m_Previews[i].eulerAngles = Vector3.zero;
+                MeshFilter mf = m_Previews[i].GetComponent<MeshFilter>();
+                if (mf == null)
+                {
+                    mf = m_Previews[i].gameObject.AddComponent<MeshFilter>();
+                    mf.hideFlags = HideFlags.HideAndDontSave;
+                }
+                mf.sharedMesh = meshes[i];
+
+                MeshRenderer mr = m_Previews[i].GetComponent<MeshRenderer>();
+                if (mr == null)
+                {
+                    mr = m_Previews[i].gameObject.AddComponent<MeshRenderer>();
+                    mr.hideFlags = HideFlags.HideAndDontSave;
+                }
+                if (m_PreviewMaterial == null)
+                {
+                    m_PreviewMaterial =
+                        new Material((Shader) EditorGUIUtility.Load("NavMeshPainter/Shader/NavMeshRender.shader"));
+                    m_PreviewMaterial.hideFlags = HideFlags.HideAndDontSave;
+                }
+                mr.sharedMaterial = m_PreviewMaterial;
             }
-            mr.sharedMaterial = m_PreviewMaterial;
+
+            //m_Target.transform.position = Vector3.zero;
+            //m_Target.transform.eulerAngles = Vector3.zero;
+            //MeshFilter mf = m_Target.GetComponent<MeshFilter>();
+            //if (mf == null)
+            //{
+            //    mf = m_Target.gameObject.AddComponent<MeshFilter>();
+            //    mf.hideFlags = HideFlags.HideAndDontSave;
+            //}
+            //mf.sharedMesh = mesh;
+
+            //MeshRenderer mr = m_Target.GetComponent<MeshRenderer>();
+            //if (mr == null)
+            //{
+            //    mr = m_Target.gameObject.AddComponent<MeshRenderer>();
+            //    mr.hideFlags = HideFlags.HideAndDontSave;
+            //}
+            //if (m_PreviewMaterial == null)
+            //{
+            //    m_PreviewMaterial =
+            //        new Material((Shader) EditorGUIUtility.Load("NavMeshPainter/Shader/NavMeshRender.shader"));
+            //    m_PreviewMaterial.hideFlags = HideFlags.HideAndDontSave;
+            //}
+            //mr.sharedMaterial = m_PreviewMaterial;
             return true;
         }
-        return false;
+        return false; 
     }
 
     private NavMeshToolEditor GetPaintingToolEditor(IPaintingTool tool)
