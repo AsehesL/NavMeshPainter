@@ -153,10 +153,10 @@ namespace ASL.NavMesh
                 m_Root.GenerateMesh(vertex0, vertex1, vertex2, uv0, uv1, uv2, triangles);
         }
 
-        public void SamplingFromTexture(Texture2D texture, TextureBlendMode blendMode)
+        public void SamplingFromTexture(Texture2D texture)
         {
             if (m_Root != null)
-                m_Root.SamplingFromTexture(uv0, uv1, uv2, texture, blendMode, 0, m_MaxDepth);
+                m_Root.SamplingFromTexture(uv0, uv1, uv2, texture, 0, m_MaxDepth);
         }
 
         public void Interesect(IPaintingTool tool, bool erase)

@@ -100,10 +100,10 @@ public class NavMeshPainter : MonoBehaviour
         return null;
     }
 
-    public void SamplingFromTexture(Texture2D texture, TextureBlendMode blendMode)
+    public void SamplingFromTexture(Texture2D texture)
     {
         if (data != null)
-            data.SamplingFromTexture(texture, blendMode);
+            data.SamplingFromTexture(texture);
     }
 
     void OnDrawGizmosSelected()

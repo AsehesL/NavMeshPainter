@@ -91,7 +91,7 @@ public class NavMeshPainterEditor : Editor
 
     private Material m_PreviewMaterial;
 
-    private TextureBlendMode m_ApplyTextureMode;
+    //private TextureBlendMode m_ApplyTextureMode;
 
     private Dictionary<System.Type, NavMeshToolEditor> m_ToolEditors;
 
@@ -272,7 +272,7 @@ public class NavMeshPainterEditor : Editor
         if (EditorGUI.EndChangeCheck())
             NavMeshEditorUtils.SetMaskTexture(m_RoadMask);
 
-        m_ApplyTextureMode = (TextureBlendMode) EditorGUILayout.EnumPopup(styles.blendMode, m_ApplyTextureMode);
+        //m_ApplyTextureMode = (TextureBlendMode) EditorGUILayout.EnumPopup(styles.blendMode, m_ApplyTextureMode);
 
         if (GUILayout.Button(styles.applyMask))
         {
@@ -380,7 +380,7 @@ public class NavMeshPainterEditor : Editor
         RenderTexture.ReleaseTemporary(rt);
 
         m_RoadMask = null;
-        m_Target.SamplingFromTexture(cont, m_ApplyTextureMode);
+        m_Target.SamplingFromTexture(cont);
 
         DestroyImmediate(cont);
         NavMeshEditorUtils.SetMaskTexture(null);

@@ -129,10 +129,10 @@ namespace ASL.NavMesh
         /// </summary>
         /// <param name="texture">目标贴图</param>
         /// <param name="blendMode">混合模式</param>
-        public void SamplingFromTexture(Texture2D texture, TextureBlendMode blendMode)
+        public void SamplingFromTexture(Texture2D texture)
         {
             if (m_NodeLists != null && m_NodeLists.Count > 0)
-                m_NodeLists[0].SamplingFromTexture(m_NodeLists, texture, blendMode);
+                m_NodeLists[0].SamplingFromTexture(m_NodeLists, texture);
         }
 
         public void CheckMaxTriangleNodeCount()
