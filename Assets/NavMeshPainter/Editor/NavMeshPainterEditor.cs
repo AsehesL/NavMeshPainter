@@ -64,6 +64,7 @@ public class NavMeshPainterEditor : Editor
         public GUIContent blendMode = new GUIContent("BlendMode");
         public GUIContent topHeight = new GUIContent("Top Height");
         public GUIContent bottomHeight = new GUIContent("Bottom Height");
+        public GUIContent clear = new GUIContent("Clear");
     }
 
     public static Styles styles
@@ -107,11 +108,19 @@ public class NavMeshPainterEditor : Editor
     {
         m_Target = (NavMeshPainter) target;
 
-        m_Previews = new Transform[m_Target.transform.childCount];
+        List<Transform> transflist = new List<Transform>();
         for (int i = 0; i < m_Target.transform.childCount; i++)
         {
-            m_Previews[i] = m_Target.transform.GetChild(i);
+            var child = m_Target.transform.GetChild(i);
+            MeshFilter mf = child.GetComponent<MeshFilter>();
+            if (mf && mf.sharedMesh)
+                transflist.Add(child);
+            else
+            {
+                Object.DestroyImmediate(child.gameObject);
+            }
         }
+        m_Previews = transflist.ToArray();
 
         BuildData();
 
@@ -257,6 +266,10 @@ public class NavMeshPainterEditor : Editor
         {
             Bake();
         }
+        if (GUILayout.Button(styles.clear))
+        {
+            Clear();
+        }
 
         GUILayout.EndVertical();
     }
@@ -281,6 +294,10 @@ public class NavMeshPainterEditor : Editor
         if (GUILayout.Button(styles.bake))
         {
             Bake();
+        }
+        if (GUILayout.Button(styles.clear))
+        {
+            Clear();
         }
 
         GUILayout.EndVertical();
@@ -315,6 +332,10 @@ public class NavMeshPainterEditor : Editor
         if (GUILayout.Button(styles.bake))
         {
             Bake();
+        }
+        if (GUILayout.Button(styles.clear))
+        {
+            Clear();
         }
     }
 
@@ -361,6 +382,16 @@ public class NavMeshPainterEditor : Editor
         {
             NavMeshBuilder.BuildNavMesh();
         }
+    }
+
+    private void Clear()
+    {
+        for (int i = 0; i < m_Previews.Length; i++)
+        {
+            if (m_Previews[i])
+                DestroyImmediate(m_Previews[i].gameObject);
+        }
+        m_Target.Clear();
     }
 
     private void ApplyMask()

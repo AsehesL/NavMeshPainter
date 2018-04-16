@@ -124,6 +124,12 @@ namespace ASL.NavMesh
             return meshes;
         }
 
+        public void Clear()
+        {
+            if (m_NodeLists != null && m_NodeLists.Count > 0)
+                m_NodeLists[0].Clear(m_NodeLists);
+        }
+
         /// <summary>
         /// 从贴图采样
         /// </summary>

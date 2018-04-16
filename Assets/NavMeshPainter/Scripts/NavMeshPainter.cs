@@ -100,6 +100,12 @@ public class NavMeshPainter : MonoBehaviour
         return null;
     }
 
+    public void Clear()
+    {
+        if (data != null)
+            data.Clear();
+    }
+
     public void SamplingFromTexture(Texture2D texture)
     {
         if (data != null)

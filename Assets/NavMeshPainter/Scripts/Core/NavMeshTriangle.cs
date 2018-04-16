@@ -94,6 +94,11 @@ namespace ASL.NavMesh
             m_NodeLists = null;
         }
 
+        public void Clear()
+        {
+            m_Root = new NavMeshTriangleNode(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1));
+        }
+
         public void Save()
         {
             if (m_Root != null)

@@ -205,6 +205,12 @@ public class NavMeshPainterData : ScriptableObject
         return null;
     }
 
+    public void Clear()
+    {
+        if (ocTree != null)
+            ocTree.Clear();
+    }
+
     public void SamplingFromTexture(Texture2D texture)
     {
         if (ocTree != null)
