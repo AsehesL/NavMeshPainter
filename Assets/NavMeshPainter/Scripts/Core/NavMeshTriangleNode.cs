@@ -241,7 +241,7 @@ namespace ASL.NavMesh
                     {
                         triangle = triangles[triangles.Count - 1];
                     }
-                    if (triangles.Count >= 64990)
+                    if (triangle.vertexCount >= 64990)
                     {
                         triangle = new NavMeshRenderTriangle();
                         triangles.Add(triangle);
