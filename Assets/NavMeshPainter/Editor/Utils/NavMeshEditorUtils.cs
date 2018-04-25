@@ -42,18 +42,27 @@ namespace ASL.NavMesh.Editor
 
         public static bool RayCastInSceneView(Mesh[] meshes, out RaycastHit hit)
         {
+            bool isHit = false;
+            hit = default(RaycastHit);
+            float hitdis = Mathf.Infinity;
             if (meshes != null && meshes.Length > 0)
             {
                 for (int i = 0; i < meshes.Length; i++)
                 {
-                    if (RayCastInSceneView(meshes[i], out hit))
+                    RaycastHit rh;
+                    if (RayCastInSceneView(meshes[i], out rh))
                     {
-                        return true;
+                        if (rh.distance < hitdis)
+                        {
+                            hit = rh;
+                            hitdis = rh.distance;
+                        }
+                        isHit = true;
                     }
                 }
             }
-            hit = default(RaycastHit);
-            return false;
+
+            return isHit;
         }
         public static bool RayCastInSceneView(Mesh mesh, out RaycastHit hit)
         {
