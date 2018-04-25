@@ -278,7 +278,10 @@ public class NavMeshPainterData : ScriptableObject
         {
             Transform child = transform.GetChild(i);
             if (child.gameObject.activeSelf)
+            {
                 FindTriangle(child, triangles, angle, ref max, ref min, ref maxArea);
+                FindTriangleInChild(child, triangles, angle, ref max, ref min, ref maxArea);
+            }
         }
     }
 
