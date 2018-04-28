@@ -170,10 +170,14 @@ namespace ASL.NavMesh
                 m_Root.Interesect(tool, erase, vertex0, vertex1, vertex2, 0, m_MaxDepth);
         }
 
-        public void DrawTriangleGizmos()
+        public void DrawTriangleGizmos(Camera sceneViewCamera, float lodDeltaDis)
         {
             if (m_Root != null)
-                m_Root.DrawTriangleGizmos(vertex0, vertex1, vertex2);
+            {
+                float dis = Vector3.Distance(sceneViewCamera.transform.position, this.bounds.center);
+                int lod = (int)(dis/lodDeltaDis);
+                m_Root.DrawTriangleGizmos(vertex0, vertex1, vertex2, lod, m_MaxDepth);
+            }
         }
     }
 }

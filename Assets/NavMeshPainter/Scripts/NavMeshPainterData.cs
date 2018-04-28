@@ -285,11 +285,11 @@ public class NavMeshPainterData : ScriptableObject
         }
     }
 
-    public void DrawGizmos(Color color)
+    public void DrawGizmos(Color color, Camera sceneViewCamera, float lodDeltaDis)
     {
         Gizmos.color = color;
         if (ocTree != null)
-            ocTree.DrawGizmos();
+            ocTree.DrawGizmos(sceneViewCamera, lodDeltaDis);
     }
 
 }

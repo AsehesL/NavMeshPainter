@@ -189,18 +189,20 @@ namespace ASL.NavMesh
 
         }
 
-        public void DrawTriangleGizmos(Vector3 v0, Vector3 v1, Vector3 v2)
+        public void DrawTriangleGizmos(Vector3 v0, Vector3 v1, Vector3 v2, int lod, int maxDepth)
         {
             if (m_PaintedType == PaintedType.Mix)
             {
+                if (lod > maxDepth)
+                    return;
                 if (m_CenterNode != null)
-                    m_CenterNode.DrawTriangleGizmos(v0, v1, v2);
+                    m_CenterNode.DrawTriangleGizmos(v0, v1, v2, lod + 1, maxDepth);
                 if (m_TopNode != null)
-                    m_TopNode.DrawTriangleGizmos(v0, v1, v2);
+                    m_TopNode.DrawTriangleGizmos(v0, v1, v2, lod + 1, maxDepth);
                 if (m_LeftNode != null)
-                    m_LeftNode.DrawTriangleGizmos(v0, v1, v2);
+                    m_LeftNode.DrawTriangleGizmos(v0, v1, v2, lod + 1, maxDepth);
                 if (m_RightNode != null)
-                    m_RightNode.DrawTriangleGizmos(v0, v1, v2);
+                    m_RightNode.DrawTriangleGizmos(v0, v1, v2, lod + 1, maxDepth);
             }
             else if(m_PaintedType == PaintedType.Painted)
             {

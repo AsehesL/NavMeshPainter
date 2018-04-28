@@ -58,6 +58,55 @@ namespace ASL.NavMesh
         /// <param name="bounds"></param>
         /// <param name="camera"></param>
         /// <returns></returns>
+        public static bool IsBoundsInCamera(this Bounds bounds, Camera camera)
+        {
+            Matrix4x4 matrix = camera.projectionMatrix * camera.worldToCameraMatrix;
+
+            int code =
+                ComputeOutCode(new Vector4(bounds.center.x + bounds.size.x / 2, bounds.center.y + bounds.size.y / 2,
+                    bounds.center.z + bounds.size.z / 2, 1), matrix);
+
+
+            code &=
+                ComputeOutCode(new Vector4(bounds.center.x - bounds.size.x / 2, bounds.center.y + bounds.size.y / 2,
+                    bounds.center.z + bounds.size.z / 2, 1), matrix);
+
+            code &=
+                ComputeOutCode(new Vector4(bounds.center.x + bounds.size.x / 2, bounds.center.y - bounds.size.y / 2,
+                    bounds.center.z + bounds.size.z / 2, 1), matrix);
+
+            code &=
+                ComputeOutCode(new Vector4(bounds.center.x - bounds.size.x / 2, bounds.center.y - bounds.size.y / 2,
+                    bounds.center.z + bounds.size.z / 2, 1), matrix);
+
+            code &=
+                ComputeOutCode(new Vector4(bounds.center.x + bounds.size.x / 2, bounds.center.y + bounds.size.y / 2,
+                    bounds.center.z - bounds.size.z / 2, 1), matrix);
+
+            code &=
+                ComputeOutCode(new Vector4(bounds.center.x - bounds.size.x / 2, bounds.center.y + bounds.size.y / 2,
+                    bounds.center.z - bounds.size.z / 2, 1), matrix);
+
+            code &=
+                ComputeOutCode(new Vector4(bounds.center.x + bounds.size.x / 2, bounds.center.y - bounds.size.y / 2,
+                    bounds.center.z - bounds.size.z / 2, 1), matrix);
+
+            code &=
+                ComputeOutCode(new Vector4(bounds.center.x - bounds.size.x / 2, bounds.center.y - bounds.size.y / 2,
+                    bounds.center.z - bounds.size.z / 2, 1), matrix);
+
+
+            if (code != 0) return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// 判断包围盒是否被相机裁剪
+        /// </summary>
+        /// <param name="bounds"></param>
+        /// <param name="camera"></param>
+        /// <returns></returns>
         public static bool IsBoundsInProjector(this Bounds bounds, Matrix4x4 worldToProjection)
         {
 

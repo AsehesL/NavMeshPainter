@@ -160,10 +160,10 @@ namespace ASL.NavMesh
                 m_NodeLists[0].Interesect(tool, m_NodeLists, erase);
         }
 
-        public void DrawGizmos()
+        public void DrawGizmos(Camera sceneViewCamera, float lodDeltaDis)
         {
             if (m_NodeLists != null && m_NodeLists.Count > 0)
-                m_NodeLists[0].DrawNodeGizmos(m_NodeLists);
+                m_NodeLists[0].DrawNodeGizmos(m_NodeLists, sceneViewCamera, lodDeltaDis);
         }
     }
 

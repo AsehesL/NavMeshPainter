@@ -38,6 +38,7 @@ public class NavMeshPainter : MonoBehaviour
     public NavMeshLineTool lineTool;
     public NavMeshBoxTool boxTool;
     public NavMeshCylinderTool cylinderTool;
+    public float lodDeltaDis = 20f;
 
     public IPaintingTool GetPaintingTool()
     {
@@ -112,9 +113,9 @@ public class NavMeshPainter : MonoBehaviour
             data.SamplingFromTexture(texture);
     }
 
-    void OnDrawGizmosSelected()
-    {
-        if (data != null)
-            data.DrawGizmos(navMeshWireColor);
-    }
+//    void OnDrawGizmosSelected()
+//    {
+//        if (data != null)
+//            data.DrawGizmos(navMeshWireColor);
+//    }
 }

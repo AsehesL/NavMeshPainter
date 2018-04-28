@@ -155,18 +155,21 @@ namespace ASL.NavMesh
             }
         }
 
-        public void DrawNodeGizmos(List<NavMeshOcTreeNode> nodeList)
+        public void DrawNodeGizmos(List<NavMeshOcTreeNode> nodeList, Camera sceneViewCamera, float lodDeltaDis)
         {
             for (int i = 0; i < m_ChildNodes.Length; i++)
             {
                 if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].DrawNodeGizmos(nodeList);
+                    nodeList[m_ChildNodes[i]].DrawNodeGizmos(nodeList, sceneViewCamera, lodDeltaDis);
             }
-            if (m_ItemList != null)
+            if (bounds.IsBoundsInCamera(sceneViewCamera))
             {
-                for (int i = 0; i < m_ItemList.Count; i++)
+                if (m_ItemList != null)
                 {
-                    m_ItemList[i].DrawTriangleGizmos();
+                    for (int i = 0; i < m_ItemList.Count; i++)
+                    {
+                        m_ItemList[i].DrawTriangleGizmos(sceneViewCamera, lodDeltaDis);
+                    }
                 }
             }
         }

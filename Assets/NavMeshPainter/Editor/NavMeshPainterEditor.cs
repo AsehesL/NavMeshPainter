@@ -65,6 +65,7 @@ public class NavMeshPainterEditor : Editor
         public GUIContent topHeight = new GUIContent("Top Height");
         public GUIContent bottomHeight = new GUIContent("Bottom Height");
         public GUIContent clear = new GUIContent("Clear");
+        public GUIContent lodTip = new GUIContent("Lod DeltaDis");
     }
 
     public static Styles styles
@@ -319,6 +320,7 @@ public class NavMeshPainterEditor : Editor
 
         m_Target.navMeshWireColor = EditorGUILayout.ColorField(styles.wireColor, m_Target.navMeshWireColor);
         m_Target.previewColor = EditorGUILayout.ColorField(styles.previewMeshColor, m_Target.previewColor);
+        m_Target.lodDeltaDis = Mathf.Max(0.001f, EditorGUILayout.FloatField(styles.lodTip, m_Target.lodDeltaDis));
 
         if (GUILayout.Button(styles.generateMesh))
         {
@@ -548,5 +550,12 @@ public class NavMeshPainterEditor : Editor
     private void SaveData()
     {
         m_Target.Save();
+    }
+
+    [DrawGizmo(GizmoType.Selected | GizmoType.Active)]
+    static void DrawGizmoForMyScript(NavMeshPainter scr, GizmoType gizmoType)
+    {
+        if(scr && scr.data && SceneView.currentDrawingSceneView && SceneView.currentDrawingSceneView.camera)
+            scr.data.DrawGizmos(scr.navMeshWireColor, SceneView.currentDrawingSceneView.camera, scr.lodDeltaDis);
     }
 }
