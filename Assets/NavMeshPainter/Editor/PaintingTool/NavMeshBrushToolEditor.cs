@@ -60,7 +60,7 @@ namespace ASL.NavMesh.Editor
             if (t != null)
             {
                 NavMeshEditorUtils.DrawBounds(t.bounds, Color.blue);
-                NavMeshEditorUtils.DrawBrush(targetPainter.GetRenderMeshes(), Matrix4x4.identity, t.position, t.length, t.width, t.height,
+                NavMeshEditorUtils.DrawBrush(targetPainter.renderMeshs, Matrix4x4.identity, t.position, t.length, t.width, t.height,
                     t.brushType);
             }
         }

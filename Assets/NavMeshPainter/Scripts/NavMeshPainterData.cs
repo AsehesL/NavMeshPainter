@@ -5,22 +5,6 @@ using ASL.NavMesh;
 
 namespace ASL.NavMesh
 {
-    
-
-//    /// <summary>
-//    /// 蒙版贴图混合方式
-//    /// </summary>
-//    public enum TextureBlendMode
-//    {
-//        /// <summary>
-//        /// 添加
-//        /// </summary>
-//        Add,
-//        /// <summary>
-//        /// 替换
-//        /// </summary>
-//        Replace,
-//    }
 
     internal class NavMeshRenderTriangle
     {
@@ -66,10 +50,6 @@ namespace ASL.NavMesh
 /// </summary>
 public class NavMeshPainterData : ScriptableObject
 {
-    /// <summary>
-    /// 用于渲染的mesh
-    /// </summary>
-    public Mesh[] renderMeshs;
 
     /// <summary>
     /// 八叉树
@@ -116,9 +96,9 @@ public class NavMeshPainterData : ScriptableObject
         //List<Vector3> vlist = new List<Vector3>();
         //List<Vector2> ulist = new List<Vector2>();
         //List<int> ilist = new List<int>();
-        List<NavMeshRenderTriangle> triangleList = new List<NavMeshRenderTriangle>();
-        NavMeshRenderTriangle triangle = new NavMeshRenderTriangle();
-        triangleList.Add(triangle);
+        //List<NavMeshRenderTriangle> triangleList = new List<NavMeshRenderTriangle>();
+        //NavMeshRenderTriangle triangle = new NavMeshRenderTriangle();
+        //triangleList.Add(triangle);
 
         for (int i = 0; i < triangles.Count; i++)
         {
@@ -126,15 +106,15 @@ public class NavMeshPainterData : ScriptableObject
 
             ocTree.Add(triangles[i]);
 
-            if (triangle.vertexCount > 64990)
-            {
-                triangle = new NavMeshRenderTriangle();
-                triangleList.Add(triangle);
-            }
-
-            triangle.AddVertex(triangles[i].vertex0, triangles[i].uv0);
-            triangle.AddVertex(triangles[i].vertex1, triangles[i].uv1);
-            triangle.AddVertex(triangles[i].vertex2, triangles[i].uv2);
+//            if (triangle.vertexCount > 64990)
+//            {
+//                triangle = new NavMeshRenderTriangle();
+//                triangleList.Add(triangle);
+//            }
+//
+//            triangle.AddVertex(triangles[i].vertex0, triangles[i].uv0);
+//            triangle.AddVertex(triangles[i].vertex1, triangles[i].uv1);
+//            triangle.AddVertex(triangles[i].vertex2, triangles[i].uv2);
 
             //ilist.Add(vlist.Count);
             //vlist.Add(triangles[i].vertex0);
@@ -153,15 +133,22 @@ public class NavMeshPainterData : ScriptableObject
         //renderMesh.SetTriangles(ilist, 0);
         //renderMesh.RecalculateNormals();
 
-        renderMeshs = new Mesh[triangleList.Count];
-        for (int i = 0; i < triangleList.Count; i++)
-        {
-            renderMeshs[i] = new Mesh();
-            renderMeshs[i].SetVertices(triangleList[i].vertexList);
-            renderMeshs[i].SetUVs(0, triangleList[i].uvList);
-            renderMeshs[i].SetTriangles(triangleList[i].indexList, 0);
-            renderMeshs[i].RecalculateNormals();
-        }
+//        renderMeshs = new Mesh[triangleList.Count];
+//        for (int i = 0; i < triangleList.Count; i++)
+//        {
+//            renderMeshs[i] = new Mesh();
+//            renderMeshs[i].SetVertices(triangleList[i].vertexList);
+//            renderMeshs[i].SetUVs(0, triangleList[i].uvList);
+//            renderMeshs[i].SetTriangles(triangleList[i].indexList, 0);
+//            renderMeshs[i].RecalculateNormals();
+//        }
+    }
+
+    public Mesh[] GenerateRenderMesh()
+    {
+        if (ocTree != null)
+            return ocTree.GenerateRenderMesh();
+        return null;
     }
 
     public void Init()

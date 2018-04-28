@@ -27,6 +27,11 @@ public class NavMeshPainter : MonoBehaviour
         Cylinder,
     }
 
+    /// <summary>
+    /// 用于渲染的mesh
+    /// </summary>
+    public Mesh[] renderMeshs;
+
     public PaintingToolType paintTool;
 
     public Color navMeshWireColor = new Color(0, 1, 0, 0.5f);
@@ -73,13 +78,6 @@ public class NavMeshPainter : MonoBehaviour
         if (data != null)
             return data.GetMinSize();
         return 0;
-    }
-
-    public Mesh[] GetRenderMeshes()
-    {
-        if (data != null)
-            return data.renderMeshs;
-        return null;
     }
 
     public void Draw(IPaintingTool tool)

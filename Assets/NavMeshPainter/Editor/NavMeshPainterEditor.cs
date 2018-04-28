@@ -99,6 +99,8 @@ public class NavMeshPainterEditor : Editor
 
     private Transform[] m_Previews;
 
+    private bool m_IsPainterChanged;
+
     [MenuItem("GameObject/NavMeshPainter/Create NavMeshPainter")]
     static void Create()
     {
@@ -108,6 +110,10 @@ public class NavMeshPainterEditor : Editor
     void OnEnable()
     {
         m_Target = (NavMeshPainter) target;
+        if (m_Target.renderMeshs == null && m_Target.data != null)
+        {
+            m_Target.renderMeshs = m_Target.data.GenerateRenderMesh();
+        }
 
         List<Transform> transflist = new List<Transform>();
         for (int i = 0; i < m_Target.transform.childCount; i++)
@@ -137,7 +143,7 @@ public class NavMeshPainterEditor : Editor
     void OnSceneGUI()
     {
         if(m_ShowCheckerBoard)
-            NavMeshEditorUtils.DrawCheckerBoard(m_Target.GetRenderMeshes(), Matrix4x4.identity);
+            NavMeshEditorUtils.DrawCheckerBoard(m_Target.renderMeshs, Matrix4x4.identity);
 
         switch (m_ToolType)
         {
@@ -349,7 +355,7 @@ public class NavMeshPainterEditor : Editor
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
 
 
-        if (m_Target.data && m_Target.data.renderMeshs != null && m_Target.data.renderMeshs.Length > 0)
+        if (m_Target.data && m_Target.renderMeshs != null && m_Target.renderMeshs.Length > 0)
         {
             var tooleditor = GetPaintingToolEditor(tool);
             tooleditor.DrawSceneGUI(m_Target);
@@ -358,13 +364,14 @@ public class NavMeshPainterEditor : Editor
 
     private void DrawMappingSceneGUI()
     {
-        NavMeshEditorUtils.DrawMask(m_Target.GetRenderMeshes(), Matrix4x4.identity);
+        NavMeshEditorUtils.DrawMask(m_Target.renderMeshs, Matrix4x4.identity);
     }
 
     private void ApplyPaint(IPaintingTool tool)
     {
         if (tool != null)
         {
+            m_IsPainterChanged = true;
             if (m_ToolType == ToolType.Paint)
                 m_Target.Draw(tool);
             else if (m_ToolType == ToolType.Erase)
@@ -400,6 +407,7 @@ public class NavMeshPainterEditor : Editor
     {
         if (m_RoadMask == null)
             return;
+        m_IsPainterChanged = true;
         RenderTexture rt = RenderTexture.GetTemporary(m_RoadMask.width, m_RoadMask.height, 0);
         Graphics.Blit(m_RoadMask, rt);
 
@@ -550,6 +558,10 @@ public class NavMeshPainterEditor : Editor
     private void SaveData()
     {
         m_Target.Save();
+        if(m_IsPainterChanged)
+            EditorUtility.SetDirty(m_Target.data);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
     }
 
     [DrawGizmo(GizmoType.Selected | GizmoType.Active)]

@@ -124,6 +124,25 @@ namespace ASL.NavMesh
             return meshes;
         }
 
+        public Mesh[] GenerateRenderMesh()
+        {
+            List<NavMeshRenderTriangle> triangles = new List<NavMeshRenderTriangle>();
+            if (m_NodeLists != null && m_NodeLists.Count > 0)
+                m_NodeLists[0].GenerateRenderMesh(m_NodeLists, triangles);
+            Mesh[] meshes = new Mesh[triangles.Count];
+
+            for (int i = 0; i < triangles.Count; i++)
+            {
+                meshes[i] = new Mesh();
+                meshes[i].SetVertices(triangles[i].vertexList);
+                meshes[i].SetUVs(0, triangles[i].uvList);
+                meshes[i].SetTriangles(triangles[i].indexList, 0);
+                meshes[i].RecalculateNormals();
+                meshes[i].hideFlags = HideFlags.HideAndDontSave;
+            }
+            return meshes;
+        }
+
         public void Clear()
         {
             if (m_NodeLists != null && m_NodeLists.Count > 0)

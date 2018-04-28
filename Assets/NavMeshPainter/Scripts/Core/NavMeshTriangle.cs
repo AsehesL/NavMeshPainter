@@ -158,6 +158,29 @@ namespace ASL.NavMesh
                 m_Root.GenerateMesh(vertex0, vertex1, vertex2, uv0, uv1, uv2, triangles);
         }
 
+        internal void GenerateRenderMesh(List<NavMeshRenderTriangle> triangles)
+        {
+            NavMeshRenderTriangle triangle = null;
+            if (triangles.Count <= 0)
+            {
+                triangle = new NavMeshRenderTriangle();
+                triangles.Add(triangle);
+            }
+            else
+            {
+                triangle = triangles[triangles.Count - 1];
+            }
+            if (triangle.vertexCount >= 64990)
+            {
+                triangle = new NavMeshRenderTriangle();
+                triangles.Add(triangle);
+            }
+
+            triangle.AddVertex(vertex0, uv0);
+            triangle.AddVertex(vertex1, uv1);
+            triangle.AddVertex(vertex2, uv2);
+        }
+
         public void SamplingFromTexture(Texture2D texture)
         {
             if (m_Root != null)
