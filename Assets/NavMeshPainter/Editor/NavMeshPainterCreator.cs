@@ -34,16 +34,16 @@ namespace ASL.NavMesh.Editor
         private int m_MaxDepth = 4;
         private bool m_ForceSetDepth = false;
         private bool m_ContainChilds;
-
-        private NavMeshPainterData m_Data;
+        
+        private string m_DataPath;
         private NavMeshPainter m_Painter;
 
-        public static void CreateWizard(NavMeshPainter painter = null, NavMeshPainterData data = null)
+        public static void CreateWizard(NavMeshPainter painter = null, string dataPath = null)
         {
             NavMeshPainterCreator creator = NavMeshPainterCreator.DisplayWizard<NavMeshPainterCreator>("NavMeshPainter");
             creator.minSize = new Vector2(400, 110);
             creator.maxSize = new Vector2(400, 110);
-            creator.m_Data = data;
+            creator.m_DataPath = dataPath;
             creator.m_Painter = painter;
         }
 
@@ -58,7 +58,7 @@ namespace ASL.NavMesh.Editor
                 m_ContainChilds);
 
             m_MaxDepth = EditorGUI.IntSlider(new Rect(110, 45, position.width - 115, 20), styles.maxDepth, m_MaxDepth, 1,
-                8);
+                7);
 
             m_ForceSetDepth = EditorGUI.Toggle(new Rect(110, 65, position.width - 115, 20), styles.forceSet,
                 m_ForceSetDepth);
@@ -73,36 +73,29 @@ namespace ASL.NavMesh.Editor
         {
             if (Selection.gameObjects == null || Selection.gameObjects.Length == 0)
                 return;
-            if (m_Data != null)
+            if (string.IsNullOrEmpty(m_DataPath))
             {
-                m_Data.Create(Selection.gameObjects, m_ContainChilds, m_Angle*0.5f, m_MaxDepth, m_ForceSetDepth);
+                string savePath = EditorUtility.SaveFilePanel("Save NavMeshPainterData", "", "", "nmptree");
+                m_DataPath = FileUtil.GetProjectRelativePath(savePath);
             }
-            else
+            if (!string.IsNullOrEmpty(m_DataPath))
             {
-                string savePath = EditorUtility.SaveFilePanel("Save NavMeshPainterData", "", "", "asset");
-                savePath = FileUtil.GetProjectRelativePath(savePath);
-                if (!string.IsNullOrEmpty(savePath))
-                {
 
-                    m_Data = NavMeshPainterData.CreateInstance<NavMeshPainterData>();
-                    m_Data.Create(Selection.gameObjects, m_ContainChilds, m_Angle*0.5f, m_MaxDepth, m_ForceSetDepth);
-
-                    AssetDatabase.CreateAsset(m_Data, savePath);
-//                    if (m_Data.renderMeshs != null && m_Data.renderMeshs.Length > 0)
-//                    {
-//                        for(int i=0;i<m_Data.renderMeshs.Length;i++)
-//                            AssetDatabase.AddObjectToAsset(m_Data.renderMeshs[i], m_Data);
-//                    }
-                    
-                }
+                NavMeshOcTree data = NavMeshOcTree.Create(Selection.gameObjects, m_ContainChilds, m_Angle*0.5f, m_MaxDepth,
+                    m_ForceSetDepth);
+                
+                NavMeshOcTree.Save(data, m_DataPath);
 
             }
+
             if (m_Painter != null)
             {
-                m_Painter.data = m_Data;
+                //m_Painter.data = m_Data;
+                m_Painter.dataPath = m_DataPath;
+                m_Painter.Reload(m_DataPath);
                 m_Painter = null;
             }
-            m_Data = null;
+            m_DataPath = null;
             Close();
         }
 

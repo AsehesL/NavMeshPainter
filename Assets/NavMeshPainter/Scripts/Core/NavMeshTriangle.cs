@@ -11,37 +11,28 @@ namespace ASL.NavMesh
     public class NavMeshTriangle
     {
 
-        public Vector3 vertex0;
-        public Vector3 vertex1;
-        public Vector3 vertex2;
-        public Vector2 uv0;
-        public Vector2 uv1;
-        public Vector2 uv2;
-
-        /// <summary>
-        /// 节点列表
-        /// </summary>
-        [SerializeField]
-        private List<NavMeshTriangleNode> m_NodeLists;
+        public NMVector3 vertex0;
+        public NMVector3 vertex1;
+        public NMVector3 vertex2;
+        public NMVector2 uv0;
+        public NMVector2 uv1;
+        public NMVector2 uv2;
+     
 
         /// <summary>
         /// 三角形的AABB包围盒
         /// </summary>
         public Bounds bounds { get { return m_Bounds; } }
-
-        [SerializeField]
-        private Bounds m_Bounds;
-
-        [SerializeField] private int m_MaxDepth;
+        
+        private NMBounds m_Bounds;
+        
+        private int m_MaxDepth;
 
         private NavMeshTriangleNode m_Root;
 
         public NavMeshTriangle(Vector3 vertex0, Vector3 vertex1, Vector3 vertex2, Vector2 uv0, Vector2 uv1, Vector2 uv2)
         {
-            //NavMeshTriangleNode root = new NavMeshTriangleNode(vertex0, vertex1, vertex2, uv0, uv1, uv2);
-            NavMeshTriangleNode root = new NavMeshTriangleNode(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1));
-            m_NodeLists = new List<NavMeshTriangleNode>();
-            m_NodeLists.Add(root);
+            m_Root = new NavMeshTriangleNode();
 
             float maxX = Mathf.Max(vertex0.x, vertex1.x, vertex2.x);
             float maxY = Mathf.Max(vertex0.y, vertex1.y, vertex2.y);
@@ -72,41 +63,16 @@ namespace ASL.NavMesh
 
         public NavMeshTriangle(Vector2 uv0, Vector2 uv1, Vector2 uv2)
         {
-            NavMeshTriangleNode root = new NavMeshTriangleNode(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1));
-            m_NodeLists = new List<NavMeshTriangleNode>();
-            m_NodeLists.Add(root);
+            m_Root = new NavMeshTriangleNode();
 
             this.uv0 = uv0;
             this.uv1 = uv1;
             this.uv2 = uv2;
         }
 
-        public int CheckMaxTriangleNodeCount()
-        {
-            return m_NodeLists.Count;
-        }
-
-        public void Init()
-        {
-            if (m_NodeLists.Count >= 1)
-                m_NodeLists[0].Init(m_NodeLists);
-            m_Root = m_NodeLists[0];
-            m_NodeLists = null;
-        }
-
         public void Clear()
         {
-            m_Root = new NavMeshTriangleNode(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1));
-        }
-
-        public void Save()
-        {
-            if (m_Root != null)
-            {
-                m_NodeLists = new List<NavMeshTriangleNode>();
-                m_NodeLists.Add(m_Root);
-                m_Root.Save(m_NodeLists);
-            }
+            m_Root = new NavMeshTriangleNode();
         }
 
         /// <summary>
@@ -155,7 +121,7 @@ namespace ASL.NavMesh
         internal void GenerateMesh(List<NavMeshRenderTriangle> triangles)
         {
             if (m_Root != null)
-                m_Root.GenerateMesh(vertex0, vertex1, vertex2, uv0, uv1, uv2, triangles);
+                m_Root.GenerateMesh(Vector2.zero, Vector2.right, Vector2.up, vertex0, vertex1, vertex2, uv0, uv1, uv2, triangles);
         }
 
         internal void GenerateRenderMesh(List<NavMeshRenderTriangle> triangles)
@@ -184,13 +150,13 @@ namespace ASL.NavMesh
         public void SamplingFromTexture(Texture2D texture)
         {
             if (m_Root != null)
-                m_Root.SamplingFromTexture(uv0, uv1, uv2, texture, 0, m_MaxDepth);
+                m_Root.SamplingFromTexture(Vector2.zero, Vector2.right, Vector2.up, uv0, uv1, uv2, texture, 0, m_MaxDepth);
         }
 
         public void Interesect(IPaintingTool tool, bool erase)
         {
             if (m_Root != null)
-                m_Root.Interesect(tool, erase, vertex0, vertex1, vertex2, 0, m_MaxDepth);
+                m_Root.Interesect(tool, erase, Vector2.zero, Vector2.right, Vector2.up, vertex0, vertex1, vertex2, 0, m_MaxDepth);
         }
 
         public void DrawTriangleGizmos(Camera sceneViewCamera, float lodDeltaDis)
@@ -199,7 +165,7 @@ namespace ASL.NavMesh
             {
                 float dis = Vector3.Distance(sceneViewCamera.transform.position, this.bounds.center);
                 int lod = (int)(dis/lodDeltaDis);
-                m_Root.DrawTriangleGizmos(vertex0, vertex1, vertex2, lod, m_MaxDepth);
+                m_Root.DrawTriangleGizmos(Vector2.zero, Vector2.right, Vector2.up, vertex0, vertex1, vertex2, lod, m_MaxDepth);
             }
         }
     }

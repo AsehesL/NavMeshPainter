@@ -4,22 +4,120 @@ using System.Collections.Generic;
 
 namespace ASL.NavMesh
 {
+    [System.Serializable]
+    public struct NMBounds
+    {
+        public NMVector3 center;
+        public NMVector3 size;
+
+        public NMBounds(NMVector3 center, NMVector3 size)
+        {
+            this.center = center;
+            this.size = size;
+        }
+
+        public static implicit operator Bounds(NMBounds bounds)
+        {
+            return new Bounds(bounds.center, bounds.size);
+        }
+
+        public static implicit operator NMBounds(Bounds bounds)
+        {
+            return new NMBounds(bounds.center, bounds.size);
+        }
+    }
+
+    [System.Serializable]
+    public struct NMVector3
+    {
+        public float x;
+        public float y;
+        public float z;
+
+        public NMVector3(float x, float y, float z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        public static implicit operator Vector3(NMVector3 vector)
+        {
+            return new Vector3(vector.x, vector.y, vector.z);
+        }
+
+        public static implicit operator NMVector3(Vector3 vector)
+        {
+            return new NMVector3(vector.x, vector.y, vector.z);
+        }
+
+        public static NMVector3 operator +(NMVector3 l, NMVector3 r)
+        {
+            return new NMVector3(l.x + r.x, l.y + r.y, l.z + r.z);
+        }
+
+        public static NMVector3 operator -(NMVector3 l, NMVector3 r)
+        {
+            return new NMVector3(l.x - r.x, l.y - r.y, l.z - r.z);
+        }
+    }
+
+    [System.Serializable]
+    public struct NMVector2
+    {
+        public float x;
+        public float y;
+
+        public NMVector2(float x, float y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        public static implicit operator Vector2(NMVector2 vector)
+        {
+            return new Vector2(vector.x, vector.y);
+        }
+
+        public static implicit operator NMVector2(Vector2 vector)
+        {
+            return new NMVector2(vector.x, vector.y);
+        }
+
+        public static NMVector2 operator +(NMVector2 l, NMVector2 r)
+        {
+            return new NMVector2(l.x + r.x, l.y + r.y);
+        }
+
+        public static NMVector2 operator -(NMVector2 l, NMVector2 r)
+        {
+            return new NMVector2(l.x - r.x, l.y - r.y);
+        }
+
+        public static NMVector2 operator *(NMVector2 l, float r)
+        {
+            return new NMVector2(l.x * r, l.y * r);
+        }
+    }
     /// <summary>
     /// 八叉树节点
     /// </summary>
     [System.Serializable]
     internal class NavMeshOcTreeNode 
     {
-        public Bounds bounds { get { return m_Bounds; } }
+        public Bounds bounds
+        {
+            get
+            {
+                return m_Bounds;
+            }
+        }
 
-        [SerializeField]
-        private Bounds m_Bounds;
-
-        [SerializeField]
+        private NMBounds m_Bounds;
+        
         private List<NavMeshTriangle> m_ItemList;
-
-        [SerializeField]
-        private int[] m_ChildNodes = new int[] { -1, -1, -1, -1, -1, -1, -1, -1 };
+        
+        private NavMeshOcTreeNode[] m_ChildNodes = new NavMeshOcTreeNode[] { null, null, null, null, null, null, null, null };
 
         public NavMeshOcTreeNode(Bounds bounds)
         {
@@ -27,56 +125,24 @@ namespace ASL.NavMesh
             this.m_ItemList = new List<NavMeshTriangle>();
         }
 
-        public void Init(List<NavMeshOcTreeNode> nodeList)
-        {
-            for (int i = 0; i < m_ChildNodes.Length; i++)
-            {
-                if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].Init(nodeList);
-            }
-            if (m_ItemList != null)
-            {
-                for (int i = 0; i < m_ItemList.Count; i++)
-                {
-                    m_ItemList[i].Init();
-                }
-            }
-        }
-
-        public void Save(List<NavMeshOcTreeNode> nodeList)
-        {
-            for (int i = 0; i < m_ChildNodes.Length; i++)
-            {
-                if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].Save(nodeList);
-            }
-            if (m_ItemList != null)
-            {
-                for (int i = 0; i < m_ItemList.Count; i++)
-                {
-                    m_ItemList[i].Save();
-                }
-            }
-        }
-
-        public NavMeshOcTreeNode Insert(NavMeshTriangle item, int depth, int maxDepth, List<NavMeshOcTreeNode> nodeList)
+        public NavMeshOcTreeNode Insert(NavMeshTriangle item, int depth, int maxDepth)
         {
             if (depth < maxDepth)
             {
-                NavMeshOcTreeNode node = GetContainerNode(item, nodeList);
+                NavMeshOcTreeNode node = GetContainerNode(item);
                 if (node != null)
-                    return node.Insert(item, depth + 1, maxDepth, nodeList);
+                    return node.Insert(item, depth + 1, maxDepth);
             }
             m_ItemList.Add(item);
             return this;
         }
 
-        public void Interesect(IPaintingTool tool, List<NavMeshOcTreeNode> nodeList, bool erase)
+        public void Interesect(IPaintingTool tool, bool erase)
         {
             for (int i = 0; i < m_ChildNodes.Length; i++)
             {
-                if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].Interesect(tool, nodeList, erase);
+                if (m_ChildNodes[i] != null)
+                    m_ChildNodes[i].Interesect(tool, erase);
             }
 
             if (tool.IntersectsBounds(this.bounds))
@@ -89,12 +155,12 @@ namespace ASL.NavMesh
             }
         }
 
-        public void GenerateMesh(List<NavMeshOcTreeNode> nodeList, List<NavMeshRenderTriangle> triangles)
+        public void GenerateMesh(List<NavMeshRenderTriangle> triangles)
         {
             for (int i = 0; i < m_ChildNodes.Length; i++)
             {
-                if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].GenerateMesh(nodeList, triangles);
+                if (m_ChildNodes[i] != null)
+                    m_ChildNodes[i].GenerateMesh(triangles);
             }
             if (m_ItemList != null)
             {
@@ -105,12 +171,12 @@ namespace ASL.NavMesh
             }
         }
 
-        public void GenerateRenderMesh(List<NavMeshOcTreeNode> nodeList, List<NavMeshRenderTriangle> triangles)
+        public void GenerateRenderMesh(List<NavMeshRenderTriangle> triangles)
         {
             for (int i = 0; i < m_ChildNodes.Length; i++)
             {
-                if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].GenerateRenderMesh(nodeList, triangles);
+                if (m_ChildNodes[i] != null)
+                    m_ChildNodes[i].GenerateRenderMesh(triangles);
             }
             if (m_ItemList != null)
             {
@@ -121,12 +187,12 @@ namespace ASL.NavMesh
             }
         }
 
-        public void Clear(List<NavMeshOcTreeNode> nodeList)
+        public void Clear()
         {
             for (int i = 0; i < m_ChildNodes.Length; i++)
             {
-                if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].Clear(nodeList);
+                if (m_ChildNodes[i] != null)
+                    m_ChildNodes[i].Clear();
             }
             if (m_ItemList != null)
             {
@@ -137,12 +203,12 @@ namespace ASL.NavMesh
             }
         }
 
-        public void SamplingFromTexture(List<NavMeshOcTreeNode> nodeList, Texture2D texture)
+        public void SamplingFromTexture(Texture2D texture)
         {
             for (int i = 0; i < m_ChildNodes.Length; i++)
             {
-                if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].SamplingFromTexture(nodeList, texture);
+                if (m_ChildNodes[i] != null)
+                    m_ChildNodes[i].SamplingFromTexture(texture);
             }
             if (m_ItemList != null)
             {
@@ -153,30 +219,12 @@ namespace ASL.NavMesh
             }
         }
 
-        public void CheckMaxTriangleNodeCount(List<NavMeshOcTreeNode> nodeList, ref int maxCount)
+        public void DrawNodeGizmos(Camera sceneViewCamera, float lodDeltaDis)
         {
             for (int i = 0; i < m_ChildNodes.Length; i++)
             {
-                if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].CheckMaxTriangleNodeCount(nodeList, ref maxCount);
-            }
-            if (m_ItemList != null)
-            {
-                for (int i = 0; i < m_ItemList.Count; i++)
-                {
-                    int count = m_ItemList[i].CheckMaxTriangleNodeCount();
-                    if (count > maxCount)
-                        maxCount = count;
-                }
-            }
-        }
-
-        public void DrawNodeGizmos(List<NavMeshOcTreeNode> nodeList, Camera sceneViewCamera, float lodDeltaDis)
-        {
-            for (int i = 0; i < m_ChildNodes.Length; i++)
-            {
-                if (m_ChildNodes[i] > 0)
-                    nodeList[m_ChildNodes[i]].DrawNodeGizmos(nodeList, sceneViewCamera, lodDeltaDis);
+                if (m_ChildNodes[i] != null)
+                    m_ChildNodes[i].DrawNodeGizmos(sceneViewCamera, lodDeltaDis);
             }
             if (bounds.IsBoundsInCamera(sceneViewCamera))
             {
@@ -190,68 +238,67 @@ namespace ASL.NavMesh
             }
         }
 
-        private NavMeshOcTreeNode GetContainerNode(NavMeshTriangle item, List<NavMeshOcTreeNode> nodeList)
+        private NavMeshOcTreeNode GetContainerNode(NavMeshTriangle item)
         {
             Vector3 halfSize = bounds.size / 2;
-            int result = -1;
+            NavMeshOcTreeNode result = null;
             result = GetContainerNode(ref m_ChildNodes[0], bounds.center + new Vector3(-halfSize.x / 2, halfSize.y / 2, halfSize.z / 2),
-                halfSize, item, nodeList);
-            if (result > 0)
-                return nodeList[result];
+                halfSize, item);
+            if (result != null)
+                return result;
 
             result = GetContainerNode(ref m_ChildNodes[1], bounds.center + new Vector3(-halfSize.x / 2, halfSize.y / 2, -halfSize.z / 2),
-                halfSize, item, nodeList);
-            if (result > 0)
-                return nodeList[result];
+                halfSize, item);
+            if (result != null)
+                return result;
 
             result = GetContainerNode(ref m_ChildNodes[2], bounds.center + new Vector3(halfSize.x / 2, halfSize.y / 2, halfSize.z / 2),
-                halfSize, item, nodeList);
-            if (result > 0)
-                return nodeList[result];
+                halfSize, item);
+            if (result != null)
+                return result;
 
             result = GetContainerNode(ref m_ChildNodes[3], bounds.center + new Vector3(halfSize.x / 2, halfSize.y / 2, -halfSize.z / 2),
-                halfSize, item, nodeList);
-            if (result > 0)
-                return nodeList[result];
+                halfSize, item);
+            if (result != null)
+                return result;
 
             result = GetContainerNode(ref m_ChildNodes[4], bounds.center + new Vector3(-halfSize.x / 2, -halfSize.y / 2, halfSize.z / 2),
-                halfSize, item, nodeList);
-            if (result > 0)
-                return nodeList[result];
+                halfSize, item);
+            if (result != null)
+                return result;
 
             result = GetContainerNode(ref m_ChildNodes[5], bounds.center + new Vector3(-halfSize.x / 2, -halfSize.y / 2, -halfSize.z / 2),
-                halfSize, item, nodeList);
-            if (result > 0)
-                return nodeList[result];
+                halfSize, item);
+            if (result != null)
+                return result;
 
             result = GetContainerNode(ref m_ChildNodes[6], bounds.center + new Vector3(halfSize.x / 2, -halfSize.y / 2, halfSize.z / 2),
-                halfSize, item, nodeList);
-            if (result > 0)
-                return nodeList[result];
+                halfSize, item);
+            if (result != null)
+                return result;
 
             result = GetContainerNode(ref m_ChildNodes[7], bounds.center + new Vector3(halfSize.x / 2, -halfSize.y / 2, -halfSize.z / 2),
-                halfSize, item, nodeList);
-            if (result > 0)
-                return nodeList[result];
+                halfSize, item);
+            if (result != null)
+                return result;
 
             return null;
         }
 
-        private int GetContainerNode(ref int node, Vector3 centerPos, Vector3 size, NavMeshTriangle item, List<NavMeshOcTreeNode> nodeList)
+        private NavMeshOcTreeNode GetContainerNode(ref NavMeshOcTreeNode node, Vector3 centerPos, Vector3 size, NavMeshTriangle item)
         {
-            int result = -1;
+            NavMeshOcTreeNode result = null;
             Bounds bd = item.bounds;
-            if (node < 0)
+            if (node == null)
             {
                 Bounds bounds = new Bounds(centerPos, size);
                 if (bounds.IsBoundsContainsAnotherBounds(bd))
                 {
-                    nodeList.Add(new NavMeshOcTreeNode(bounds));
-                    node = nodeList.Count - 1;
+                    node = new NavMeshOcTreeNode(bounds);
                     result = node;
                 }
             }
-            else if (nodeList[node].bounds.IsBoundsContainsAnotherBounds(bd))
+            else if (node.bounds.IsBoundsContainsAnotherBounds(bd))
             {
                 result = node;
             }

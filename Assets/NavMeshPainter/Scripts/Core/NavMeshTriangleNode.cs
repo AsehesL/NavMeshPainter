@@ -16,139 +16,27 @@ namespace ASL.NavMesh
             Painted,
             Mix,
         }
-
-        #region 权重坐标公式：(1-u-v)*v0+u*v1+v*v2   u+v=1
-        /// <summary>
-        /// 权重坐标0
-        /// </summary>
-        public Vector2 weight0;
-        /// <summary>
-        /// 权重坐标1
-        /// </summary>
-        public Vector2 weight1;
-        /// <summary>
-        /// 权重坐标2
-        /// </summary>
-        public Vector2 weight2;
-        #endregion
-
-//        /// <summary>
-//        /// 标记是否被绘制
-//        /// </summary>
-//        public bool isBePainted;
-//        /// <summary>
-//        /// 是否标记为混合：如果标记为混合，表示子节点存在颜色不相同的情况，不进行节点合并
-//        /// </summary>
-//        public bool isMix;
-
-        [SerializeField] private PaintedType m_PaintedType;
         
-        [SerializeField] private int m_CenterNodeIndex = -1;
-        [SerializeField] private int m_TopNodeIndex = -1;
-        [SerializeField] private int m_LeftNodeIndex = -1;
-        [SerializeField] private int m_RightNodeIndex = -1;
+        private PaintedType m_PaintedType;
+        
 
         private NavMeshTriangleNode m_CenterNode;
         private NavMeshTriangleNode m_TopNode;
         private NavMeshTriangleNode m_LeftNode;
         private NavMeshTriangleNode m_RightNode;
 
-        public NavMeshTriangleNode(Vector2 weight0, Vector2 weight1, Vector2 weight2, PaintedType painted = PaintedType.None)
+        public NavMeshTriangleNode(PaintedType painted = PaintedType.None)
         {
-            this.weight0 = weight0;
-            this.weight1 = weight1;
-            this.weight2 = weight2;
             this.m_PaintedType = painted;
-            //if (isBePainted)
-            //    m_PaintedType = PaintedType.Painted;
-            //else
-            //    m_PaintedType = PaintedType.None;
         }
 
-        public void Init(List<NavMeshTriangleNode> nodelist)
-        {
-            //Linear to Linked
-            {
-                m_CenterNode = m_CenterNodeIndex >= 0 && m_CenterNodeIndex < nodelist.Count
-                    ? nodelist[m_CenterNodeIndex]
-                    : null;
-                m_TopNode = m_TopNodeIndex >= 0 && m_TopNodeIndex < nodelist.Count
-                    ? nodelist[m_TopNodeIndex]
-                    : null;
-                m_LeftNode = m_LeftNodeIndex >= 0 && m_LeftNodeIndex < nodelist.Count
-                    ? nodelist[m_LeftNodeIndex]
-                    : null;
-                m_RightNode = m_RightNodeIndex >= 0 && m_RightNodeIndex < nodelist.Count
-                    ? nodelist[m_RightNodeIndex]
-                    : null;
-
-                if (m_CenterNode != null)
-                    m_CenterNode.Init(nodelist);
-                if (m_TopNode != null)
-                    m_TopNode.Init(nodelist);
-                if (m_LeftNode != null)
-                    m_LeftNode.Init(nodelist);
-                if (m_RightNode != null)
-                    m_RightNode.Init(nodelist);
-            }
-        }
-
-        public void Save(List<NavMeshTriangleNode> nodelist)
-        {
-            //Linked to Linear
-            if (m_CenterNode != null)
-            {
-                m_CenterNodeIndex = nodelist.Count;
-                nodelist.Add(m_CenterNode);
-                m_CenterNode.Save(nodelist);
-            }
-            else
-            {
-                m_CenterNodeIndex = -1;
-            }
-            if (m_TopNode != null)
-            {
-                m_TopNodeIndex = nodelist.Count;
-                nodelist.Add(m_TopNode);
-                m_TopNode.Save(nodelist);
-            }
-            else
-            {
-                m_TopNodeIndex = -1;
-            }
-            if (m_LeftNode != null)
-            {
-                m_LeftNodeIndex = nodelist.Count;
-                nodelist.Add(m_LeftNode);
-                m_LeftNode.Save(nodelist);
-            }
-            else
-            {
-                m_LeftNodeIndex = -1;
-            }
-            if (m_RightNode != null)
-            {
-                m_RightNodeIndex = nodelist.Count;
-                nodelist.Add(m_RightNode);
-                m_RightNode.Save(nodelist);
-            }
-            else
-            {
-                m_RightNodeIndex = -1;
-            }
-
-        }
-
-
-
-        public void Interesect(IPaintingTool tool, bool erase, Vector3 v0, Vector3 v1, Vector3 v2, int depth, int maxDepth)
+        public void Interesect(IPaintingTool tool, bool erase, Vector2 weight0, Vector2 weight1, Vector2 weight2, Vector3 v0, Vector3 v1, Vector3 v2, int depth, int maxDepth)
         {
             Vector3 vertex0 = (1 - weight0.x - weight0.y) * v0 + weight0.x * v1 + weight0.y * v2;
             Vector3 vertex1 = (1 - weight1.x - weight1.y) * v0 + weight1.x * v1 + weight1.y * v2;
             Vector3 vertex2 = (1 - weight2.x - weight2.y) * v0 + weight2.x * v1 + weight2.y * v2;
             if (tool.IntersectsTriangle(vertex0, vertex1, vertex2))
             {
-                //bool cotinuePaint = isBePainted == erase || isMix;
                 bool continuePaint = m_PaintedType == PaintedType.Mix;
                 if (m_PaintedType == PaintedType.Painted && erase)
                     continuePaint = true;
@@ -159,54 +47,59 @@ namespace ASL.NavMesh
                 
                 if (depth <= maxDepth)
                 {
-                    Vector2 halfw01 = weight0 + (weight1 - weight0) * 0.5f;
-                    Vector2 halfw02 = weight0 + (weight2 - weight0) * 0.5f;
-                    Vector2 halfw12 = weight1 + (weight2 - weight1) * 0.5f;
+                    
                     if (m_CenterNode == null)
-                        m_CenterNode = new NavMeshTriangleNode(halfw01, halfw12, halfw02, m_PaintedType);
+                        m_CenterNode = new NavMeshTriangleNode(m_PaintedType);
                     if (m_TopNode == null)
-                        m_TopNode = new NavMeshTriangleNode(halfw01, weight1, halfw12, m_PaintedType);
+                        m_TopNode = new NavMeshTriangleNode(m_PaintedType);
                     if (m_LeftNode == null)
-                        m_LeftNode = new NavMeshTriangleNode(weight0, halfw01, halfw02, m_PaintedType);
+                        m_LeftNode = new NavMeshTriangleNode(m_PaintedType);
                     if (m_RightNode == null)
-                        m_RightNode = new NavMeshTriangleNode(halfw02, halfw12, weight2, m_PaintedType);
+                        m_RightNode = new NavMeshTriangleNode(m_PaintedType);
                 }
 
+                Vector2 halfw01 = weight0 + (weight1 - weight0) * 0.5f;
+                Vector2 halfw02 = weight0 + (weight2 - weight0) * 0.5f;
+                Vector2 halfw12 = weight1 + (weight2 - weight1) * 0.5f;
+
                 if (m_CenterNode != null)
-                    m_CenterNode.Interesect(tool, erase, v0, v1, v2, depth + 1, maxDepth);
+                    m_CenterNode.Interesect(tool, erase, halfw01, halfw12, halfw02, v0, v1, v2, depth + 1, maxDepth);
 
                 if (m_TopNode != null)
-                    m_TopNode.Interesect(tool, erase, v0, v1, v2, depth + 1, maxDepth);
+                    m_TopNode.Interesect(tool, erase, halfw01, weight1, halfw12, v0, v1, v2, depth + 1, maxDepth);
 
                 if (m_LeftNode != null)
-                    m_LeftNode.Interesect(tool, erase, v0, v1, v2, depth + 1, maxDepth);
+                    m_LeftNode.Interesect(tool, erase, weight0, halfw01, halfw02, v0, v1, v2, depth + 1, maxDepth);
 
                 if (m_RightNode != null)
-                    m_RightNode.Interesect(tool, erase, v0, v1, v2, depth + 1, maxDepth);
+                    m_RightNode.Interesect(tool, erase, halfw02, halfw12, weight2, v0, v1, v2, depth + 1, maxDepth);
 
                 ResetPaintMark(!erase);
             }
 
         }
 
-        public void DrawTriangleGizmos(Vector3 v0, Vector3 v1, Vector3 v2, int lod, int maxDepth)
+        public void DrawTriangleGizmos(Vector2 weight0, Vector2 weight1, Vector2 weight2, Vector3 v0, Vector3 v1, Vector3 v2, int lod, int maxDepth)
         {
             if (m_PaintedType == PaintedType.Mix)
             {
                 if (lod > maxDepth)
                     return;
+                Vector2 halfw01 = weight0 + (weight1 - weight0) * 0.5f;
+                Vector2 halfw02 = weight0 + (weight2 - weight0) * 0.5f;
+                Vector2 halfw12 = weight1 + (weight2 - weight1) * 0.5f;
+
                 if (m_CenterNode != null)
-                    m_CenterNode.DrawTriangleGizmos(v0, v1, v2, lod + 1, maxDepth);
+                    m_CenterNode.DrawTriangleGizmos(halfw01, halfw12, halfw02, v0, v1, v2, lod + 1, maxDepth);
                 if (m_TopNode != null)
-                    m_TopNode.DrawTriangleGizmos(v0, v1, v2, lod + 1, maxDepth);
+                    m_TopNode.DrawTriangleGizmos(halfw01, weight1, halfw12, v0, v1, v2, lod + 1, maxDepth);
                 if (m_LeftNode != null)
-                    m_LeftNode.DrawTriangleGizmos(v0, v1, v2, lod + 1, maxDepth);
+                    m_LeftNode.DrawTriangleGizmos(weight0, halfw01, halfw02, v0, v1, v2, lod + 1, maxDepth);
                 if (m_RightNode != null)
-                    m_RightNode.DrawTriangleGizmos(v0, v1, v2, lod + 1, maxDepth);
+                    m_RightNode.DrawTriangleGizmos(halfw02, halfw12, weight2, v0, v1, v2, lod + 1, maxDepth);
             }
             else if(m_PaintedType == PaintedType.Painted)
             {
-               // if (isBePainted)
                 {
                     Vector3 vertex0 = (1 - weight0.x - weight0.y) * v0 + weight0.x * v1 + weight0.y * v2;
                     Vector3 vertex1 = (1 - weight1.x - weight1.y) * v0 + weight1.x * v1 + weight1.y * v2;
@@ -219,7 +112,7 @@ namespace ASL.NavMesh
             }
         }
 
-        internal void GenerateMesh(Vector3 v0, Vector3 v1, Vector3 v2, Vector2 u0, Vector2 u1, Vector2 u2, List<NavMeshRenderTriangle> triangles)
+        internal void GenerateMesh(Vector2 weight0, Vector2 weight1, Vector2 weight2, Vector3 v0, Vector3 v1, Vector3 v2, Vector2 u0, Vector2 u1, Vector2 u2, List<NavMeshRenderTriangle> triangles)
         {
             if (m_PaintedType == PaintedType.Painted)
             {
@@ -252,29 +145,26 @@ namespace ASL.NavMesh
                     triangle.AddVertex(vertex0, uv0);
                     triangle.AddVertex(vertex1, uv1);
                     triangle.AddVertex(vertex2, uv2);
-
-//                    ilist.Add(vlist.Count);
-//                    vlist.Add(vertex0);
-//                    ilist.Add(vlist.Count);
-//                    vlist.Add(vertex1);
-//                    ilist.Add(vlist.Count);
-//                    vlist.Add(vertex2);
+                    
                 }
             }
             else if(m_PaintedType == PaintedType.Mix)
             {
+                Vector2 halfw01 = weight0 + (weight1 - weight0) * 0.5f;
+                Vector2 halfw02 = weight0 + (weight2 - weight0) * 0.5f;
+                Vector2 halfw12 = weight1 + (weight2 - weight1) * 0.5f;
                 if (m_CenterNode != null)
-                    m_CenterNode.GenerateMesh(v0, v1, v2, u0, u1, u2, triangles);
+                    m_CenterNode.GenerateMesh(halfw01, halfw12, halfw02, v0, v1, v2, u0, u1, u2, triangles);
                 if (m_TopNode != null)
-                    m_TopNode.GenerateMesh(v0, v1, v2, u0, u1, u2, triangles);
+                    m_TopNode.GenerateMesh(halfw01, weight1, halfw12, v0, v1, v2, u0, u1, u2, triangles);
                 if (m_LeftNode != null)
-                    m_LeftNode.GenerateMesh(v0, v1, v2, u0, u1, u2, triangles);
+                    m_LeftNode.GenerateMesh(weight0, halfw01, halfw02, v0, v1, v2, u0, u1, u2, triangles);
                 if (m_RightNode != null)
-                    m_RightNode.GenerateMesh(v0, v1, v2, u0, u1, u2, triangles);
+                    m_RightNode.GenerateMesh(halfw02, halfw12, weight2, v0, v1, v2, u0, u1, u2, triangles);
             }
         }
 
-        public void SamplingFromTexture(Vector2 u0, Vector2 u1, Vector2 u2, Texture2D texture, int depth, int maxDepth)
+        public void SamplingFromTexture(Vector2 weight0, Vector2 weight1, Vector2 weight2, Vector2 u0, Vector2 u1, Vector2 u2, Texture2D texture, int depth, int maxDepth)
         {
             if (depth <= maxDepth)
             {
@@ -283,7 +173,7 @@ namespace ASL.NavMesh
                 Vector2 halfw12 = weight1 + (weight2 - weight1) * 0.5f;
                 if (m_CenterNode != null)
                 {
-                    m_CenterNode.SamplingFromTexture(u0, u1, u2, texture, depth + 1, maxDepth);
+                    m_CenterNode.SamplingFromTexture(halfw01, halfw12, halfw02, u0, u1, u2, texture, depth + 1, maxDepth);
                 }
                 else
                 {
@@ -292,7 +182,7 @@ namespace ASL.NavMesh
 
                 if (m_TopNode != null)
                 {
-                    m_TopNode.SamplingFromTexture(u0, u1, u2, texture, depth + 1, maxDepth);
+                    m_TopNode.SamplingFromTexture(halfw01, weight1, halfw12, u0, u1, u2, texture, depth + 1, maxDepth);
                 }
                 else
                 {
@@ -301,7 +191,7 @@ namespace ASL.NavMesh
 
                 if (m_LeftNode != null)
                 {
-                    m_LeftNode.SamplingFromTexture(u0, u1, u2, texture, depth + 1, maxDepth);
+                    m_LeftNode.SamplingFromTexture(weight0, halfw01, halfw02, u0, u1, u2, texture, depth + 1, maxDepth);
                 }
                 else
                 {
@@ -310,7 +200,7 @@ namespace ASL.NavMesh
 
                 if (m_RightNode != null)
                 {
-                    m_RightNode.SamplingFromTexture(u0, u1, u2, texture, depth + 1, maxDepth);
+                    m_RightNode.SamplingFromTexture(halfw02, halfw12, weight2, u0, u1, u2, texture, depth + 1, maxDepth);
                 }
                 else
                 {
@@ -321,16 +211,11 @@ namespace ASL.NavMesh
             }
             else
             {
-                bool painted = SampleTexture(u0, u1, u2, texture);
+                bool painted = SampleTexture(weight0, weight1, weight2, u0, u1, u2, texture);
                 //if (blendMode == TextureBlendMode.Replace)
                 {
                     m_PaintedType = painted ? PaintedType.Painted : PaintedType.None;
                 }
-                //else
-                //{
-                //    if (painted)
-                //        m_PaintedType = PaintedType.Painted;
-                //}
             }
         }
 
@@ -347,7 +232,7 @@ namespace ASL.NavMesh
                 NavMeshTriangleNode left = SampleTexture(w0, halfw01, halfw02, u0, u1, u2, texture, depth + 1, maxDepth);
                 NavMeshTriangleNode right = SampleTexture(halfw02, halfw12, w2, u0, u1, u2, texture, depth + 1, maxDepth);
                 
-                NavMeshTriangleNode node = new NavMeshTriangleNode(w0, w1, w2);
+                NavMeshTriangleNode node = new NavMeshTriangleNode();
                 node.m_CenterNode = center;
                 node.m_TopNode = top;
                 node.m_LeftNode = left;
@@ -358,8 +243,8 @@ namespace ASL.NavMesh
             }
             else
             {
-                NavMeshTriangleNode node = new NavMeshTriangleNode(w0, w1, w2);
-                if (node.SampleTexture(u0, u1, u2, texture))
+                NavMeshTriangleNode node = new NavMeshTriangleNode();
+                if (node.SampleTexture(w0, w1, w2, u0, u1, u2, texture))
                 {
                     node.m_PaintedType = PaintedType.Painted;
                     return node;
@@ -369,60 +254,7 @@ namespace ASL.NavMesh
 
            
         }
-
-//        public void SamplingFromTexture(Vector2 u0, Vector2 u1, Vector2 u2, Texture2D texture, TextureBlendMode blendMode, int depth, int maxDepth)
-//        {
-//           
-//            bool continueSample = false;
-//            bool isInMask = SamplingTexture(u0, u1, u2, texture);
-//            bool painted = isBePainted;
-//            if (blendMode == TextureBlendMode.Add)
-//            {
-//                if (isInMask)
-//                {
-//                    isBePainted = true;
-//                    continueSample = true;
-//                }
-//            }
-//            else
-//            {
-//                if (isBePainted != isInMask)
-//                    continueSample = true;
-//                isBePainted = isInMask;
-//            }
-//            if (!continueSample)
-//                return;
-//
-//            if (depth <= maxDepth)
-//            {
-//                Vector2 halfw01 = weight0 + (weight1 - weight0) * 0.5f;
-//                Vector2 halfw02 = weight0 + (weight2 - weight0) * 0.5f;
-//                Vector2 halfw12 = weight1 + (weight2 - weight1) * 0.5f;
-//                if (m_CenterNode == null)
-//                    m_CenterNode = new NavMeshTriangleNode(halfw01, halfw12, halfw02, painted);
-//                if (m_TopNode == null)
-//                    m_TopNode = new NavMeshTriangleNode(halfw01, weight1, halfw12, painted);
-//                if (m_LeftNode == null)
-//                    m_LeftNode = new NavMeshTriangleNode(weight0, halfw01, halfw02, painted);
-//                if (m_RightNode == null)
-//                    m_RightNode = new NavMeshTriangleNode(halfw02, halfw12, weight2, painted);
-//            }
-//
-//            if (m_CenterNode != null)
-//                m_CenterNode.SamplingFromTexture(u0, u1, u2, texture, blendMode, depth + 1, maxDepth);
-//
-//            if (m_TopNode != null)
-//                m_TopNode.SamplingFromTexture(u0, u1, u2, texture, blendMode, depth + 1, maxDepth);
-//
-//            if (m_LeftNode != null)
-//                m_LeftNode.SamplingFromTexture(u0, u1, u2, texture, blendMode, depth + 1, maxDepth);
-//
-//            if (m_RightNode != null)
-//                m_RightNode.SamplingFromTexture(u0, u1, u2, texture, blendMode, depth + 1, maxDepth);
-//            
-//
-//            ResetPaintMark(isBePainted);
-//        }
+       
 
         private void ResetPaintMark(bool paint)
         {
@@ -510,7 +342,7 @@ namespace ASL.NavMesh
             }
         }
 
-        private bool SampleTexture(Vector2 u0, Vector2 u1, Vector2 u2, Texture2D texture)
+        private bool SampleTexture(Vector2 weight0, Vector2 weight1, Vector2 weight2, Vector2 u0, Vector2 u1, Vector2 u2, Texture2D texture)
         {
             Vector2 uv0 = (1 - weight0.x - weight0.y)*u0 + weight0.x*u1 + weight0.y*u2;
             Vector2 uv1 = (1 - weight1.x - weight1.y)*u0 + weight1.x*u1 + weight1.y*u2;
@@ -520,10 +352,6 @@ namespace ASL.NavMesh
 
             if (SampleTexture(uv, texture))
                 return true;
-//            if (SampleTexture(uv1, texture))
-//                return true;
-//            if (SampleTexture(uv2, texture))
-//                return true;
             return false;
         }
 

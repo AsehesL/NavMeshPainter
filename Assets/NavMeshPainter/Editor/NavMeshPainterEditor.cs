@@ -88,12 +88,11 @@ public class NavMeshPainterEditor : Editor
 
     private Texture2D m_RoadMask;
 
-    //private Color m_PreviewMeshColor = Color.red;
-    //private GameObject m_PreviewMeshObj;
+    private DefaultAsset m_OcTreeAsset;
+    
 
     private Material m_PreviewMaterial;
-
-    //private TextureBlendMode m_ApplyTextureMode;
+    
 
     private Dictionary<System.Type, NavMeshToolEditor> m_ToolEditors;
 
@@ -110,10 +109,8 @@ public class NavMeshPainterEditor : Editor
     void OnEnable()
     {
         m_Target = (NavMeshPainter) target;
-        if (m_Target.renderMeshs == null && m_Target.data != null)
-        {
-            m_Target.renderMeshs = m_Target.data.GenerateRenderMesh();
-        }
+
+        BuildData();
 
         List<Transform> transflist = new List<Transform>();
         for (int i = 0; i < m_Target.transform.childCount; i++)
@@ -128,9 +125,7 @@ public class NavMeshPainterEditor : Editor
             }
         }
         m_Previews = transflist.ToArray();
-
-        BuildData();
-
+        
         ResetCheckerBoard();
         NavMeshEditorUtils.SetMaskTexture(null);
     }
@@ -190,15 +185,16 @@ public class NavMeshPainterEditor : Editor
     private void DrawNoDataGUI()
     {
         EditorGUI.BeginChangeCheck();
-        m_Target.data =
-            EditorGUILayout.ObjectField(styles.painterData, m_Target.data, typeof (NavMeshPainterData), false) as
-                NavMeshPainterData;
-        if(EditorGUI.EndChangeCheck())
-            if (m_Target.data != null)
-            {
-                BuildData();
+        m_OcTreeAsset =
+            EditorGUILayout.ObjectField(styles.painterData, m_OcTreeAsset, typeof (DefaultAsset), false) as
+                DefaultAsset;
+        if (EditorGUI.EndChangeCheck())
+        {
+            //if (m_OcTreeAsset != null)
+            RebuildData(m_OcTreeAsset);
+            if(m_Target.data != null)
                 ResetCheckerBoard();
-            }
+        }
         if (GUILayout.Button(styles.create))
         {
             CreateNewNavMeshPainterData();
@@ -314,15 +310,16 @@ public class NavMeshPainterEditor : Editor
     {
         GUILayout.Label(styles.setting, styles.boldLabel);
         EditorGUI.BeginChangeCheck();
-        m_Target.data =
-            EditorGUILayout.ObjectField(styles.painterData, m_Target.data, typeof(NavMeshPainterData), false) as
-                NavMeshPainterData;
+        m_OcTreeAsset =
+            EditorGUILayout.ObjectField(styles.painterData, m_OcTreeAsset, typeof(DefaultAsset), false) as
+                DefaultAsset;
         if (EditorGUI.EndChangeCheck())
-            if (m_Target.data != null)
-            {
-                BuildData();
+        {
+            //if (m_OcTreeAsset != null)
+            RebuildData(m_OcTreeAsset);
+            if(m_Target.data != null)
                 ResetCheckerBoard();
-            }
+        }
 
         m_Target.navMeshWireColor = EditorGUILayout.ColorField(styles.wireColor, m_Target.navMeshWireColor);
         m_Target.previewColor = EditorGUILayout.ColorField(styles.previewMeshColor, m_Target.previewColor);
@@ -355,7 +352,7 @@ public class NavMeshPainterEditor : Editor
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
 
 
-        if (m_Target.data && m_Target.renderMeshs != null && m_Target.renderMeshs.Length > 0)
+        if (m_Target.data != null && m_Target.renderMeshs != null && m_Target.renderMeshs.Length > 0)
         {
             var tooleditor = GetPaintingToolEditor(tool);
             tooleditor.DrawSceneGUI(m_Target);
@@ -486,29 +483,6 @@ public class NavMeshPainterEditor : Editor
                 mr.sharedMaterial = m_PreviewMaterial;
             }
 
-            //m_Target.transform.position = Vector3.zero;
-            //m_Target.transform.eulerAngles = Vector3.zero;
-            //MeshFilter mf = m_Target.GetComponent<MeshFilter>();
-            //if (mf == null)
-            //{
-            //    mf = m_Target.gameObject.AddComponent<MeshFilter>();
-            //    mf.hideFlags = HideFlags.HideAndDontSave;
-            //}
-            //mf.sharedMesh = mesh;
-
-            //MeshRenderer mr = m_Target.GetComponent<MeshRenderer>();
-            //if (mr == null)
-            //{
-            //    mr = m_Target.gameObject.AddComponent<MeshRenderer>();
-            //    mr.hideFlags = HideFlags.HideAndDontSave;
-            //}
-            //if (m_PreviewMaterial == null)
-            //{
-            //    m_PreviewMaterial =
-            //        new Material((Shader) EditorGUIUtility.Load("NavMeshPainter/Shader/NavMeshRender.shader"));
-            //    m_PreviewMaterial.hideFlags = HideFlags.HideAndDontSave;
-            //}
-            //mr.sharedMaterial = m_PreviewMaterial;
             return true;
         }
         return false; 
@@ -552,14 +526,37 @@ public class NavMeshPainterEditor : Editor
 
     private void BuildData()
     {
-        m_Target.Init();
+        //m_Target.Init();
+        
+        m_Target.Load();
+
+        m_OcTreeAsset = AssetDatabase.LoadAssetAtPath<DefaultAsset>(m_Target.dataPath);
+    }
+
+    private void RebuildData(DefaultAsset asset)
+    {
+        if (asset != null)
+        {
+            string path = AssetDatabase.GetAssetPath(asset);
+            if (!string.IsNullOrEmpty(path))
+            {
+                System.IO.FileInfo file = new System.IO.FileInfo(path);
+                if (file.Extension.ToLower() == ".nmptree" && file.Exists)
+                {
+                    m_Target.Reload(path);
+                    return;
+                }
+            }
+        }
+        m_Target.Reload(null);
     }
 
     private void SaveData()
     {
-        m_Target.Save();
-        if(m_IsPainterChanged)
-            EditorUtility.SetDirty(m_Target.data);
+        //m_Target.Save();
+        if(m_IsPainterChanged || !System.IO.File.Exists(m_Target.dataPath))
+            m_Target.Save();
+        //EditorUtility.SetDirty(m_Target.data);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
     }
@@ -567,7 +564,7 @@ public class NavMeshPainterEditor : Editor
     [DrawGizmo(GizmoType.Selected | GizmoType.Active)]
     static void DrawGizmoForMyScript(NavMeshPainter scr, GizmoType gizmoType)
     {
-        if(scr && scr.data && SceneView.currentDrawingSceneView && SceneView.currentDrawingSceneView.camera)
+        if(scr && scr.data != null && SceneView.currentDrawingSceneView && SceneView.currentDrawingSceneView.camera)
             scr.data.DrawGizmos(scr.navMeshWireColor, SceneView.currentDrawingSceneView.camera, scr.lodDeltaDis);
     }
 }
