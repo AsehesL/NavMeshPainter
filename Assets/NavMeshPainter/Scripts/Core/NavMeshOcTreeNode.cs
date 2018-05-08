@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace ASL.NavMesh
 {
+    /// <summary>
+    /// Unity Bounds不支持序列化
+    /// </summary>
     [System.Serializable]
     public struct NMBounds
     {
@@ -27,6 +30,9 @@ namespace ASL.NavMesh
         }
     }
 
+    /// <summary>
+    /// Unity Vector3不支持序列化
+    /// </summary>
     [System.Serializable]
     public struct NMVector3
     {

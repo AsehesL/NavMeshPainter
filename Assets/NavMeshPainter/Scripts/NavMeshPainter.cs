@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using ASL.NavMesh;
 
 
@@ -36,6 +37,8 @@ public class NavMeshPainter : MonoBehaviour
     /// 用于渲染的mesh
     /// </summary>
     public Mesh[] renderMeshs;
+
+    public List<MeshFilter> sceneMeshs;
 
     public PaintingToolType paintTool;
 

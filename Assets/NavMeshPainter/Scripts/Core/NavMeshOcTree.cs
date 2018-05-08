@@ -71,6 +71,10 @@ namespace ASL.NavMesh
         private int m_MaxDepth;
 
         private NavMeshOcTreeNode m_Root;
+
+        private float m_MaxTriangleArea;
+        private int m_MaxTriangleDepth;
+        private bool m_FOrceSetTriangleDepth;
         
 
         /// <summary>
@@ -85,7 +89,7 @@ namespace ASL.NavMesh
             this.m_Root = new NavMeshOcTreeNode(new Bounds(center, size));
         }
 
-        public static NavMeshOcTree Create(GameObject[] gameObjects, bool containChilds, float angle, int maxDepth, bool forceSetDepth)
+        public static NavMeshOcTree Create(MeshFilter[] meshFilter, int maxTriangleDepth, bool forceSetTriangleDepth)
         {
             Vector3 max = new Vector3(-Mathf.Infinity, -Mathf.Infinity, -Mathf.Infinity);
             Vector3 min = new Vector3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);

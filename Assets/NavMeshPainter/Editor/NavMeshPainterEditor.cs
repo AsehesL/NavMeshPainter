@@ -66,6 +66,8 @@ public class NavMeshPainterEditor : Editor
         public GUIContent bottomHeight = new GUIContent("Bottom Height");
         public GUIContent clear = new GUIContent("Clear");
         public GUIContent lodTip = new GUIContent("Lod DeltaDis");
+        public GUIContent maxDepth = new GUIContent("MaxDepth");
+        public GUIContent forceSet = new GUIContent("Force SetDepth");
     }
 
     public static Styles styles
@@ -92,6 +94,9 @@ public class NavMeshPainterEditor : Editor
     
 
     private Material m_PreviewMaterial;
+
+    private int m_MaxTriangleDepth;
+    private bool m_ForceSetTriangleDepth;
     
 
     private Dictionary<System.Type, NavMeshToolEditor> m_ToolEditors;
@@ -184,22 +189,30 @@ public class NavMeshPainterEditor : Editor
 
     private void DrawNoDataGUI()
     {
+        DrawTreeAssetCreateGUI();
+        EditorGUILayout.HelpBox("No PainterData has been setted!", MessageType.Error);
+    }
+
+    private void DrawTreeAssetCreateGUI()
+    {
         EditorGUI.BeginChangeCheck();
         m_OcTreeAsset =
-            EditorGUILayout.ObjectField(styles.painterData, m_OcTreeAsset, typeof (DefaultAsset), false) as
+            EditorGUILayout.ObjectField(styles.painterData, m_OcTreeAsset, typeof(DefaultAsset), false) as
                 DefaultAsset;
         if (EditorGUI.EndChangeCheck())
         {
             //if (m_OcTreeAsset != null)
             RebuildData(m_OcTreeAsset);
-            if(m_Target.data != null)
+            if (m_Target.data != null)
                 ResetCheckerBoard();
         }
+        m_MaxTriangleDepth = EditorGUILayout.IntSlider(styles.maxDepth, m_MaxTriangleDepth, 1, 7);
+
+        m_ForceSetTriangleDepth = EditorGUILayout.Toggle(styles.forceSet, m_ForceSetTriangleDepth);
         if (GUILayout.Button(styles.create))
         {
             CreateNewNavMeshPainterData();
         }
-        EditorGUILayout.HelpBox("No PainterData has been setted!", MessageType.Error);
     }
 
     private void DrawToolsGUI()
@@ -309,17 +322,7 @@ public class NavMeshPainterEditor : Editor
     private void DrawBakeSettingGUI()
     {
         GUILayout.Label(styles.setting, styles.boldLabel);
-        EditorGUI.BeginChangeCheck();
-        m_OcTreeAsset =
-            EditorGUILayout.ObjectField(styles.painterData, m_OcTreeAsset, typeof(DefaultAsset), false) as
-                DefaultAsset;
-        if (EditorGUI.EndChangeCheck())
-        {
-            //if (m_OcTreeAsset != null)
-            RebuildData(m_OcTreeAsset);
-            if(m_Target.data != null)
-                ResetCheckerBoard();
-        }
+        DrawTreeAssetCreateGUI();
 
         m_Target.navMeshWireColor = EditorGUILayout.ColorField(styles.wireColor, m_Target.navMeshWireColor);
         m_Target.previewColor = EditorGUILayout.ColorField(styles.previewMeshColor, m_Target.previewColor);
@@ -330,10 +333,7 @@ public class NavMeshPainterEditor : Editor
             RefreshPreviewMesh();
         }
 
-        if (GUILayout.Button(styles.create))
-        {
-            CreateNewNavMeshPainterData();
-        }
+        
         if (GUILayout.Button(styles.bake))
         {
             Bake();
@@ -426,6 +426,7 @@ public class NavMeshPainterEditor : Editor
 
     private void CreateNewNavMeshPainterData()
     {
+        MeshFilter[] meshFilters = Object.FindObjectsOfType<MeshFilter>();
         NavMeshPainterCreator.CreateWizard(m_Target);
     }
 

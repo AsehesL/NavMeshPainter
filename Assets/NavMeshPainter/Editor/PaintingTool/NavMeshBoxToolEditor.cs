@@ -61,6 +61,8 @@ namespace ASL.NavMesh.Editor
                 return;
             if (m_IsDragging)
             {
+                
+
                 NavMeshEditorUtils.DrawBounds(t.bounds, Color.blue);
             }
             else
